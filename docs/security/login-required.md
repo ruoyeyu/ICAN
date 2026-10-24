@@ -13,13 +13,23 @@ The existing Go `/api/v1/files` upload route already required an authenticated a
 - Canvas, personal asset, API configuration and image/media blob caches are scoped by account ID. Pending responses cannot apply a previous account's state after a switch. Legacy keys remain untouched and are never automatically displayed, assigned or uploaded to another account.
 - Provider reference links retain their separate, controlled authorization; login gating does not remove the provider's ability to read an explicitly shared reference.
 
+## Verified v0.1.1 public image
+
+Source: `8b5d9aeb06d5ea1ad967f36b31fdfe2798efc0a0`. [CI 40103981848](https://github.com/ruoyeyu/ICAN/actions/runs/40103981848) passed the build, tests, runtime/Compose checks, scan and publication. Anonymous registry access was verified against the manifest SHA256 and image config digest. The platform is Linux / amd64.
+
+```sh
+docker pull ghcr.io/ruoyeyu/ican@sha256:d4517b26856b2062b2a6c05d3992ac89a96722d33f40266efbae336e471dd832
+```
+
+Set `ICAN_IMAGE` to that complete reference. See `evidence/ghcr-v0.1.1-publication.json` and `evidence/ghcr-40103981848-evidence.zip` for commit-bound results and the full raw scan. Scan matches: 0 critical/high/medium/low, 1 UNKNOWN module record retained. The [v0.1.1 release](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.1) supplies configuration assets and bilingual instructions.
+
 ## Existing data and update
 
 There is no database schema change and no deletion of database, media, API settings or encryption keys. Account data already synced to the server remains available after login. Preserve the existing data directory and original encryption key when replacing the container.
 
 Old browser-only projects and local blobs without a recorded account owner remain in the old browser storage, but are no longer automatically loaded. Recover them through an explicit, owner-approved export/import; do not clear browser storage or silently claim them for whichever account signs in next. A generic automatic legacy importer is not included in this patch.
 
-The old v0.1.0 release image is immutable and does not gain this fix merely because `main` changes. Use the successful build's new source commit and digest. Production rollout and rollback follow `ghcr-deployment.md`; no server deployment is performed by this change.
+The old v0.1.0 release image is immutable and does not gain this fix merely because `main` changes. Use the successful build's new source commit and digest. Production rollout and rollback follow `ghcr-deployment.md`; no server deployment is performed by this change. Rolling back to v0.1.0 restores the guest-canvas behavior, so restrict public access while using it for recovery.
 
 ## Verification
 

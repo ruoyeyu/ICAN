@@ -1,0 +1,54 @@
+{
+  "sourceCommit": "8b5d9aeb06d5ea1ad967f36b31fdfe2798efc0a0",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:d4517b26856b2062b2a6c05d3992ac89a96722d33f40266efbae336e471dd832",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-8b5d9aeb06d5ea1ad967f36b31fdfe2798efc0a0-run-40103981848-1",
+  "imageId": "sha256:46c12f6d737999c5ffec21dd0245929edf809d4247906a3b9062ba376f2d6cc4",
+  "platform": "linux/amd64",
+  "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
+  "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40103981848",
+  "runAttempt": "1",
+  "productionApproved": false,
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "unknownMatch": {
+    "id": "GO-2026-5932",
+    "package": "golang.org/x/crypto",
+    "note": "Raw module match retained; existing contextual review applies. No ignore filter added."
+  },
+  "tests": {
+    "goSuite": "passed",
+    "web": 24,
+    "director": 294,
+    "deploymentAndPublicationPolicies": 7,
+    "imageAndRestart": "passed",
+    "runtimeRegression": "passed",
+    "actualComposeAtRequestedLimits": "passed",
+    "localBrowserEvidence": "login-required-local.json",
+    "localBrowserCodeCommit": "37ca84a05b9df07b09bda4efecfaaab0553cfe5a"
+  },
+  "runtimeLimits": {
+    "cpus": 1.6,
+    "memoryBytes": 1610612736,
+    "additionalSwap": false
+  },
+  "evidenceArchive": {
+    "path": "ghcr-40103981848-evidence.zip",
+    "sha256": "01b76882f5e02dde0eaa19b33ca01c5f50629e11d1566e6e8c39d1035086b7bd",
+    "artifactId": 12564221299
+  },
+  "publicationArtifact": {
+    "id": 12564112027,
+    "sha256": "cea15b65f069e5c2b1d6a0570bc27e4ac4b66fcf2e8a6c02cb7303617daf586e"
+  },
+  "anonymousRegistryPullCheck": {
+    "passed": true,
+    "manifestDigestVerified": true,
+    "configDigestVerified": true
+  }
+}

@@ -1,5 +1,7 @@
 # ICAN 交接
 
+v0.1.1 公共镜像已完成重新编译与发布，CI 40103981848 全通过；源码 8b5d9aeb06d5ea1ad967f36b31fdfe2798efc0a0，digest 及匿名拉取验证见 docs/security/evidence/ghcr-v0.1.1-publication.json。Release 使用新版本源码及同一份已验证镜像，保留 v0.1.0 tag/附件；待最终核对 Release 发布状态。没有服务器部署。
+
 用户要求重新编译并提供可共同使用的公共版本，本轮发布目标为 v0.1.1。版本号、Web/Director 包元数据和 OCI 标签同步更新；主线流水线重新构建并验证镜像后才发布 Release。无需生产服务器编译，不操作线上部署。
 
 本轮修复游客画布入口和无归属浏览器缓存自动同步：服务端页面鉴权、根路径会话 Cookie、登录后使用与账号缓存隔离。详见 docs/security/login-required.md。保留旧本地缓存、数据库、媒体和密钥；原 v0.1.0 镜像不变，需采用本次成功 CI 的新 digest。未操作生产服务器。

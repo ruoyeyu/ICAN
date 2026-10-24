@@ -11,7 +11,9 @@ import urllib.parse
 import urllib.request
 
 REPO = 'ruoyeyu/ICAN'
-TAG = 'v0.1.0'
+TAG = 'v0.1.1'
+EVIDENCE_PATH = Path('docs/security/evidence/ghcr-v0.1.1-publication.json')
+NOTES_PATH = Path('.github/release/v0.1.1.md')
 API = f'https://api.github.com/repos/{REPO}'
 
 
@@ -47,7 +49,7 @@ def source_file(path, source):
 def main():
     if os.environ.get('GITHUB_REPOSITORY') != REPO or os.environ.get('GITHUB_REF') != 'refs/heads/main':
         raise RuntimeError('Release only allowed from repository main')
-    evidence_path = Path('docs/security/evidence/ghcr-publication.json')
+    evidence_path = EVIDENCE_PATH
     evidence = json.loads(evidence_path.read_text())
     source, image = evidence['sourceCommit'], evidence['image']
     if not re.fullmatch(r'[0-9a-f]{40}', source) or not re.fullmatch(r'ghcr.io/ruoyeyu/ican@sha256:[0-9a-f]{64}', image):
@@ -72,7 +74,8 @@ def main():
     subprocess.run(['docker', 'pull', image], check=True)
     inspected = json.loads(subprocess.check_output(['docker', 'image', 'inspect', image]))[0]
     if (inspected['Id'] != evidence['imageId']
-            or inspected['Config']['Labels']['org.opencontainers.image.revision'] != source):
+            or inspected['Config']['Labels']['org.opencontainers.image.revision'] != source
+            or inspected['Config']['Labels']['org.opencontainers.image.version'] != TAG.removeprefix('v')):
         raise RuntimeError('Registry image does not match the checked artifact')
 
     assets = {name: source_file(path, source) for name, path in {
@@ -87,7 +90,7 @@ def main():
     assets.update({'publication.json': evidence_path.read_bytes(), 'image-security-evidence.zip': raw})
     assets['SHA256SUMS'] = ''.join(hashlib.sha256(data).hexdigest() + '  ' + name + '\n'
                                   for name, data in assets.items()).encode()
-    body = Path('.github/release/v0.1.0.md').read_text()
+    body = NOTES_PATH.read_text()
     # Existing releases may update notes after validating the same source and assets.
     releases = request('/releases?per_page=100')
     existing = next((r for r in releases if r['tag_name'] == TAG), None)
@@ -97,7 +100,7 @@ def main():
         release = existing
     else:
         release = request('/releases', 'POST', {'tag_name': TAG, 'target_commitish': source,
-            'name': 'ICAN v0.1.0 (Pre-release)', 'body': body, 'draft': True,
+            'name': f'ICAN {TAG} (Pre-release)', 'body': body, 'draft': True,
             'prerelease': True, 'make_latest': 'false'})
     uploaded = {a['name']: a for a in request(f"/releases/{release['id']}/assets?per_page=100")}
     for name, data in assets.items():

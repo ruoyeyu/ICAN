@@ -89,7 +89,7 @@ chmod 600 .env
 
 GitHub Actions 在完成构建、测试和安全检查后发布 GHCR 镜像。服务器只拉取并运行成功记录中的不可变 digest，不执行编译；详见 [GHCR 部署、更新和回滚说明](docs/security/ghcr-deployment.zh-CN.md)。
 
-当前登录保护请采用[登录修复的镜像与验证记录](docs/security/login-required.md)。原 [v0.1.0 预发布](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0)早于此次修复，其不可变镜像和附件保留用于追溯。
+公共编译版本：[ICAN v0.1.1](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.1)，包含[强制登录修复镜像与验证记录](docs/security/login-required.md)。原 [v0.1.0 预发布](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0)早于此次修复，其不可变镜像和附件保留用于追溯。
 
 ### 更新容器，保留数据
 
