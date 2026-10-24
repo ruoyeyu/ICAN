@@ -4,7 +4,7 @@
 
 **Bring your own API. Keep your references, ideas, and results on one canvas.**
 
-ICAN is a self-hosted AI creative workspace based on [Infinite Canvas](https://github.com/tigerowo/infinite-canvas). It brings prompts, reference material, and image and video generation together for individuals and small teams who want to manage their own projects and media.
+ICAN is a self-hosted AI creative workspace derived from [Infinite Canvas](https://github.com/basketikun/infinite-canvas), using [tigerowo’s derivative](https://github.com/tigerowo/infinite-canvas) as its direct code base. It brings prompts, reference material, and image and video generation together for individuals and small teams who want to manage their own projects and media.
 
 Models run through the external APIs you configure. The canvas itself does not need a GPU. ICAN includes no model credits or preset paid channels; usage costs depend on your provider.
 
@@ -94,6 +94,8 @@ Reproducible bug reports and specific API adapter requests are welcome. Remove A
 
 ## Credits and license
 
-Thanks to [tigerowo/infinite-canvas](https://github.com/tigerowo/infinite-canvas) and its contributors for the original project. ICAN is a modified fork licensed under [AGPL-3.0](LICENSE). Original attribution and copyright notices are retained; see [NOTICE](NOTICE).
+The original project is [basketikun/infinite-canvas](https://github.com/basketikun/infinite-canvas). ICAN uses [tigerowo/infinite-canvas](https://github.com/tigerowo/infinite-canvas) as its direct code base; that derivative credits the original project and incorporates the image-generation enhancements from [HuFakai/infinite-canvas](https://github.com/HuFakai/infinite-canvas). Thanks to the authors and contributors of all three projects.
+
+ICAN retains the [AGPL-3.0](LICENSE) license of the adopted code base, along with original attribution and copyright notices; see [NOTICE](NOTICE).
 
 This fork modifies the upstream UI and default integrations, adds invitation-only registration and session revocation, encrypts saved sensitive settings, enforces media ownership and controlled provider links, checks server outbound requests, updates dependencies, and adds container isolation and verification. See the [hardening review](docs/security/hardening-review.md) and [supply-chain review](docs/security/supply-chain-review.md) for evidence and limitations. These changes do not establish absolute security: production network/resource controls, live provider acceptance, and migration/backup recovery remain deployment gates.

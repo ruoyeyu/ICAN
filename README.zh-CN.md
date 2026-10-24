@@ -4,7 +4,7 @@
 
 **接自己的 API，在一张画布里整理参考、尝试想法、留下结果。**
 
-ICAN 是一个可以自己部署的 AI 创作工作台，基于 [Infinite Canvas](https://github.com/tigerowo/infinite-canvas) 修改。它把提示词、参考素材和图片、视频生成放在一起，适合已经有模型 API、想自己管理项目和素材的个人或小团队。
+ICAN 是一个可以自己部署的 AI 创作工作台，源自 [Infinite Canvas 原项目](https://github.com/basketikun/infinite-canvas)，以 [tigerowo 的二次开发版本](https://github.com/tigerowo/infinite-canvas) 为直接代码基础。它把提示词、参考素材和图片、视频生成放在一起，适合已经有模型 API、想自己管理项目和素材的个人或小团队。
 
 模型通过你配置的外部 API 调用，运行画布本身不需要 GPU。项目不提供模型额度，也不预设付费渠道；调用费用由接入的服务决定。
 
@@ -92,6 +92,8 @@ bun run build
 
 ## 来源与许可
 
-感谢 [tigerowo/infinite-canvas](https://github.com/tigerowo/infinite-canvas) 及其贡献者提供的基础能力。ICAN 是在该项目上的修改分支，采用 [AGPL-3.0](LICENSE)，保留原作者署名和版权说明，详见 [NOTICE](NOTICE)。
+原项目为 [basketikun/infinite-canvas](https://github.com/basketikun/infinite-canvas)。ICAN 直接基于 [tigerowo/infinite-canvas](https://github.com/tigerowo/infinite-canvas) 继续开发；tigerowo 版本以原项目为基础，并合入了 [HuFakai/infinite-canvas](https://github.com/HuFakai/infinite-canvas) 的生图增强成果。感谢三个项目的作者与贡献者。
+
+ICAN 沿用所采用代码版本的 [AGPL-3.0](LICENSE) 协议，保留原作者署名和版权说明，详见 [NOTICE](NOTICE)。
 
 本分支修改了上游界面和默认接入，新增邀请码注册与会话撤销、敏感配置加密、素材归属检查和受控供应商链接、服务端出站请求防护，并更新依赖、补充容器隔离与验证。具体修改、证据和限制见[安全加固记录](docs/security/hardening-review.md)与[供应链复核](docs/security/supply-chain-review.md)。这些补丁不代表绝对安全：生产网络与资源边界、真实供应商验收、迁移及备份恢复仍是上线门槛。
