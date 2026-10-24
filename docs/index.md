@@ -3,6 +3,7 @@
 - [安全复核与实施证据](security/hardening-review.md)
 - [中低危、二进制与外部引用复核](security/supply-chain-review.md)
 - [部署、迁移与回滚](security/deployment.md)
+- [Docker 运行与维护](security/docker-operations.md)
 - [实施范围](security/implementation-plan.md)
 - [后端数据库](backend/backend-database.md)
 - [接口响应](backend/api-response.md)

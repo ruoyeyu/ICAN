@@ -1,9 +1,22 @@
 # Deployment values must be reviewed and explicitly chosen before use.
 services:
   app:
-    build: .
-    image: ican:reviewed
-    env_file: [.env]
+    image: ${ICAN_IMAGE:?set the verified immutable image reference}
+    pull_policy: never
+    platform: linux/amd64
+    environment:
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?set the exact HTTPS origin}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?set administrator username}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set a unique bootstrap password}
+      JWT_SECRET: ${JWT_SECRET:?set an independent random secret}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?set an independent encryption key}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-168}
+      STORAGE_DRIVER: sqlite
+      DATABASE_DSN: /app/data/ican.db
+      MEDIA_DIR: /app/data/media
+      AI_LOG_DIR: /app/data/logs
+      AUTH_ATTEMPTS_PER_MINUTE: ${AUTH_ATTEMPTS_PER_MINUTE:?confirm authentication request limit}
+      MEDIA_LINK_TTL_SECONDS: ${MEDIA_LINK_TTL_SECONDS:?confirm supplier link lifetime}
     user: "10001:10001"
     init: true
     read_only: true
@@ -13,7 +26,11 @@ services:
     mem_limit: ${ICAN_MEMORY_LIMIT:?confirm memory limit}
     cpus: ${ICAN_CPU_LIMIT:?confirm CPU limit}
     volumes:
-      - ${ICAN_DATA_DIR:?set backed-up isolated data directory}:/app/data
+      - type: bind
+        source: ${ICAN_DATA_DIR:?set backed-up isolated data directory}
+        target: /app/data
+        bind:
+          create_host_path: false
     tmpfs:
       - /tmp:rw,nosuid,nodev,noexec,size=${ICAN_TMP_BYTES:?confirm temporary storage limit},uid=10001,gid=10001
       - /app/web/.next/cache:rw,nosuid,nodev,noexec,size=${ICAN_CACHE_BYTES:?confirm cache limit},uid=10001,gid=10001

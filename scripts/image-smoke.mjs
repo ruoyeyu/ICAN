@@ -5,6 +5,7 @@ assert.equal(process.getuid(),10001);
 assert.throws(()=>writeFileSync('/app/root-write-probe','fixture'),/EROFS|EACCES/);
 assert.match(readFileSync('/proc/self/status','utf8'),/CapEff:\s+0+\n/);
 assert.match(readFileSync('/proc/self/status','utf8'),/NoNewPrivs:\s+1\n/);
+assert.match(readFileSync('/proc/self/status','utf8'),/Seccomp:\s+2\n/);
 for(const path of ['/bin/sh','/usr/bin/apt','/usr/local/bin/npm','/usr/bin/mount']) assert.equal(existsSync(path),false,path);
 const origin='http://127.0.0.1:3000';
 async function api(path,body,token,method=body===undefined?'GET':'POST') {
@@ -30,4 +31,4 @@ const link=(await api('/api/v1/files/'+item.data.id+'/share',{},user.token)).url
 assert.equal((await fetch(link)).status,200,'supplier grant');
 await api('/api/v1/files/'+item.data.id+'/share',undefined,user.token,'DELETE');assert.equal((await fetch(link)).status,404,'revoked grant');
 await api('/api/auth/logout',{},user.token);assert.equal((await api('/api/auth/me',undefined,user.token)).role,'guest');
-console.log(JSON.stringify({productionImageSmoke:'passed',user:process.getuid(),network:'none',readOnlyRoot:true}));
+console.log(JSON.stringify({productionImageSmoke:'passed',user:process.getuid(),seccompFilter:true,readOnlyRoot:true}));

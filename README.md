@@ -7,6 +7,7 @@
 - [实施与验证报告](docs/security/hardening-review.md)
 - [运行组件与镜像审核](docs/security/runtime-review.md)
 - [部署门槛、备份和回滚](docs/security/deployment.md)
+- [Docker 运行、验收与更新](docs/security/docker-operations.md)
 - [交接记录](HANDOFF.md)
 - [文档索引](docs/index.md)
 

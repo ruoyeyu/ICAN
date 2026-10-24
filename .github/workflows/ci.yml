@@ -1,7 +1,7 @@
 name: ICAN verification
 on:
   push:
-    branches: [main]
+    branches: [main, security/runtime-isolation-candidate]
     paths-ignore:
       - 'docs/**'
       - '*.md'
@@ -19,8 +19,14 @@ jobs:
           persist-credentials: false
       - name: Build and test final image without publishing
         run: docker build --progress=plain -t ican:verify .
+      - name: Test deployment policy rejection cases
+        run: python3 -B -m unittest discover -s scripts -p test_container_policy.py -v
       - name: Verify final image isolation and restart recovery
         run: sh scripts/verify-image.sh
+      - name: Verify native allocation, resolver and isolated TLS
+        run: sh scripts/verify-runtime.sh
+      - name: Verify actual Compose deployment with disposable fixtures
+        run: sh scripts/verify-compose.sh
       - name: Inventory native binaries without executing them
         run: python3 scripts/inventory-image.py
       - name: Scan installed image components
@@ -34,4 +40,6 @@ jobs:
             image-vulnerabilities.json
             image-native-inventory.json
             image-sbom.cdx.json
+            runtime-regressions.log
+            compose-policy.json
           if-no-files-found: warn
