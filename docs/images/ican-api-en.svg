@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="570" viewBox="0 0 1200 570" role="img" aria-labelledby="title desc" font-family="Arial, 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif">
   <title id="title">Your API, your parameters</title>
   <desc id="desc">Example values only. Available parameters depend on the provider and model.</desc>
-  <rect x="0" y="0" width="1200" height="570" rx="18" fill="#181715" stroke="#44403c" />
-  <path d="M860 88 Q1000 130 1135 54" fill="none" stroke="#44403c" stroke-width="1.5" />
-  <ellipse cx="170" cy="470" rx="145" ry="58" fill="#292524" opacity=".65" />
-  <ellipse cx="1020" cy="110" rx="160" ry="85" fill="#292524" opacity=".7" />
-  <g fill="#44403c">
+  <rect x="0" y="0" width="1200" height="570" rx="18" fill="#28332f" stroke="#45514a" />
+  <path d="M860 88 Q1000 130 1135 54" fill="none" stroke="#617a6b" stroke-width="1.5" />
+  <ellipse cx="170" cy="470" rx="145" ry="58" fill="#535044" opacity=".65" />
+  <ellipse cx="1020" cy="110" rx="160" ry="85" fill="#40564b" opacity=".7" />
+  <g fill="#566258">
     <circle cx="24" cy="140" r=".65" />
     <circle cx="24" cy="204" r=".65" />
     <circle cx="24" cy="268" r=".65" />
@@ -141,39 +141,39 @@
     <circle cx="1176" cy="524" r=".65" />
   </g>
   <g font-family="Arial, 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif">
-    <path d="M36 106 H1164" stroke="#44403c" />
-    <text x="36" y="45" font-size="23" fill="#f5f5f4" font-weight="700">ICAN</text>
-    <text x="140" y="45" font-size="19" fill="#f5f5f4" font-weight="600">Your API, your parameters</text>
-    <text x="36" y="86" font-size="16" fill="#d6d3d1">Example values only. Available parameters depend on the provider and model.</text>
-    <text x="36" y="546" font-size="13" fill="#d6d3d1">WORKFLOW ILLUSTRATION · NOT A SCREENSHOT</text>
-    <rect x="50" y="140.0" width="515" height="355" rx="12" fill="#181715" stroke="none" opacity=".38" />
-    <rect x="50" y="135" width="515" height="355" rx="14" fill="#1f1d1a" stroke="#44403c" />
-    <rect x="610" y="140.0" width="540" height="355" rx="12" fill="#181715" stroke="none" opacity=".38" />
-    <rect x="610" y="135" width="540" height="355" rx="14" fill="#1f1d1a" stroke="#44403c" />
-    <text x="76" y="174" font-size="23" fill="#f5f5f4">API connection</text>
-    <text x="636" y="174" font-size="23" fill="#f5f5f4">Video parameters</text>
-    <text x="76" y="212" font-size="15" fill="#d6d3d1">Base URL</text>
-    <rect x="76" y="224" width="463" height="46" rx="12" fill="#292524" stroke="#44403c" />
-    <text x="92" y="254" font-size="18" fill="#f5f5f4">https://api.example.com</text>
-    <text x="76" y="298" font-size="15" fill="#d6d3d1">API Key</text>
-    <rect x="76" y="310" width="463" height="46" rx="12" fill="#292524" stroke="#44403c" />
-    <text x="92" y="340" font-size="18" fill="#f5f5f4">••••••••••••••••</text>
-    <text x="76" y="384" font-size="15" fill="#d6d3d1">Model</text>
-    <rect x="76" y="396" width="463" height="46" rx="12" fill="#292524" stroke="#44403c" />
-    <text x="92" y="426" font-size="18" fill="#f5f5f4">Your model ID</text>
-    <text x="636" y="212" font-size="15" fill="#d6d3d1">Aspect ratio</text>
-    <rect x="636" y="224" width="218" height="46" rx="12" fill="#292524" stroke="#44403c" />
-    <text x="652" y="254" font-size="18" fill="#f5f5f4">9:16</text>
-    <text x="884" y="254" font-size="16" fill="#d6d3d1">Custom input supported</text>
-    <text x="636" y="298" font-size="15" fill="#d6d3d1">Resolution</text>
-    <rect x="636" y="310" width="218" height="46" rx="12" fill="#292524" stroke="#44403c" />
-    <text x="652" y="340" font-size="18" fill="#f5f5f4">720p</text>
-    <text x="884" y="340" font-size="16" fill="#d6d3d1">Custom input supported</text>
-    <text x="636" y="384" font-size="15" fill="#d6d3d1">Duration</text>
-    <rect x="636" y="396" width="218" height="46" rx="12" fill="#292524" stroke="#44403c" />
-    <text x="652" y="426" font-size="18" fill="#f5f5f4">5s</text>
-    <text x="884" y="426" font-size="16" fill="#d6d3d1">Custom input supported</text>
-    <rect x="1108" y="36" width="16" height="5" rx="2" fill="#78716c" />
-    <rect x="1132" y="36" width="32" height="5" rx="2" fill="#fafaf9" />
+    <path d="M36 106 H1164" stroke="#536157" />
+    <text x="36" y="45" font-size="23" fill="#f1f1e8" font-weight="700">ICAN</text>
+    <text x="140" y="45" font-size="19" fill="#f1f1e8" font-weight="600">Your API, your parameters</text>
+    <text x="36" y="86" font-size="16" fill="#c7d1c8">Example values only. Available parameters depend on the provider and model.</text>
+    <text x="36" y="546" font-size="13" fill="#c7d1c8">WORKFLOW ILLUSTRATION · NOT A SCREENSHOT</text>
+    <rect x="50" y="140.0" width="515" height="355" rx="12" fill="#d8d6cb" stroke="none" opacity=".38" />
+    <rect x="50" y="135" width="515" height="355" rx="14" fill="#fffefa" stroke="#dedbd2" />
+    <rect x="610" y="140.0" width="540" height="355" rx="12" fill="#d8d6cb" stroke="none" opacity=".38" />
+    <rect x="610" y="135" width="540" height="355" rx="14" fill="#fffefa" stroke="#dedbd2" />
+    <text x="76" y="174" font-size="23" fill="#292524">API connection</text>
+    <text x="636" y="174" font-size="23" fill="#292524">Video parameters</text>
+    <text x="76" y="212" font-size="15" fill="#78716c">Base URL</text>
+    <rect x="76" y="224" width="463" height="46" rx="12" fill="#eeece6" stroke="#dedbd2" />
+    <text x="92" y="254" font-size="18" fill="#292524">https://api.example.com</text>
+    <text x="76" y="298" font-size="15" fill="#78716c">API Key</text>
+    <rect x="76" y="310" width="463" height="46" rx="12" fill="#eeece6" stroke="#dedbd2" />
+    <text x="92" y="340" font-size="18" fill="#292524">••••••••••••••••</text>
+    <text x="76" y="384" font-size="15" fill="#78716c">Model</text>
+    <rect x="76" y="396" width="463" height="46" rx="12" fill="#eeece6" stroke="#dedbd2" />
+    <text x="92" y="426" font-size="18" fill="#292524">Your model ID</text>
+    <text x="636" y="212" font-size="15" fill="#78716c">Aspect ratio</text>
+    <rect x="636" y="224" width="218" height="46" rx="12" fill="#eeece6" stroke="#dedbd2" />
+    <text x="652" y="254" font-size="18" fill="#292524">9:16</text>
+    <text x="884" y="254" font-size="16" fill="#57534e">Custom input supported</text>
+    <text x="636" y="298" font-size="15" fill="#78716c">Resolution</text>
+    <rect x="636" y="310" width="218" height="46" rx="12" fill="#eeece6" stroke="#dedbd2" />
+    <text x="652" y="340" font-size="18" fill="#292524">720p</text>
+    <text x="884" y="340" font-size="16" fill="#57534e">Custom input supported</text>
+    <text x="636" y="384" font-size="15" fill="#78716c">Duration</text>
+    <rect x="636" y="396" width="218" height="46" rx="12" fill="#eeece6" stroke="#dedbd2" />
+    <text x="652" y="426" font-size="18" fill="#292524">5s</text>
+    <text x="884" y="426" font-size="16" fill="#57534e">Custom input supported</text>
+    <rect x="1108" y="36" width="16" height="5" rx="2" fill="#9db5a6" />
+    <rect x="1132" y="36" width="32" height="5" rx="2" fill="#365f50" />
   </g>
 </svg>

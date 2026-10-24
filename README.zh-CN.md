@@ -22,6 +22,33 @@ ICAN 是一个可以自己部署的 AI 创作工作台，源自 [Infinite Canvas
 
 ![自定义 API 配置与视频参数示意。](docs/images/ican-api.svg)
 
+## 界面预览
+
+以下为真实前端界面截图，使用本地模拟数据：LLM 文案、图片和视频记录均非真实模型生成，未调用付费 API。应用 UI 未修改；上面的绿色流程图属于说明插图。
+
+**画布：创意简报 → LLM 文案 → 图片 → 视频**
+
+![实际画布中的本地模拟文案、图片和视频节点。](docs/images/screenshots/canvas-demo.png)
+
+<details>
+<summary>展开查看图片工作台、视频工作台和 API 配置</summary>
+
+**图片工作台：模拟结果与生成设置**
+
+![图片工作台与本地模拟结果。](docs/images/screenshots/image-demo.png)
+
+**视频工作台：模拟视频与生成设置**
+
+![视频工作台与本地模拟片段。](docs/images/screenshots/video-demo.png)
+
+**API 配置：示例地址与占位凭据**
+
+![实际 API 配置弹窗和演示模型。](docs/images/screenshots/config-demo.png)
+
+</details>
+
+导演台在当前版本中已关闭，因此不作为可用功能展示。[截图范围说明](docs/images/screenshots/README.md)。
+
 ## 这个分支改了什么
 
 ICAN 沿用原项目的画布、账号、配置同步和素材管理，在这些基础上做精简和加固。
