@@ -2,6 +2,8 @@
 
 用户已确认采用 Docker。当前独立分支 security/runtime-isolation-candidate 增加不可变镜像部署、显式环境变量、只读容器策略检查、实际 Compose 与原生运行回归；同时试验签名验证后的 Wolfi glibc-dynamic 基础层。参见 docs/security/docker-operations.md。这个候选不自动升级为生产，原 Debian 的中低危账目仍保留；源补丁/公告覆盖、服务器隔离和功能/迁移门槛未完成前保留现站。
 
+Docker 候选代码 dcbd8399213cf290994fcd69fa224697535d280c 的 CI 40086299774 全通过。实际 Compose、非 root/只读/seccomp、账号/私有媒体/重启、原生分配及封闭 DNS/TLS、SBOM/扫描均已验证；23 个 ELF（原 285），Node/Go 二进制与原基线一致。扫描 0 严重/高/中/低、1 UNKNOWN；没有自动关闭原 25 个 CVE。完整证据为 evidence/runtime-candidate-*，没有发布镜像或切换服务器。首次 fixture 初始化失败及其最小权限修正也保留记录。
+
 采用上游 e13006fbaeabe14e4a6d27cba667ff1473009ebc；独立分支 security/ican-hardening。用户明确指定私有 ruoyeyu/ICAN 为项目仓库并授权上传，参考 fork 不修改。原审查源码目录保持不变。
 
 已实现邀请码注册、持久可撤销会话、配置加密、统一 HTTP 出站检查、私有媒体与供应商链接、主动内容拒绝、后台功能隔离、去推广/默认渠道、透明的自定义视频参数、受影响依赖升级及非 root 镜像定义。额外发现并修复图片/音频任务客户端 ID 覆盖其他用户数据的问题。

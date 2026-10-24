@@ -1,0 +1,4 @@
+aligned allocation regression passed
+long resolver search domain parsed without abort
+isolated DNS, TLS certificate verification and HTTP fetch passed
+untrusted TLS certificate rejected

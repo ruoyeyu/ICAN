@@ -18,7 +18,20 @@
 
 基础镜像签名已按发布者 GitHub Actions 身份和 OIDC issuer 验证，见 evidence/runtime-candidate-base-signature.log；扫描原始证据独立保存。基础层七个包包含 glibc 2.44-r9、GCC runtime 16.2.0-r1，当前该基础层没有扫描匹配，但不等于最终应用镜像无漏洞，也不等于原来的 25 个 CVE 全部修复。Wolfi 公告覆盖与 Debian 不同，保留 supply-chain-review.md 中的原始记录和未完成事项。
 
-候选须核对 GCC/glibc 实际源版本与公告、x86-64 CPU 指令集需求、locale、TLS/DNS 和原生运行兼容性。CI 增加有界 aligned allocation 测试、长 LOCALDOMAIN 配置解析、封闭网络中的 DNS/TLS 正反例。这些只覆盖所写触发条件，不是完整 CVE 复现或间接调用证明。最终 CI 结果另见 evidence/runtime-candidate-ci.json（生成后才作为实际证据）。
+候选须核对 GCC/glibc 实际源版本与公告、x86-64 CPU 指令集需求、locale、TLS/DNS 和原生运行兼容性。CI 增加有界 aligned allocation 测试、长 LOCALDOMAIN 配置解析、封闭网络中的 DNS/TLS 正反例。这些只覆盖所写触发条件，不是完整 CVE 复现或间接调用证明。源码/公告覆盖和 locale 限制见 evidence/runtime-candidate-source-review.json。
+
+## 实际验证结果
+
+[CI 40086299774](https://github.com/ruoyeyu/ICAN/actions/runs/40086299774) 全通过，代码 `dcbd8399213cf290994fcd69fa224697535d280c`，最终 Image ID `sha256:33f6705156851ae767376806ddd56453557ef7c03705062c11ebc77cc10521ae`；没有发布 registry 镜像或部署现站。证据汇总在 [runtime-candidate-ci.json](evidence/runtime-candidate-ci.json)，完整日志、组件清单、扫描和 SBOM 在同目录。
+
+- Go 测试、18 项前端测试与生产构建通过；5 个策略检查测试含多组危险配置反例。
+- 实际镜像通过非 root、只读根目录、无 capabilities、NoNewPrivs、有效 seccomp、邀请码注册、私有媒体/授权撤销、退出及账号重启恢复检查。
+- 实际 Compose 文件通过 create 后的配置检查、启动后应用测试与宿主机回环端口访问；全程只有一次性 fixture 数据与凭据。
+- aligned scalar/array allocation、长 DNS search 配置解析及封闭网络 DNS/TLS 正反例通过。仍不代替生产 DNS/证书环境验收。
+- 最终镜像 7 个 OS 包、13 个 Node 包、49 个 Go 模块；23 个 ELF，原基线为 285 个。系统 zlib/OpenSSL、gconv 模块不再进入该候选镜像；Node 自带静态库仍存在并单独记录。Node 与 Go 主程序 SHA256 均与原已验证版本一致。无 Web 原生文件和 set-ID 文件。
+- 当前完整扫描为 0 CRITICAL、0 HIGH、0 MEDIUM、0 LOW、1 UNKNOWN；UNKNOWN 仍是未导入 openpgp 的 x/crypto 模块匹配。原 Debian 的 25 个 CVE **没有因扫描结果变化自动关闭**，需结合真实移除的文件、更新的源码和发行版覆盖逐项确认。
+
+首次 CI 的 Compose fixture 初始化因 CAP_CHOWN 不授予 chmod 权限而失败；现已由宿主机目录所有者先设置模式，再在受限一次性容器内 chown。没有向应用添加 capabilities。失败及修正证据保留为 runtime-candidate-first-ci.*。
 
 ## 隔离测试实例的操作顺序
 
