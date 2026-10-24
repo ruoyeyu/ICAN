@@ -24,18 +24,20 @@ COPY integration ./integration
 COPY internal ./internal
 COPY main.go ./
 RUN CGO_ENABLED=0 go test ./... && CGO_ENABLED=0 go build -trimpath -o /server .
+RUN mkdir -p /runtime-data /runtime-cache
 
-FROM library/node:24.22.1-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205
+FROM gcr.io/distroless/cc-debian13:nonroot@sha256:3ee00291cf386ec52a552e6a858d555debd74776eb4bfa53fa3df2cd6677515e
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0
-COPY --from=api-build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=web-build /usr/local/bin/node /usr/local/bin/node
+COPY --from=web-build /usr/local/LICENSE /usr/share/licenses/node/LICENSE
 COPY --from=api-build /server /app/server
-COPY --chmod=0555 docker-entrypoint.sh /app/docker-entrypoint.sh
+COPY --chmod=0444 docker-entrypoint.mjs /app/docker-entrypoint.mjs
 COPY --from=web-build /app/web/public /app/web/public
 COPY --from=web-build /app/web/.next/standalone /app/web
 COPY --from=web-build /app/web/.next/static /app/web/.next/static
-RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-* /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg
-RUN mkdir -p /app/data /app/web/.next/cache && chown -R 10001:10001 /app/data /app/web/.next/cache
+COPY --from=api-build --chown=10001:10001 /runtime-data /app/data
+COPY --from=api-build --chown=10001:10001 /runtime-cache /app/web/.next/cache
 USER 10001:10001
 EXPOSE 3000
-CMD ["/app/docker-entrypoint.sh"]
+CMD ["/usr/local/bin/node", "/app/docker-entrypoint.mjs"]

@@ -1,7 +1,6 @@
 import { channelProtocolForConfig, localChannelForActiveModel, type AiConfig } from "@/stores/use-config-store";
 
 export const GEMINI_PROTOCOL = "gemini" as const;
-export const GEMINI_DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com";
 
 export function isGeminiConfig(config: AiConfig, model = config.model) {
     return channelProtocolForConfig({ ...config, model }) === GEMINI_PROTOCOL;
@@ -20,7 +19,8 @@ export function normalizeGeminiModel(model: string) {
 }
 
 export function normalizeGeminiBaseUrl(baseUrl: string) {
-    return (baseUrl.trim() || GEMINI_DEFAULT_BASE_URL).replace(/\/+$/, "").replace(/\/v1beta$/i, "");
+    if (!baseUrl.trim()) throw new Error("请明确配置自己的 API 地址");
+    return baseUrl.trim().replace(/\/+$/, "").replace(/\/v1beta$/i, "");
 }
 
 export function geminiActionUrl(baseUrl: string, model: string, action: "generateContent" | "streamGenerateContent" | "predictLongRunning") {

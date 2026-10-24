@@ -2,6 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createVideoRequestBody } from "./video";
 import { defaultConfig, localChannelForActiveModel, resolveModelForCapability } from "@/stores/use-config-store";
+import { geminiActionUrl } from "@/lib/gemini";
+
+test("Gemini protocol never supplies a default vendor address", () => {
+    assert.throws(() => geminiActionUrl(" ", "own-model", "generateContent"), /API 地址/);
+    assert.equal(geminiActionUrl("https://provider.invalid/v1beta", "own-model", "generateContent"), "https://provider.invalid/v1beta/models/own-model:generateContent");
+});
 
 test("custom video preserves explicit model, prompt, aspect ratio, resolution and duration", async () => {
     for (const resolution of ["720p", "custom-resolution"]) {

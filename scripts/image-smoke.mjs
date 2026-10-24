@@ -1,5 +1,11 @@
 import assert from 'node:assert/strict';
 import { setTimeout } from 'node:timers/promises';
+import { readFileSync, existsSync, writeFileSync } from 'node:fs';
+assert.equal(process.getuid(),10001);
+assert.throws(()=>writeFileSync('/app/root-write-probe','fixture'),/EROFS|EACCES/);
+assert.match(readFileSync('/proc/self/status','utf8'),/CapEff:\s+0+\n/);
+assert.match(readFileSync('/proc/self/status','utf8'),/NoNewPrivs:\s+1\n/);
+for(const path of ['/bin/sh','/usr/bin/apt','/usr/local/bin/npm','/usr/bin/mount']) assert.equal(existsSync(path),false,path);
 const origin='http://127.0.0.1:3000';
 async function api(path,body,token,method=body===undefined?'GET':'POST') {
  const r=await fetch(origin+path,{method,headers:{'Content-Type':'application/json',Origin:origin,...(token?{Authorization:`Bearer ${token}`}:{})},body:body===undefined?undefined:JSON.stringify(body)});
