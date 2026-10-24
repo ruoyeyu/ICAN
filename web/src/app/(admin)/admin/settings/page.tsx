@@ -1076,7 +1076,7 @@ function normalizePrivateSetting(setting: Partial<AdminSettings["private"]> = {}
 }
 
 function normalizeStorageProvider(item: Partial<AdminStorageProvider> = {}): AdminStorageProvider {
-    const type = item.type === "webdav" ? "webdav" : "s3";
+    const type = item.type === "local" ? "local" : item.type === "webdav" ? "webdav" : "s3";
     return {
         ...(type === "webdav" ? emptyWebDAVStorageProvider : emptyS3StorageProvider),
         ...item,

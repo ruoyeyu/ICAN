@@ -27,15 +27,21 @@ import (
 )
 
 var parameterTranslationVariables = []string{
-	"model", "prompt", "size", "aspectRatio", "quality", "count", "images",
+	"model", "prompt", "rawPrompt", "size", "rawSize", "aspectRatio", "quality", "count", "images",
 	"resolution", "seconds", "mode", "negativePrompt", "generateAudio", "watermark",
 	"videos", "audios", "firstFrame", "lastFrame", "voice", "audioFormat", "speed", "instructions",
 }
 var parameterTranslationMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+
+type parameterTranslationProgram struct {
+	code       *goja.Program
+	references *model.ParameterTranslationReferences
+}
+
 var parameterTranslationCache = struct {
 	sync.Mutex
-	items map[string]map[string]*goja.Program
-}{items: map[string]map[string]*goja.Program{}}
+	items map[string]map[string]*parameterTranslationProgram
+}{items: map[string]map[string]*parameterTranslationProgram{}}
 
 // 解析配置仅用于校验和匹配，不执行用户表达式。空模型块保持系统默认调用。
 func ParameterTranslationModels(source string) ([]string, error) {
@@ -51,7 +57,7 @@ func ParameterTranslationModels(source string) ([]string, error) {
 	return models, nil
 }
 
-func parameterTranslationPrograms(source string) (map[string]*goja.Program, error) {
+func parameterTranslationPrograms(source string) (map[string]*parameterTranslationProgram, error) {
 	if strings.TrimSpace(source) == "" {
 		return nil, nil
 	}
@@ -116,7 +122,7 @@ func parameterTranslationPrograms(source string) (map[string]*goja.Program, erro
 		}
 		return text[int(expression.Idx0())-1 : int(expression.Idx1())-1]
 	}
-	programs := map[string]*goja.Program{}
+	programs := map[string]*parameterTranslationProgram{}
 	for name, expression := range rules {
 		rule, ok := expression.(*ast.ObjectLiteral)
 		if !ok || strings.TrimSpace(name) == "" {
@@ -150,7 +156,11 @@ func parameterTranslationPrograms(source string) (map[string]*goja.Program, erro
 		if err != nil {
 			return nil, err
 		}
-		programs[name] = program
+		references, err := parseTranslationReferences(items["references"])
+		if err != nil {
+			return nil, fmt.Errorf("模型 %s：%w", name, err)
+		}
+		programs[name] = &parameterTranslationProgram{code: program, references: references}
 	}
 	if len(parameterTranslationCache.items) >= 32 {
 		for key := range parameterTranslationCache.items {
@@ -213,6 +223,9 @@ func NewParameterTranslation(channel model.ModelChannel, modelName string, varia
 	if err != nil || programs[modelName] == nil {
 		return nil, err
 	}
+	if err := validateTranslationReferences(programs[modelName].references, variables["images"]); err != nil {
+		return nil, err
+	}
 	runtime := goja.New()
 	for _, name := range parameterTranslationVariables {
 		_ = runtime.Set(name, goja.Undefined())
@@ -229,7 +242,7 @@ func NewParameterTranslation(channel model.ModelChannel, modelName string, varia
 	}
 	_ = runtime.Set("model", modelName)
 	translation := &ParameterTranslation{runtime: runtime, channel: channel, Client: HTTPClientForChannel(channel)}
-	value, err := translation.run(func() (goja.Value, error) { return runtime.RunProgram(programs[modelName]) })
+	value, err := translation.run(func() (goja.Value, error) { return runtime.RunProgram(programs[modelName].code) })
 	if err != nil {
 		return nil, fmt.Errorf("自定配置求值失败：%w", err)
 	}
@@ -267,9 +280,15 @@ func NewParameterTranslation(channel model.ModelChannel, modelName string, varia
 				return nil, errors.New("failure 必须是状态值数组")
 			}
 		}
-		if _, _, err := translation.request(context.Background(), true, "任务ID"); err != nil {
+		queryRequest, _, err := translation.request(context.Background(), true, "任务ID")
+		if err != nil {
 			return nil, err
 		}
+		if _, err := translation.configuredImageContent("任务ID", queryRequest.URL); err != nil {
+			return nil, err
+		}
+	} else if content := parameterTranslationValue(translation.rule, "content"); !goja.IsUndefined(content) && !goja.IsNull(content) {
+		return nil, errors.New("content 需要任务查询 poll 配置")
 	}
 	if _, _, err := translation.request(context.Background(), false, ""); err != nil {
 		return nil, err
@@ -507,12 +526,13 @@ func (translation *ParameterTranslation) jsonValue(value goja.Value) (any, error
 }
 
 type parameterTranslationRequest struct {
-	URL          string          `json:"url"`
-	Headers      map[string]any  `json:"headers"`
-	Params       map[string]any  `json:"params"`
-	Body         json.RawMessage `json:"body"`
-	Format       string          `json:"format"`
-	ResponseType string          `json:"responseType"`
+	URL          string                     `json:"url"`
+	Headers      map[string]any             `json:"headers"`
+	Params       map[string]any             `json:"params"`
+	Body         json.RawMessage            `json:"body"`
+	Format       string                     `json:"format"`
+	ResponseType string                     `json:"responseType"`
+	Parts        []parameterTranslationPart `json:"parts"`
 }
 
 func (translation *ParameterTranslation) request(ctx context.Context, query bool, taskID string, prepared ...*http.Request) (*http.Request, string, error) {
@@ -590,6 +610,15 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 	replace := func(value string) string {
 		return strings.ReplaceAll(strings.ReplaceAll(value, "{taskId}", taskID), "{channelKey}", translation.channel.APIKey)
 	}
+	// Explicit raw inputs remain literal even when they contain template placeholders.
+	replaceBody := func(value string) string {
+		for _, name := range []string{"rawPrompt", "rawSize"} {
+			if raw := translation.runtime.Get(name); raw != nil && !goja.IsUndefined(raw) && raw.String() == value {
+				return value
+			}
+		}
+		return replace(value)
+	}
 	fieldText := func(value any) string {
 		if text, ok := value.(string); ok {
 			return replace(text)
@@ -616,11 +645,14 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 	contentType := ""
 	// 在 JSON 编码后替换 token 会破坏含引号的值，所以先递归替换字符串值。
 	var bodyValue any
+	if plan.Parts != nil && plan.Format != "formData" {
+		return nil, "", errors.New("parts 必须使用 formData 编码")
+	}
 	if len(plan.Body) > 0 {
 		if err := json.Unmarshal(plan.Body, &bodyValue); err != nil {
 			return nil, "", err
 		}
-		bodyValue = replaceParameterTranslationValues(bodyValue, replace)
+		bodyValue = replaceParameterTranslationValues(bodyValue, replaceBody)
 	}
 	switch plan.Format {
 	case "json":
@@ -637,6 +669,18 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 		}
 	case "formData", "urlencoded":
 		fields, ok := bodyValue.(map[string]any)
+		if plan.Parts != nil {
+			if plan.Format != "formData" || len(plan.Body) != 0 {
+				return nil, "", errors.New("parts 仅用于无 body 的 formData 请求")
+			}
+			var payload []byte
+			payload, contentType, err = encodeTranslationParts(plan.Parts, replaceBody)
+			if err != nil {
+				return nil, "", err
+			}
+			body = bytes.NewReader(payload)
+			break
+		}
 		if !ok {
 			return nil, "", errors.New("表单请求体必须是字段对象")
 		}
@@ -688,7 +732,14 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 			return nil, "", errors.New("headers 必须是字段对象")
 		}
 	}
-	customAuth := strings.Contains(encoded.String(), "{channelKey}")
+	authConfig := encoded.String()
+	for _, name := range []string{"rawPrompt", "rawSize"} {
+		if raw := translation.runtime.Get(name); raw != nil && !goja.IsUndefined(raw) {
+			literal, _ := json.Marshal(raw.String())
+			authConfig = strings.ReplaceAll(authConfig, string(literal), `""`)
+		}
+	}
+	customAuth := strings.Contains(authConfig, "{channelKey}")
 	for key, value := range headers {
 		if strings.Contains(fmt.Sprint(value), "{channelKey}") {
 			customAuth = true
@@ -747,7 +798,15 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 	if !query && !download {
 		translation.Submission = request
 	}
-	response, err := translation.Client.Do(request)
+	client := translation.Client
+	if download && kind == "image" {
+		copy := *client
+		copy.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
+			return errors.New("带鉴权的图片内容下载不接受重定向")
+		}
+		client = &copy
+	}
+	response, err := client.Do(request)
 	if err != nil {
 		result.Retryable = true
 		message := err.Error()
@@ -861,7 +920,13 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 		if result.ContentType == "" {
 			result.ContentType = http.DetectContentType(payload)
 		}
-		if (kind == "video" || download) && !strings.HasPrefix(result.ContentType, "video/") {
+		if download && kind == "image" {
+			result.ContentType, err = PassiveMediaType(payload)
+			if err != nil || !strings.HasPrefix(result.ContentType, "image/") {
+				return result, errors.New("图片内容接口未返回有效图片")
+			}
+		}
+		if kind == "video" && !strings.HasPrefix(result.ContentType, "video/") {
 			result.ContentType = "video/mp4"
 		}
 		return result, nil
@@ -883,7 +948,19 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 		}
 	}
 	result.URLs = ParameterTranslationMediaURLs(value, kind, mimeType, 0)
-	if kind == "video" {
+	if kind == "image" {
+		for i, image := range result.URLs {
+			if strings.HasPrefix(image, "data:image/") {
+				payload, _, readErr := readWorkflowMedia(ctx, image, 0)
+				actual, typeErr := PassiveMediaType(payload)
+				if readErr != nil || typeErr != nil || !strings.HasPrefix(actual, "image/") {
+					return result, errors.New("结果不是有效的图片编码")
+				}
+				result.URLs[i] = "data:" + actual + ";base64," + base64.StdEncoding.EncodeToString(payload)
+			}
+		}
+	}
+	if kind == "video" || kind == "image" {
 		if len(result.URLs) > 0 && strings.HasPrefix(result.URLs[0], "data:video/") {
 			result.Body, result.ContentType, err = readWorkflowMedia(ctx, result.URLs[0], 0)
 			if err != nil {
@@ -901,12 +978,34 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 			}
 		}
 		defaultResult := goja.IsUndefined(selector) || goja.IsNull(selector) || (selector.ExportType() == reflect.TypeFor[string]() && selector.String() == "")
-		if len(result.URLs) == 0 && query && defaultResult && request.Method == http.MethodGet && taskID != "" && strings.HasSuffix(request.URL.EscapedPath(), "/videos/"+strings.ReplaceAll(url.QueryEscape(taskID), "+", "%20")) {
+		if kind == "video" && len(result.URLs) == 0 && query && defaultResult && request.Method == http.MethodGet && taskID != "" && strings.HasSuffix(request.URL.EscapedPath(), "/videos/"+strings.ReplaceAll(url.QueryEscape(taskID), "+", "%20")) {
 			target := *request.URL
 			target.Path, target.RawPath, target.RawQuery = target.Path+"/content", target.EscapedPath()+"/content", ""
 			content = &target
 		}
+		if kind == "image" && len(result.URLs) == 0 && query && (defaultResult || (value == nil && selector.ExportType() != reflect.TypeFor[string]())) {
+			content, err = translation.configuredImageContent(taskID, request.URL)
+			if err != nil {
+				return result, err
+			}
+		}
 		if content != nil {
+			if kind == "image" {
+				params := request.URL.Query()
+				maps.Copy(params, content.Query())
+				content.RawQuery = params.Encode()
+				fetch := request.Clone(ctx)
+				fetch.URL, fetch.Method = content, http.MethodGet
+				fetch.Body, fetch.GetBody, fetch.ContentLength = nil, nil, 0
+				fetch.Header.Del("Content-Type")
+				fetch.Header.Del("Content-Length")
+				downloaded, err := translation.Send(ctx, kind, false, taskID, fetch)
+				if err != nil {
+					return downloaded, err
+				}
+				result.URLs = []string{"data:" + downloaded.ContentType + ";base64," + base64.StdEncoding.EncodeToString(downloaded.Body)}
+				return result, nil
+			}
 			result.ContentURL, result.URLs = content.String(), nil
 			return result, nil
 		}

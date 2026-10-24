@@ -23,11 +23,13 @@ await call('/api/v1/canvas/projects',{data:project},alice.token);
 browser=await chromium.launch({executablePath:process.env.ICAN_TEST_CHROMIUM,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--no-zygote','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'],env:process.env});
 const ctx=await browser.newContext({viewport:{width:1500,height:950}});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(origin+'/canvas');assert.equal(new URL(page.url()).pathname,'/login');
+assert.ok(!(await page.locator('body').innerText()).includes('账号登录'));
+assert.ok(!(await page.locator('body').innerText()).includes('登录后使用画布，新账号需要邀请码。'));
 await page.addScriptTag({content:fs.readFileSync(repo+'/web/node_modules/localforage/dist/localforage.min.js','utf8')});
 await page.evaluate(async p=>{window.localforage.config({name:'infinite-canvas',storeName:'app_state'});await window.localforage.setItem('infinite-canvas:canvas_store',JSON.stringify({state:{projects:[{...p,id:'legacy',title:'UNOWNED LEGACY'}]},version:0}));},project);
 for(const path of ['/canvas','/image','/video','/director/index.html']){await page.goto(origin+path);assert.equal(new URL(page.url()).pathname,'/login');assert.ok(!(await page.locator('body').innerText()).includes('UNOWNED LEGACY'));}
 const form=new FormData();form.append('file',new Blob(['fixture'],{type:'image/png'}),'guest.png');assert.equal((await fetch(origin+'/api/v1/files',{method:'POST',body:form})).status,401);
-async function uiLogin(name){await page.getByLabel('用户名',{exact:true}).fill(name);await page.getByLabel('密码',{exact:true}).fill(name+'-password');await page.locator('button[type=submit]').click();await page.waitForURL(u=>!u.pathname.startsWith('/login'));await page.goto(origin+'/canvas');}
+async function uiLogin(name,password=name+'-password'){await page.getByLabel('用户名',{exact:true}).fill(name);await page.getByLabel('密码',{exact:true}).fill(password);await page.locator('button[type=submit]').click();await page.waitForURL(u=>!u.pathname.startsWith('/login'));await page.goto(origin+'/canvas');}
 await uiLogin('alice');await page.getByText('Alice private project',{exact:true}).waitFor();assert.ok(!(await page.locator('body').innerText()).includes('UNOWNED LEGACY'));
 assert.equal((await call('/api/v1/canvas/projects',undefined,alice.token)).length,1,'legacy not auto-uploaded');
 await page.goto(origin+'/canvas/alice-project');await page.getByRole('button',{name:'打开导演台',exact:true}).click();
@@ -39,6 +41,23 @@ await ctx.request.post(origin+'/api/auth/logout');await page.goto(origin+'/canva
 await uiLogin('bob');await page.waitForTimeout(700);let text=await page.locator('body').innerText();assert.ok(!text.includes('Alice private project'));assert.ok(!text.includes('UNOWNED LEGACY'));assert.equal((await call('/api/v1/canvas/projects',undefined,bob.token)).length,0);
 await page.addScriptTag({content:fs.readFileSync(repo+'/web/node_modules/localforage/dist/localforage.min.js','utf8')});
 assert.ok(await page.evaluate(async()=>{window.localforage.config({name:'infinite-canvas',storeName:'app_state'});return (await window.localforage.getItem('infinite-canvas:canvas_store')).includes('UNOWNED LEGACY');}),'legacy data preserved');
+await ctx.request.post(origin+'/api/auth/logout');await page.goto(origin+'/login');
+await uiLogin('fixture-admin','fixture-admin-password-only');
+const before=await call('/api/admin/settings',undefined,admin.token);
+await page.goto(origin+'/admin/settings');
+await page.getByLabel('是否允许用户自定义渠道',{exact:true}).waitFor();
+for(const label of ['是否允许用户自定义渠道','是否允许普通用户使用云端渠道']) {
+ const toggle=page.getByLabel(label,{exact:true});
+ if(await toggle.getAttribute('aria-checked')!=='true') await toggle.click();
+}
+const saving=page.waitForResponse(r=>r.url().endsWith('/api/admin/settings')&&r.request().method()==='POST');
+await page.getByRole('button',{name:/保存设置/}).click();
+const saved=await (await saving).json();assert.equal(saved.code,0,JSON.stringify(saved));
+const after=await call('/api/admin/settings',undefined,admin.token);
+assert.equal(after.public.modelChannel.allowCustomChannel,true);
+assert.equal(after.public.modelChannel.allowUserRemoteChannel,true);
+assert.deepEqual(after.private.storage.providers.map(p=>({id:p.id,type:p.type})),before.private.storage.providers.map(p=>({id:p.id,type:p.type})));
+assert.equal(after.private.storage.providers[0].type,'local');
 assert.deepEqual(errors,[]);
-console.log(JSON.stringify({anonymousPages:'blocked',anonymousUpload:401,login:'passed',directorCapture:'passed',revokedSession:'blocked',accountIsolation:'passed',unownedLegacyCache:'preserved/not shown/not uploaded',pageErrors:errors}));
+console.log(JSON.stringify({adminChannelToggles:'saved together; local storage ID/type preserved',loginCopy:'simplified',anonymousPages:'blocked',anonymousUpload:401,login:'passed',directorCapture:'passed',revokedSession:'blocked',accountIsolation:'passed',unownedLegacyCache:'preserved/not shown/not uploaded',pageErrors:errors}));
 }finally{if(browser)await browser.close();next.kill();api.kill();fs.rmSync(data,{recursive:true,force:true});}

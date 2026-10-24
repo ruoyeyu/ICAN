@@ -1,4 +1,6 @@
 import axios from "axios";
+import { prepareTranslationImages } from "./translation-images";
+import type { TranslationReferences } from "@/lib/channel-parameter-translation";
 import { executeParameterTranslation, findParameterTranslation, normalizeTranslationAspectRatio, translationBody, translationHeaders, type TranslationInput } from "./channel-parameter-translation";
 
 import { isMiniMaxChannel, miniMaxModels } from "@/lib/minimax-video";
@@ -957,7 +959,7 @@ async function requestAndParseImages(config: AiConfig, endpoint: string, request
 async function requestImages(config: AiConfig & { seedIndex?: number; seedCount?: number }, prompt: string, references: ReferenceImage[], signal?: AbortSignal): Promise<GeneratedImage[]> {
 	const translation = await findParameterTranslation(config);
 	if (translation) {
-		const input = await imageTranslationInput(config,prompt,references,createImageRequestParams(config));
+		const input = await imageTranslationInput(config,prompt,references,createImageRequestParams(config),translation.references);
 		const result = await executeParameterTranslation(config,translation,input,signal);
 		return result.urls.map((dataUrl) => ({id:nanoid(),dataUrl}));
 	}
@@ -980,17 +982,19 @@ async function requestImages(config: AiConfig & { seedIndex?: number; seedCount?
     return references.length ? requestImageEditSingle(config, prompt, references, params) : requestImageGenerationSingle(config, prompt, params);
 }
 
-async function imageTranslationInput(config: AiConfig, prompt: string, references: ReferenceImage[], params: ImageRequestParams): Promise<TranslationInput> {
+async function imageTranslationInput(config: AiConfig, prompt: string, references: ReferenceImage[], params: ImageRequestParams, policy?: TranslationReferences): Promise<TranslationInput> {
     return {
         kind: "image",
         variables: {
             model: config.model,
             prompt: withPromptGuard(config, withSystemPrompt(config, prompt)),
+            rawPrompt: prompt,
+            rawSize: config.size,
             size: params.size,
             aspectRatio: normalizeTranslationAspectRatio(config.size),
             quality: config.quality,
             count: params.n,
-            images: await Promise.all(references.map(async (ref) => publicHttpUrl(ref.url) || publicHttpUrl(ref.dataUrl) || imageToDataUrl(ref))),
+            images: await prepareTranslationImages(references, policy),
         },
     };
 }
@@ -1055,7 +1059,7 @@ export async function createCanvasImageTask(config: AiConfig & { seedIndex?: num
         }, image.id);
     }
     const params = createImageRequestParams({ ...config, count: "1" });
-    const request: RequestInit = translation ? {method:"POST",headers:translationHeaders(config,translation),body:JSON.stringify({endpoint:references.length ? "/images/edits" : "/images/generations",nodeId:options.nodeId || "",source:options.source || "canvas",sourceId:options.sourceId || "",clientTaskId:options.clientTaskId || "",prompt,request:translationBody(config,await imageTranslationInput(config,prompt,references,params))})} : await createCanvasImageTaskRequest({ ...config, count: "1" }, prompt, references, params, options);
+    const request: RequestInit = translation ? {method:"POST",headers:translationHeaders(config,translation),body:JSON.stringify({endpoint:references.length ? "/images/edits" : "/images/generations",nodeId:options.nodeId || "",source:options.source || "canvas",sourceId:options.sourceId || "",clientTaskId:options.clientTaskId || "",prompt,request:translationBody(config,await imageTranslationInput(config,prompt,references,params,translation.references))})} : await createCanvasImageTaskRequest({ ...config, count: "1" }, prompt, references, params, options);
     options.signal?.throwIfAborted();
     options.onServerTask?.();
     const response = await fetch("/api/v1/canvas/image-tasks", request);

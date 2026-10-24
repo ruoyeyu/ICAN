@@ -75,7 +75,7 @@ Personal API settings are also used in the browser, and some requests go directl
 
 **This is a development preview. Start in a separate test environment.** The Docker candidate has passed build, container/Compose, and automated checks. Remaining work is listed below.
 
-ICAN **0.1.1** is maintained on `main`, including the Docker setup and 3D Director. The tested platform is Linux / amd64. Docker and Docker Compose are required.
+ICAN **0.1.2** is maintained on `main`, including the Docker setup and 3D Director. The tested platform is Linux / amd64. Docker and Docker Compose are required.
 
 ```sh
 git clone https://github.com/ruoyeyu/ICAN.git

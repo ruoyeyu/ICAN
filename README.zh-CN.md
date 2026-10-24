@@ -75,7 +75,7 @@ ICAN 沿用原项目的画布、账号、配置同步和素材管理，在这些
 
 **当前为开发预览，建议先在独立测试环境运行。** Docker 候选的构建、容器/Compose 运行及自动化检查已经通过，未完成事项见下方「当前进度」。
 
-ICAN 当前版本为 **0.1.1**，Docker 配置和导演台均已合入 `main`，后续只维护主线。当前验证平台为 Linux / amd64，需要 Docker 和 Docker Compose。
+ICAN 当前版本为 **0.1.2**，Docker 配置和导演台均已合入 `main`，后续只维护主线。当前验证平台为 Linux / amd64，需要 Docker 和 Docker Compose。
 
 ```sh
 git clone https://github.com/ruoyeyu/ICAN.git

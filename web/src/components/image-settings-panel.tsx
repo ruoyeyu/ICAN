@@ -6,11 +6,14 @@ import { ConfigProvider, Switch } from "antd";
 import { type CanvasTheme } from "@/lib/canvas-theme";
 import type { AiConfig } from "@/stores/use-config-store";
 
-const qualityOptions = [
+export const imageQualityOptions = [
     { value: "auto", label: "自动" },
     { value: "high", label: "高" },
     { value: "medium", label: "中" },
     { value: "low", label: "低" },
+    { value: "1K", label: "1K" },
+    { value: "2K", label: "2K" },
+    { value: "4K", label: "4K" },
 ];
 const DIMENSION_STEP = 16;
 
@@ -81,15 +84,16 @@ export function ImageSettingsPanel({ config, onConfigChange, theme, showTitle = 
             >
                 {showTitle ? <div className="text-lg font-semibold">图像设置</div> : null}
                 <div className="space-y-2.5">
-                    <SettingTitle color={theme.node.muted}>质量</SettingTitle>
+                    <SettingTitle color={theme.node.muted}>质量 / 档位</SettingTitle>
                     <div className="grid grid-cols-4 gap-2.5">
-                        {qualityOptions.map((item) => (
+                        {imageQualityOptions.map((item) => (
                             <OptionPill key={item.value} selected={quality === item.value} theme={theme} onClick={() => onConfigChange("quality", item.value)}>
                                 {item.label}
                             </OptionPill>
                         ))}
                     </div>
                 </div>
+                <input aria-label="自定义图片质量或档位" value={quality} onChange={(event) => onConfigChange("quality", event.target.value)} placeholder="按模型填写质量或档位" className="h-9 w-full rounded-xl border bg-transparent px-3 text-sm outline-none" style={{ borderColor: theme.node.stroke, color: theme.node.text }} />
                 {showSize ? (
                     <>
                         <div className="space-y-2.5">
@@ -112,6 +116,7 @@ export function ImageSettingsPanel({ config, onConfigChange, theme, showTitle = 
                         </div>
                         <div className="space-y-2.5">
                             <SettingTitle color={theme.node.muted}>宽高比</SettingTitle>
+                            <input aria-label="自定义图片比例或尺寸" value={activeSize} onChange={(event) => onConfigChange("size", event.target.value)} placeholder="例如 5:4 或 1537x1001" className="h-9 w-full rounded-xl border bg-transparent px-3 text-sm outline-none" style={{ borderColor: theme.node.stroke, color: theme.node.text }} />
                             <div className="grid grid-cols-4 gap-2.5">
                                 {aspectOptions.map((item) => (
                                     <button

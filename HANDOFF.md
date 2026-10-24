@@ -1,5 +1,7 @@
 # ICAN 交接
 
+v0.1.2 本轮修改：修复后台 local 存储误转 s3，保留渠道权限与配置；扩展现有图片模板的参考编码、二进制 multipart、原始参数、显式同源内容下载；统一 ICAN/画布文案，删去登录页标题和说明。未运行外部插件，专用供应商配置不入公共仓库。见 docs/security/custom-api-templates.md。Go 全套、Web 26 项、导演台 294 项、生产前端构建、真实浏览器登录/双账号/导演台及后台保存回归通过；85 组专用模板请求 fixture 通过，证据为 docs/security/evidence/custom-api-local.json。镜像等待本次 CI，未操作服务器。
+
 按用户要求删除 v0.1.0 GitHub Release 及其附件，一次性任务 40105399560 成功，随后移除该任务定义。v0.1.1 Release/附件、源码 tag 和 GHCR 历史镜像保留；README 旧下载入口已移除。证据见 docs/security/evidence/removed-release-v0.1.0.json。未改应用或服务器，生产待办无需调整。
 
 v0.1.1 公共镜像已完成重新编译与发布，CI 40103981848 全通过；源码 8b5d9aeb06d5ea1ad967f36b31fdfe2798efc0a0，digest 及匿名拉取验证见 docs/security/evidence/ghcr-v0.1.1-publication.json。Release 使用新版本源码及同一份已验证镜像，保留 v0.1.0 tag/附件；Release 40104375905 发布成功，源码 tag、公开预发布状态与六个附件 SHA256 已核对，证据为 docs/security/evidence/prerelease-v0.1.1.json。没有服务器部署。
@@ -14,7 +16,7 @@ v0.1.0 预发布已发布，流水线 40099763230 全通过；已核对 tag 指�
 
 本轮用户授权 GitHub 构建、检查后发布 GHCR，禁止自动部署服务器。Compose 固定 1.6 CPU / 1.5 GiB；服务器仅拉 digest，更新保留原数据和密钥。流程见 `docs/security/ghcr-deployment.md`，现有生产阻断项继续生效。首次 GHCR 流水线 40098999311 全通过，源码 `4702d09c590769f5ec73ef3de6b312702bcea7e3`；实际 digest 和检查证据见 `docs/security/evidence/ghcr-publication.json`。
 
-当前版本 **0.1.1**，只维护 `main`。最新工作顺序：暂停功能扩充，先收尾资源边界、会话凭据和更新恢复，再做最终镜像与服务器部署验收；详见 `docs/progress/todo.md`。本轮精简记录见 `docs/security/repository-cleanup.md`。保留数据库模型、持久数据路径、密钥和共享协议辅助函数；没有修改线上部署。下面的旧候选分支记录仅用于追溯历史验证，不是当前检出指令。
+当前版本 **0.1.2**，只维护 `main`。最新工作顺序：暂停功能扩充，先收尾资源边界、会话凭据和更新恢复，再做最终镜像与服务器部署验收；详见 `docs/progress/todo.md`。本轮精简记录见 `docs/security/repository-cleanup.md`。保留数据库模型、持久数据路径、密钥和共享协议辅助函数；没有修改线上部署。下面的旧候选分支记录仅用于追溯历史验证，不是当前检出指令。
 
 用户最新要求：确认不影响当前构建的扫描项不计入有效风险数；原始证据保留。runtime-candidate-ci.json 为 GO-2026-5932 增加按具体镜像绑定的排除及有效计数，旧待复核 CVE 不随之自动排除。用户还明确要求频繁更新容器时保留既有账号、媒体、个人 API 和管理员中转站配置；AGENTS.md 已改为要求版本化增量迁移。现有绑定目录和加密配置支持持久保存，但当前启动 AutoMigrate 不等于完整迁移机制，跨版本恢复/迁移仍列入阻断项。详见 docker-operations.md 数据保留章节。
 

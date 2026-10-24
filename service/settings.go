@@ -1014,6 +1014,9 @@ func findSavedStorageProvider(provider model.StorageProvider, saved []model.Stor
 func validateEnabledStorageProviderTypes(providers []model.StorageProvider) error {
 	enabledType := ""
 	for _, provider := range providers {
+		if provider.ID == LocalMediaProvider && provider.Type != "local" {
+			return safeMessageError{message: "服务器本地存储类型不能修改，请刷新设置页面"}
+		}
 		if provider.Type != "local" && provider.Type != model.StorageProviderTypeS3 && provider.Type != model.StorageProviderTypeWebDAV {
 			return safeMessageError{message: "存储类型不支持"}
 		}
@@ -1025,7 +1028,7 @@ func validateEnabledStorageProviderTypes(providers []model.StorageProvider) erro
 			continue
 		}
 		if enabledType != provider.Type {
-			return safeMessageError{message: "S3/R2 与 WebDAV 不能同时启用"}
+			return safeMessageError{message: "不同类型的媒体存储不能同时启用（服务器本地、S3/R2、WebDAV），请只启用一种存储类型"}
 		}
 	}
 	return nil
@@ -1176,16 +1179,17 @@ func publicChannelInfos(channels []model.ModelChannel, availableModels, availabl
 		translated, _ := ParameterTranslationModels(channel.ParameterTranslation)
 		translated = filterEnabledModels(translated, models)
 		result = append(result, model.PublicModelChannelInfo{
-			ParameterTranslationModels: translated,
-			ID:                         channel.ID,
-			Protocol:                   channel.Protocol,
-			Name:                       channel.Name,
-			BaseURL:                    channel.BaseURL,
-			Models:                     models,
-			Weight:                     channel.Weight,
-			Timeout:                    channel.Timeout,
-			Enabled:                    channel.Enabled,
-			Remark:                     channel.Remark,
+			ParameterTranslationModels:     translated,
+			ParameterTranslationReferences: ParameterTranslationReferenceInputs(channel.ParameterTranslation, translated),
+			ID:                             channel.ID,
+			Protocol:                       channel.Protocol,
+			Name:                           channel.Name,
+			BaseURL:                        channel.BaseURL,
+			Models:                         models,
+			Weight:                         channel.Weight,
+			Timeout:                        channel.Timeout,
+			Enabled:                        channel.Enabled,
+			Remark:                         channel.Remark,
 
 			ModelCapabilities: modelCapabilities,
 		})

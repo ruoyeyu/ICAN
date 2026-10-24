@@ -1,3 +1,4 @@
+export type TranslationReferences = { format: "auto" | "url" | "dataUrl"; max?: number };
 export type ChannelTranslation = { channelId: string; parameterTranslation: string };
 export type TranslationVariable = readonly [label: string, name: string, type: string, description: string];
 
@@ -8,6 +9,8 @@ export const translationVariableGroups = {
     ],
     image: [
         ["尺寸", "size", "string", "当前图片尺寸"],
+        ["原始尺寸", "rawSize", "string", "未经通用像素换算的图片尺寸或比例"],
+        ["原始提示词", "rawPrompt", "string", "用户输入原文，不添加系统提示或改写保护前缀"],
         ["宽高比", "aspectRatio", "string", "当前图片比例"],
         ["图片质量", "quality", "string", "当前图片质量"],
         ["生成数量", "count", "number", "本次实际请求数量"],
@@ -58,6 +61,9 @@ export const translationConfigItems: readonly (readonly [label: string, code: st
     ["URL 查询参数", "params: {},", "放在 URL 查询字符串里的参数"],
     ["请求体", "body: {},", "按接口文档组织实际发送的字段"],
     ["请求体格式", 'format: "json",', "json / formData / urlencoded / raw"],
+    ["参考图编码", 'references: { format: "dataUrl" },', "放在模型内；auto / url / dataUrl，可选 max 明确接口上限"],
+    ["二进制表单", 'parts: [{ name: "image[]", file: images[0] }],', "formData 专用，不能同时使用 body；文本段用 value"],
+    ["图片内容下载", 'content: { url: "/jobs/{taskId}/content" },', "放在模型内；成功查询没有结果时，同源带鉴权 GET 图片"],
     ["返回数据格式", 'responseType: "json",', "json / text / blob / arraybuffer"],
     ["结果提取", 'result: "",', "结果字段路径或同步函数"],
     ["错误提取", 'error: "",', "特殊接口的错误字段路径或同步函数"],
@@ -82,7 +88,7 @@ export function translationAuthoringPrompt(models: string[] = [], baseUrl = "") 
         items.map(([label, name, type, description]) => [label, name, type, `${groupNames[group]}：${description}`] as const),
     );
     return [
-        `请为 Infinite Canvas 编写一份渠道自定传参转译配置，统一支持图片、视频、音频，按 models 区分真实模型名称。当前渠道已选模型：${models.length ? models.join("、") : "按渠道模型列表填写"}。`,
+        `请为 ICAN 编写一份渠道自定传参转译配置，统一支持图片、视频、音频，按 models 区分真实模型名称。当前渠道已选模型：${models.length ? models.join("、") : "按渠道模型列表填写"}。`,
         `当前渠道 Base URL：${baseUrl || "未填写，请先确认渠道地址"}。`,
         translationRuleHint,
         "只输出完整 JavaScript 对象表达式，不用 Markdown 代码围栏、import、async function、request、return 或手写轮询循环。",
@@ -103,13 +109,17 @@ export function translationAuthoringPrompt(models: string[] = [], baseUrl = "") 
         "",
         "配置规则",
         "- 顶层仅支持 models、可选的共用 headers 和可选的共用 poll。models 的键必须与真实模型名称精确匹配；多个模型并列填写。",
-        "- 每个模型配置包含且仅包含一种生成请求方法块，及可选的 result、error、poll。空配置、空模型块和未配置的模型使用系统默认调用。",
-        "- 每个请求块必须有 url，可选 headers、params、body、format、responseType。相对 url 追加到上述 Base URL 的已有路径后；系统不会自动补齐或去重 /v1 等路径前缀，请按接口文档填写剩余路径。完整地址直接使用。",
+        "- 每个模型配置包含且仅包含一种生成请求方法块，及可选的 result、error、poll、references、content。空配置、空模型块和未配置的模型使用系统默认调用。",
+        "- 每个请求块必须有 url，可选 headers、params、body、parts、format、responseType。相对 url 追加到上述 Base URL 的已有路径后；系统不会自动补齐或去重 /v1 等路径前缀，请按接口文档填写剩余路径。完整地址直接使用。",
         "- format 支持 json、formData、urlencoded、raw；responseType 支持 json、text、blob、arraybuffer；默认均为 json。",
         "- 鉴权使用外面已填写的渠道密钥，模板只使用 {channelKey}，不另填 apiKey。FormData 的 Content-Type 边界由系统生成。",
         "- poll 中填写 taskId、一种查询请求方法块、status、非空 success 数组；failure 按文档填写，progress 可省略。查询地址或参数使用 {taskId}。模型 poll 省略时继承渠道 poll，false 表示关闭，对象表示完整覆盖。",
         "- body、params 和 headers 按目标接口文档平铺或嵌套，字段名不固定。固定字符串带引号；引用面板变量不带引号。可选变量没有值时可以是 undefined，JSON 对象中的 undefined 字段不发送。",
         "- 素材变量都是 URL/Data URL 字符串或字符串数组。没有普通参考素材时为 []，没有首尾帧时为空字符串；表单编码不会把 URL 自动变成文件。",
+        "- 图片模型可声明静态 references: {format: \"dataUrl\"} 或 {format: \"url\", max: 6}；max 仅按接口文档声明，不静默裁剪。dataUrl 提供真实图片编码，url 为站内私有图片签发受控授权链接。未声明沿用原编码规则。",
+        "- formData 的 parts 是有序数组：文本段 {name: \"prompt\", value: rawPrompt}，文件段 {name: \"image[]\", file: images[0], filename: \"reference.png\"}；file 必须是图片 Data URL，系统校验实际 MIME；parts 与 body 互斥。",
+        "- 图片精确参数使用 rawPrompt 和 rawSize；quality 保留面板原值。分辨率档位与接口 quality 是独立概念，模板按接口合同显式映射，拒绝不支持的值，不能套用默认预设。",
+        "- 异步图片可显式配置 content: {url: \"/jobs/{taskId}/content\"}；仅成功状态且没有图片结果时使用，沿用查询鉴权且要求同源，拒绝所有重定向和非图片。错误的 result 路径仍报错，不自动猜图片下载路径。",
         "- 同名模型按现有素材输入组织 body。接口要求首尾帧与普通参考互斥时，有 firstFrame 或 lastFrame 就只发送首尾帧字段；否则发送普通参考字段；没有素材时按文生请求填写。不新增生成方式或面板变量。",
         "- result 提取媒体 URL、Data URL 或图片结果数组；直接返回二进制时可省略 result。error 可省略，沿用系统错误处理。",
         "- 视频的同站 /videos/{id}/content 结果地址沿用请求头，并补入结果地址缺少的原请求查询参数；结果地址已有查询字段保持原值。标准 GET /videos/{taskId} 查询完成且未配置 result、没有媒体地址时，系统在原查询路径后追加 /content；明确填错 result 仍报错。",
@@ -121,6 +131,12 @@ export function translationAuthoringPrompt(models: string[] = [], baseUrl = "") 
 
 // 只读取静态模型名称；保存校验不运行用户的请求表达式或响应函数。
 const translationProgramsCache = new Map<string, Record<string, string>>();
+const referenceInputsCache = new Map<string, Record<string, TranslationReferences>>();
+
+export async function translationReferenceInput(source: string, model: string) {
+    await translationPrograms(source);
+    return referenceInputsCache.get(source)?.[model];
+}
 
 export async function translationPrograms(source: string): Promise<Record<string, string>> {
     if (!source.trim()) return {};
@@ -173,7 +189,21 @@ export async function translationPrograms(source: string): Promise<Record<string
         if (requests.some((request) => !request.getChild("ObjectExpression"))) throw new Error(`模型 ${name} 的请求必须是配置对象`);
         if (new Set(rule.getChildren("Property").map(key)).size !== rule.getChildren("Property").length) throw new Error(`模型 ${name} 的配置字段不能重复`);
         validatePoll(rule.getChildren("Property").find((field) => key(field) === "poll"));
-        return { name, configured: requests.length === 1, rule: text.slice(rule.from, rule.to) };
+        let references: TranslationReferences | undefined;
+        const refField = rule.getChildren("Property").find((item) => key(item) === "references");
+        if (refField) {
+            const object = refField.getChild("ObjectExpression");
+            if (!object || object.getChildren("Spread").length) throw new Error("references 必须是静态对象");
+            const values: Record<string, unknown> = {};
+            for (const field of object.getChildren("Property")) {
+                const name = key(field), literal = field.lastChild;
+                if (!["format", "max"].includes(name) || name in values || !literal || !["String", "Number"].includes(literal.name)) throw new Error("references 仅支持静态 format 和 max");
+                values[name] = new Function(`return (${text.slice(literal.from, literal.to)});`)();
+            }
+            if (!["auto", "url", "dataUrl"].includes(String(values.format)) || (values.max !== undefined && (!Number.isSafeInteger(values.max) || Number(values.max) < 0))) throw new Error("参考图片编码或数量配置无效");
+            references = values as TranslationReferences;
+        }
+        return { name, configured: requests.length === 1, rule: text.slice(rule.from, rule.to), references };
     });
     if (new Set(entries.map((item) => item.name)).size !== entries.length) throw new Error("模型名称不能重复");
     const fragment = (name: string, fallback: string) => {
@@ -182,7 +212,11 @@ export async function translationPrograms(source: string): Promise<Record<string
         return value ? text.slice(value.from, value.to) : fallback;
     };
     const programs = Object.fromEntries(entries.filter((item) => item.configured).map((item) => [item.name, `({headers:(${fragment("headers", "{}")}),poll:(${fragment("poll", "false")}),rule:(${item.rule})})`]));
-    if (translationProgramsCache.size >= 32) translationProgramsCache.delete(translationProgramsCache.keys().next().value!);
+    if (translationProgramsCache.size >= 32) {
+        const oldest = translationProgramsCache.keys().next().value!;
+        translationProgramsCache.delete(oldest); referenceInputsCache.delete(oldest);
+    }
+    referenceInputsCache.set(source, Object.fromEntries(entries.filter((item) => item.references).map((item) => [item.name, item.references!])));
     translationProgramsCache.set(source, programs);
     return programs;
 }

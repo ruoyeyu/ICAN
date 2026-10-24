@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## ICAN v0.1.2
+
+- Fix saving custom/cloud channel permissions without rewriting local media storage; preserve channel IDs, credentials and backend permission checks.
+- Extend explicit image API templates with reference encoding, genuine multipart image files, raw parameters and authenticated same-origin result downloads. Reject invalid media and unsafe redirects.
+- Add image tier/custom parameter controls; use ICAN branding and simplify the login screen. Preserve existing data, configuration and upstream attribution.
+
 ## ICAN v0.1.1
 
 - Require a server-validated login for every workspace, reject guest imports/uploads, and isolate canvas, asset, API configuration and media caches by account. Preserve legacy unowned browser data without automatically assigning or uploading it.

@@ -8,7 +8,7 @@ import React from "react";
 
 export const metadata: Metadata = {
     title: "ICAN",
-    description: "一个无限画布创作工具",
+    description: "一个画布创作工具",
 };
 
 export default function RootLayout({

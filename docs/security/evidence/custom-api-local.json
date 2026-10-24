@@ -1,0 +1,53 @@
+{
+  "baseCommit": "a01793e3d00109b947162e7ccac9789300d8c623",
+  "version": "v0.1.2",
+  "environment": "isolated temporary local API/database and production Next build; mocked supplier HTTP only",
+  "goSuite": "go test ./... passed",
+  "webTests": 26,
+  "directorTests": 294,
+  "productionWebBuild": "passed",
+  "browser": {
+    "adminChannelToggles": "saved together; local storage ID/type preserved",
+    "loginCopy": "simplified",
+    "anonymousPages": "blocked",
+    "anonymousUpload": 401,
+    "login": "passed",
+    "directorCapture": "passed",
+    "revokedSession": "blocked",
+    "accountIsolation": "passed",
+    "unownedLegacyCache": "preserved/not shown/not uploaded",
+    "pageErrors": []
+  },
+  "privateTemplateContract": {
+    "serverCasesPassed": 85,
+    "gptSizePairs": 24,
+    "templateAndSizeTableDeliveredSeparately": true,
+    "paidCalls": 0,
+    "externalPluginExecuted": false
+  },
+  "dependenciesChanged": false,
+  "databaseSchemaChanged": false,
+  "productionModified": false,
+  "checks": [
+    "ordered multipart with genuine image bytes",
+    "raw prompt/ratio and literal placeholder preservation",
+    "reference format/count enforcement",
+    "same-origin authenticated PNG/JPEG download",
+    "reject HTML/JSON/empty media/redirects/foreign-origin content",
+    "no paid task resubmission after result failure",
+    "cloud and personal channels enabled together; disabled permissions enforced",
+    "storage/channel IDs and saved credentials preserved"
+  ],
+  "logHashes": {
+    "provider-go-all.log": "c63c9754843e4f88d247e15b7f6cb297bee103547bb1cad7ffeb34708242e09f",
+    "provider-web-tests.log": "0a3d043cf382518984a496bb370d9639fabd83ecd5ad46fc513e5fee8e0474bd",
+    "provider-web-build.log": "ea7b194cce72d87299ae91219287d0ce66fd48e83688ca3b730b25dddb849248",
+    "provider-director-tests.log": "ed0f4b3845c2b764a39bee8b5335feb51f029a6249d944018de20de2dd4cf162",
+    "provider-browser.log": "884bf49d67e47d80f59b7189ce6bb79abd434cbb87ffd318598756d919cf85af"
+  },
+  "unverified": [
+    "real provider paid generation and long-running jobs",
+    "production host/proxy and reference URL reachability",
+    "cross-version backup restore on production data; see progress/todo.md"
+  ]
+}
