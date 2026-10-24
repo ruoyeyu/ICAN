@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="570" viewBox="0 0 1200 570" role="img" aria-labelledby="title desc" font-family="Arial, 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif">
   <title id="title">更新应用，保留数据</title>
   <desc id="desc">沿用持久目录和加密密钥；涉及数据格式变更时，先验证迁移。</desc>
-  <rect x="0" y="0" width="1200" height="570" rx="18" fill="#28332f" stroke="#45514a" />
-  <path d="M860 88 Q1000 130 1135 54" fill="none" stroke="#617a6b" stroke-width="1.5" />
-  <ellipse cx="170" cy="470" rx="145" ry="58" fill="#535044" opacity=".65" />
-  <ellipse cx="1020" cy="110" rx="160" ry="85" fill="#40564b" opacity=".7" />
-  <g fill="#566258">
+  <rect x="0" y="0" width="1200" height="570" rx="18" fill="#181715" stroke="#44403c" />
+  <path d="M860 88 Q1000 130 1135 54" fill="none" stroke="#44403c" stroke-width="1.5" />
+  <ellipse cx="170" cy="470" rx="145" ry="58" fill="#292524" opacity=".65" />
+  <ellipse cx="1020" cy="110" rx="160" ry="85" fill="#292524" opacity=".7" />
+  <g fill="#44403c">
     <circle cx="24" cy="140" r=".65" />
     <circle cx="24" cy="204" r=".65" />
     <circle cx="24" cy="268" r=".65" />
@@ -141,38 +141,38 @@
     <circle cx="1176" cy="524" r=".65" />
   </g>
   <g font-family="Arial, 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif">
-    <path d="M36 106 H1164" stroke="#536157" />
-    <text x="36" y="45" font-size="23" fill="#f1f1e8" font-weight="700">ICAN</text>
-    <text x="140" y="45" font-size="19" fill="#f1f1e8" font-weight="600">更新应用，保留数据</text>
-    <text x="36" y="86" font-size="16" fill="#c7d1c8">沿用持久目录和加密密钥；涉及数据格式变更时，先验证迁移。</text>
-    <text x="36" y="546" font-size="13" fill="#c7d1c8">功能示意 · 非界面截图</text>
-    <rect x="50" y="164.0" width="320" height="302" rx="12" fill="#d8d6cb" stroke="none" opacity=".38" />
-    <rect x="50" y="159" width="320" height="302" rx="14" fill="#fffefa" stroke="#dedbd2" />
-    <text x="76" y="201" font-size="24" fill="#292524">应用容器</text>
-    <text x="76" y="244" font-size="20" fill="#292524">前端 + 后端</text>
-    <text x="76" y="280" font-size="17" fill="#57534e">替换为已验证的镜像</text>
-    <text x="76" y="325" font-size="17" fill="#78716c">程序代码与依赖</text>
-    <text x="76" y="421" font-size="18" fill="#292524">不重新初始化数据库</text>
-    <path d="M370 278 C417.5 278 417.5 278 465 278" fill="none" stroke="#78958a" stroke-width="2" />
-    <circle cx="370" cy="278" r="4" fill="#6e8d7f" />
-    <circle cx="465" cy="278" r="4" fill="#6e8d7f" />
-    <rect x="465" y="164.0" width="340" height="302" rx="12" fill="#d8d6cb" stroke="none" opacity=".38" />
-    <rect x="465" y="159" width="340" height="302" rx="14" fill="#fffefa" stroke="#dedbd2" />
-    <text x="491" y="201" font-size="23" fill="#292524">ICAN_DATA_DIR</text>
-    <text x="491" y="247" font-size="22" fill="#292524">ican.db</text>
-    <text x="491" y="276" font-size="16" fill="#57534e">账号 · API 配置 · 任务</text>
-    <text x="491" y="325" font-size="22" fill="#292524">media/</text>
-    <text x="491" y="354" font-size="16" fill="#57534e">图片 · 视频 · 音频</text>
-    <text x="491" y="421" font-size="18" fill="#292524">保存在容器之外</text>
-    <rect x="850" y="164.0" width="300" height="302" rx="12" fill="#d8d6cb" stroke="none" opacity=".38" />
-    <rect x="850" y="159" width="300" height="302" rx="14" fill="#fffefa" stroke="#dedbd2" />
-    <text x="874" y="201" font-size="22" fill="#292524">密钥与备份</text>
-    <text x="874" y="247" font-size="16" fill="#292524">DATA_ENCRYPTION_KEY</text>
-    <text x="874" y="281" font-size="18" fill="#292524">保留原加密密钥</text>
-    <text x="874" y="328" font-size="17" fill="#57534e">备份数据库和媒体</text>
-    <text x="874" y="363" font-size="17" fill="#57534e">密钥单独妥善保管</text>
-    <text x="874" y="421" font-size="18" fill="#292524">验证恢复流程</text>
-    <rect x="1108" y="36" width="16" height="5" rx="2" fill="#9db5a6" />
-    <rect x="1132" y="36" width="32" height="5" rx="2" fill="#365f50" />
+    <path d="M36 106 H1164" stroke="#44403c" />
+    <text x="36" y="45" font-size="23" fill="#f5f5f4" font-weight="700">ICAN</text>
+    <text x="140" y="45" font-size="19" fill="#f5f5f4" font-weight="600">更新应用，保留数据</text>
+    <text x="36" y="86" font-size="16" fill="#d6d3d1">沿用持久目录和加密密钥；涉及数据格式变更时，先验证迁移。</text>
+    <text x="36" y="546" font-size="13" fill="#d6d3d1">功能示意 · 非界面截图</text>
+    <rect x="50" y="164.0" width="320" height="302" rx="12" fill="#181715" stroke="none" opacity=".38" />
+    <rect x="50" y="159" width="320" height="302" rx="14" fill="#1f1d1a" stroke="#44403c" />
+    <text x="76" y="201" font-size="24" fill="#f5f5f4">应用容器</text>
+    <text x="76" y="244" font-size="20" fill="#f5f5f4">前端 + 后端</text>
+    <text x="76" y="280" font-size="17" fill="#d6d3d1">替换为已验证的镜像</text>
+    <text x="76" y="325" font-size="17" fill="#d6d3d1">程序代码与依赖</text>
+    <text x="76" y="421" font-size="18" fill="#f5f5f4">不重新初始化数据库</text>
+    <path d="M370 278 C417.5 278 417.5 278 465 278" fill="none" stroke="#a8a29e" stroke-width="2" />
+    <circle cx="370" cy="278" r="4" fill="#d6d3d1" />
+    <circle cx="465" cy="278" r="4" fill="#d6d3d1" />
+    <rect x="465" y="164.0" width="340" height="302" rx="12" fill="#181715" stroke="none" opacity=".38" />
+    <rect x="465" y="159" width="340" height="302" rx="14" fill="#1f1d1a" stroke="#44403c" />
+    <text x="491" y="201" font-size="23" fill="#f5f5f4">ICAN_DATA_DIR</text>
+    <text x="491" y="247" font-size="22" fill="#f5f5f4">ican.db</text>
+    <text x="491" y="276" font-size="16" fill="#d6d3d1">账号 · API 配置 · 任务</text>
+    <text x="491" y="325" font-size="22" fill="#f5f5f4">media/</text>
+    <text x="491" y="354" font-size="16" fill="#d6d3d1">图片 · 视频 · 音频</text>
+    <text x="491" y="421" font-size="18" fill="#f5f5f4">保存在容器之外</text>
+    <rect x="850" y="164.0" width="300" height="302" rx="12" fill="#181715" stroke="none" opacity=".38" />
+    <rect x="850" y="159" width="300" height="302" rx="14" fill="#1f1d1a" stroke="#44403c" />
+    <text x="874" y="201" font-size="22" fill="#f5f5f4">密钥与备份</text>
+    <text x="874" y="247" font-size="16" fill="#f5f5f4">DATA_ENCRYPTION_KEY</text>
+    <text x="874" y="281" font-size="18" fill="#f5f5f4">保留原加密密钥</text>
+    <text x="874" y="328" font-size="17" fill="#d6d3d1">备份数据库和媒体</text>
+    <text x="874" y="363" font-size="17" fill="#d6d3d1">密钥单独妥善保管</text>
+    <text x="874" y="421" font-size="18" fill="#f5f5f4">验证恢复流程</text>
+    <rect x="1108" y="36" width="16" height="5" rx="2" fill="#78716c" />
+    <rect x="1132" y="36" width="32" height="5" rx="2" fill="#fafaf9" />
   </g>
 </svg>
