@@ -47,7 +47,13 @@ ICAN 是一个可以自己部署的 AI 创作工作台，源自 [Infinite Canvas
 
 </details>
 
-安全候选分支已接入从源码构建的 3D 导演台，支持场景构图、机位和截图；暂不包含时间轴与视频导出，生产验收仍待完成。[截图范围说明](docs/images/screenshots/README.md)。
+**3D 导演台 — 场景构图、机位控制与截图**
+
+![导演台中的双角色场景、机位参数和截图预览。](docs/images/screenshots/director-demo.png)
+
+
+
+ICAN 已接入从源码构建的 3D 导演台，支持场景构图、机位和截图；暂不包含时间轴与视频导出，生产验收仍待完成。[截图范围说明](docs/images/screenshots/README.md)。
 
 ## 这个分支改了什么
 
