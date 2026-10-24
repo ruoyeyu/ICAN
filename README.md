@@ -67,7 +67,7 @@ Routine updates must not reinitialize the database or regenerate `DATA_ENCRYPTIO
 ## Current status
 
 - Canvas and custom API cleanup, account/media access controls, dependency updates, and automated Docker verification are in place.
-- Production resource and network boundaries, real-browser and provider acceptance, and legacy/cross-version migration drills remain open. The live Huajing API contract and historical tasks have not passed acceptance testing; full compatibility is not claimed.
+- Production resource and network boundaries, real-browser and provider acceptance, and legacy/cross-version migration drills remain open. Live custom API contracts and historical tasks still require acceptance testing; universal provider compatibility is not claimed.
 
 Security scope, evidence, and outstanding work are recorded in the repository. A scan covers a particular code and image snapshot; it does not replace deployment acceptance.
 

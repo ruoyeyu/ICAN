@@ -6,7 +6,7 @@
 
 采用 `tigerowo/infinite-canvas@e13006fbaeabe14e4a6d27cba667ff1473009ebc`；复核时上游 main 和用户参考 fork 均指向该提交。工作分支 `security/ican-hardening`，独立目录 `ICAN`，原审查副本未改动。
 
-用户指定私有 `ruoyeyu/ICAN` 为项目仓库，并明确授权上传改动；公开 fork 仅供参考，未写入。用户随后说明 `/root/hb` 等路径来自另一台服务器，可以忽略路径文件。本环境没有其原始未提交补丁、api.txt、旧素材或服务器访问，因此本次不声称迁入那些文件。
+本次审查与修改针对 `ruoyeyu/ICAN` 中的代码。未取得既有部署的原始补丁、接口文档、数据与服务器访问权限，因此不声称完成既有部署迁移或生产兼容性验证。
 
 ## 模块边界
 
@@ -44,14 +44,14 @@
 
 官方基准：[Next 安全公告](https://nextjs.org/blog/nextjs-security-update-october-14-2026)、[Node 安全版本](https://nodejs.org/en/blog/release/v24.22.1)、[Go 发布记录](https://go.dev/doc/devel/release)。
 
-## 画境适配边界
+## 自定义 API 兼容性验证
 
 已增加“自定义 API（原样参数）”视频流程，提交 `model`、`prompt`、`aspect_ratio`、`resolution`、`seconds` 和图片/视频/音频参考；比例、分辨率、时长均可选预设或输入自定义值，不按模型自动保存参数。支持既有 `/videos` 创建/查询/内容流程与参数转译配置。
 
-这只是本地协议合同的实现及测试，**不等于原 `/root/hb` 画境补丁迁入或画境标准 API 已验证兼容**。必须拿到真实 api.txt/官方接口要求与历史任务响应，逐字段核实：参考字段/编码、任务 envelope、状态枚举、下载地址、分辨率字段名称及每个模型的支持范围。未进行付费生成调用，未替换用户 API Key、prompt 或模型。
+当前验证基于本地协议 fixture，**不代表所有外部 API 均已兼容**。接入具体服务前，应依据其接口文档和历史任务响应，逐字段核实：参考字段/编码、任务 envelope、状态枚举、下载地址、分辨率字段名称及每个模型的支持范围。未进行付费生成调用，未替换用户 API Key、prompt 或模型。
 
 ## 本次证据与剩余门槛
 
 `evidence/go-tests.jsonl` 记录 Go 测试；`web-tests.log` 记录 18 项前端协议测试；`production-build.log` 为生产构建与 TypeScript 检查；`runtime-smoke.json` 为 17 项真实 Go + Next 生产进程联通检查。fixture 限额/密钥均仅用于临时测试，没有使用生产凭据。
 
-剩余部署阻断项：上传/请求体与后台任务并发等资源边界尚未完成确认和全路径实施；最终镜像的中低危匹配及静态捆绑 native 组件进一步复核；宿主机出站 ACL、Nginx/TLS/日志审查；真实浏览器和外部供应商参考素材读取；画境标准接口与历史任务；旧数据迁移演练、独立加密备份、恢复及回滚演练。没有在生产执行攻击性测试，也没有替换 hb.lightnest.cn。细节见 deployment.md。
+剩余部署阻断项：上传/请求体与后台任务并发等资源边界尚未完成确认和全路径实施；最终镜像的中低危匹配及静态捆绑 native 组件进一步复核；宿主机出站 ACL、Nginx/TLS/日志审查；真实浏览器和外部供应商参考素材读取；自定义 API 接口与历史任务；旧数据迁移演练、独立加密备份、恢复及回滚演练。没有在生产执行攻击性测试，也没有替换 现有生产站点。细节见 deployment.md。

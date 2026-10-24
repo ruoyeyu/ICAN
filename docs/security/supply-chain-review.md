@@ -75,7 +75,7 @@
 
 ## 验证、限制与回滚
 
-本地 179 个 Go 测试及子测试通过，新增固定上传阻断、关闭协议和关闭自定义渠道回归；18 个前端测试及生产构建通过，19 项 Go/Next 实际进程联通验证通过，standalone 无 Sharp/@img。[最终镜像 CI 40084004422](https://github.com/ruoyeyu/ICAN/actions/runs/40084004422) 全部通过，绑定代码 `271689883f215dcd65120cbb7fa9e8d507c4056c`；结果见 `evidence/second-pass-ci.json`。完整扫描仍为 0 HIGH/CRITICAL、23 MEDIUM、8 LOW、1 UNKNOWN；Node 包由 19 降至 13。最终 285 个 ELF 中，253 个为 glibc 字符转换模块、27 个系统库、3 个 OpenSSL engine，另有官方 Node 和本项目 Go 服务；无 Web 原生文件、无 set-ID 文件。Node 哈希与此前核验的官方二进制一致，系统 libz 哈希与实际下载的 Debian 二进制包一致。没有把保留的系统 gconv 模块说成已删除。生产未部署，未付费调用。真实浏览器 CSP/媒体体验、DNS 配置、容量并发边界、画境合同、旧数据和回滚演练仍是上线门槛。
+本地 179 个 Go 测试及子测试通过，新增固定上传阻断、关闭协议和关闭自定义渠道回归；18 个前端测试及生产构建通过，19 项 Go/Next 实际进程联通验证通过，standalone 无 Sharp/@img。[最终镜像 CI 40084004422](https://github.com/ruoyeyu/ICAN/actions/runs/40084004422) 全部通过，绑定代码 `271689883f215dcd65120cbb7fa9e8d507c4056c`；结果见 `evidence/second-pass-ci.json`。完整扫描仍为 0 HIGH/CRITICAL、23 MEDIUM、8 LOW、1 UNKNOWN；Node 包由 19 降至 13。最终 285 个 ELF 中，253 个为 glibc 字符转换模块、27 个系统库、3 个 OpenSSL engine，另有官方 Node 和本项目 Go 服务；无 Web 原生文件、无 set-ID 文件。Node 哈希与此前核验的官方二进制一致，系统 libz 哈希与实际下载的 Debian 二进制包一致。没有把保留的系统 gconv 模块说成已删除。生产未部署，未付费调用。真实浏览器 CSP/媒体体验、DNS 配置、容量并发边界、外部 API 合同、旧数据和回滚演练仍是上线门槛。
 
 本轮无数据结构修改。可在独立测试实例回退到上一候选提交 `9f1a91e53c6ccc11c5918ecb4241e65c07b6cf3f` 复现对比，但会恢复此次移除的第三方上传和 native 组件，不建议作为生产回退目标；线上原站保持不变。数据库/密钥/用户媒体的生产备份回滚仍按 deployment.md 执行。
 
