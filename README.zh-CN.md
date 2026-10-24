@@ -87,7 +87,7 @@ chmod 600 .env
 
 先填写管理员凭据、独立密钥、访问域名、持久数据目录和各项运行限制。没有默认管理员密码，也不提供可直接用于生产的通用限额。
 
-GitHub Actions 在完成构建、测试和安全检查后发布 GHCR 镜像。服务器只拉取并运行成功记录中的不可变 digest，不执行编译；详见 [GHCR 部署、更新和回滚说明](docs/security/ghcr-deployment.md)。
+GitHub Actions 在完成构建、测试和安全检查后发布 GHCR 镜像。服务器只拉取并运行成功记录中的不可变 digest，不执行编译；详见 [GHCR 部署、更新和回滚说明](docs/security/ghcr-deployment.zh-CN.md)。
 
 ### 更新容器，保留数据
 

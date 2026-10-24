@@ -1,6 +1,6 @@
 # ICAN 交接
 
-本轮用户授权 GitHub 构建、检查后发布 GHCR，禁止自动部署服务器。Compose 固定 1.6 CPU / 1.5 GiB；服务器仅拉 digest，更新保留原数据和密钥。流程见 `docs/security/ghcr-deployment.md`，现有生产阻断项继续生效。
+本轮用户授权 GitHub 构建、检查后发布 GHCR，禁止自动部署服务器。Compose 固定 1.6 CPU / 1.5 GiB；服务器仅拉 digest，更新保留原数据和密钥。流程见 `docs/security/ghcr-deployment.md`，现有生产阻断项继续生效。首次 GHCR 流水线 40098999311 全通过，源码 `4702d09c590769f5ec73ef3de6b312702bcea7e3`；实际 digest 和检查证据见 `docs/security/evidence/ghcr-publication.json`。
 
 当前版本 **0.1.0**，只维护 `main`。最新工作顺序：暂停功能扩充，先收尾资源边界、会话凭据和更新恢复，再做最终镜像与服务器部署验收；详见 `docs/progress/todo.md`。本轮精简记录见 `docs/security/repository-cleanup.md`。保留数据库模型、持久数据路径、密钥和共享协议辅助函数；没有修改线上部署。下面的旧候选分支记录仅用于追溯历史验证，不是当前检出指令。
 
