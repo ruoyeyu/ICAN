@@ -1,0 +1,30 @@
+name: Publish checked pre-release
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/release/**'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ican-prerelease-publication
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.repository == 'ruoyeyu/ICAN' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Test release failure gates
+        run: python3 -B -m unittest discover -s .github/release -p test_publish.py -v
+      - name: Validate checked image and publish pre-release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 .github/release/publish.py

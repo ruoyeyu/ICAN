@@ -1,0 +1,73 @@
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import tempfile
+import unittest
+from unittest.mock import patch
+
+spec = importlib.util.spec_from_file_location('release', Path(__file__).with_name('publish.py'))
+release = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(release)
+
+
+class ReleaseGateTests(unittest.TestCase):
+    def execute(self, failure=None):
+        evidence = json.loads(Path('docs/security/evidence/ghcr-publication.json').read_text())
+        source = evidence['sourceCommit']
+        mutations = []
+        draft = {'id': 42, 'draft': True, 'prerelease': True, 'html_url': 'https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0'}
+        def api(path, method='GET', data=None, binary=False):
+            if method != 'GET':
+                mutations.append((path, method))
+                if binary:
+                    return {'digest': 'invalid' if failure == 'upload' else 'sha256:' + hashlib.sha256(data).hexdigest()}
+                if method == 'PATCH':
+                    return {**draft, 'draft': False}
+                return draft
+            if path.endswith('/jobs?per_page=100'):
+                return {'jobs': [{'name': n, 'conclusion': 'success'} for n in ('isolated-build', 'publish')]}
+            if '/actions/runs/' in path:
+                return {'head_sha': 'wrong' if failure == 'source' else source,
+                        'conclusion': 'failure' if failure == 'checks' else 'success',
+                        'status': 'completed', 'head_branch': 'main',
+                        'path': '.github/workflows/ci.yml', 'event': 'push'}
+            if '/git/ref/tags/' in path:
+                return {'object': {'sha': source}}
+            if path == '/releases?per_page=100' or '/assets?' in path:
+                return []
+            raise AssertionError(path)
+        inspected = [{'Id': 'wrong' if failure == 'image' else evidence['imageId'],
+                      'Config': {'Labels': {'org.opencontainers.image.revision': source}}}]
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
+            'GITHUB_REPOSITORY': release.REPO, 'GITHUB_REF': 'refs/heads/main',
+            'GITHUB_STEP_SUMMARY': str(Path(directory) / 'summary'),
+        }), patch.object(release, 'request', side_effect=api), patch.object(release, 'optional', return_value=None), \
+                patch.object(release, 'source_file', side_effect=lambda p, s: b'v0.1.0' if p == 'VERSION' else b'fixture'), \
+                patch.object(release.subprocess, 'run'), \
+                patch.object(release.subprocess, 'check_output', return_value=json.dumps(inspected).encode()):
+            if failure:
+                with self.assertRaises(RuntimeError):
+                    release.main()
+            else:
+                release.main()
+        return mutations
+
+    def test_checks_and_artifact_mismatch_block_mutation(self):
+        for failure in ('checks', 'source', 'image'):
+            with self.subTest(failure=failure):
+                self.assertEqual(self.execute(failure), [])
+
+    def test_upload_failure_leaves_unpublished_draft(self):
+        mutations = self.execute('upload')
+        self.assertFalse(any(method == 'PATCH' for _, method in mutations))
+
+    def test_publish_only_after_all_six_assets(self):
+        mutations = self.execute()
+        self.assertEqual(sum('/assets?' in path for path, _ in mutations), 6)
+        self.assertEqual(mutations[-1], ('/releases/42', 'PATCH'))
+
+
+if __name__ == '__main__':
+    unittest.main()

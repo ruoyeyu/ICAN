@@ -1,5 +1,7 @@
 # 本版本待验收
 
+- v0.1.0 预发布入口：复用已验证的 GHCR digest，发布双语说明、Compose/环境示例、配置检查器、原始安全证据和 SHA256SUMS；不部署服务器，不改变已有运行功能。
+
 - GHCR 发布：测试任务与发布权限分离，发布同一份已检查镜像，记录源码 commit/digest；Compose 固定 1.6 CPU / 1.5 GiB，沿用原持久目录与密钥。仅配置发布流水线，不部署服务器；首次远端流水线 40098999311 的构建、检查、发布及 digest 拉回验证全部通过，证据见 `../security/evidence/ghcr-publication.json`；真实服务器和跨版本恢复仍待验收。
 
 - ICAN 0.1.0 主线精简：移除不可达组件和已禁用接口，保留现有数据库结构、媒体与 API 配置。Go 测试、导演台 294 项测试和前端 18 项测试通过；详细结果与限制见 `../security/repository-cleanup.md`。
