@@ -87,7 +87,7 @@ chmod 600 .env
 
 先填写管理员凭据、独立密钥、访问域名、持久数据目录和各项运行限制。没有默认管理员密码，也不提供可直接用于生产的通用限额。
 
-目前没有发布可直接拉取的 ICAN 镜像。请按 [Docker 运行与更新说明](https://github.com/ruoyeyu/ICAN/blob/main/docs/security/docker-operations.md) 构建、验证镜像并填写 `ICAN_IMAGE`；Compose 使用已加载的固定镜像，不在启动时自动追踪最新版本。
+GitHub Actions 在完成构建、测试和安全检查后发布 GHCR 镜像。服务器只拉取并运行成功记录中的不可变 digest，不执行编译；详见 [GHCR 部署、更新和回滚说明](docs/security/ghcr-deployment.md)。
 
 ### 更新容器，保留数据
 

@@ -23,8 +23,9 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     pids_limit: ${ICAN_PIDS_LIMIT:?confirm process limit}
-    mem_limit: ${ICAN_MEMORY_LIMIT:?confirm memory limit}
-    cpus: ${ICAN_CPU_LIMIT:?confirm CPU limit}
+    mem_limit: 1536m
+    memswap_limit: 1536m
+    cpus: 1.6
     volumes:
       - type: bind
         source: ${ICAN_DATA_DIR:?set backed-up isolated data directory}

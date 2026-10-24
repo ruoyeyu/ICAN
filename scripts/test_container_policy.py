@@ -17,7 +17,7 @@ class ContainerPolicyTests(unittest.TestCase):
             "Config": {**self.image["Config"], "Image": self.image["Id"], "User": "10001:10001",
                        "Env": ["ADMIN_PASSWORD=fixture-only-secret"]},
             "HostConfig": {"ReadonlyRootfs": True, "CapDrop": ["ALL"], "SecurityOpt": ["no-new-privileges=true"],
-                           "Init": True, "PidsLimit": 256, "Memory": 1073741824, "NanoCpus": 2000000000,
+                           "Init": True, "PidsLimit": 256, "Memory": 1610612736, "MemorySwap": 1610612736, "NanoCpus": 1600000000,
                            "CgroupnsMode": "private", "IpcMode": "private", "NetworkMode": "fixture_ican",
                            "PortBindings": {"3000/tcp": [{"HostIp": "127.0.0.1", "HostPort": "3001"}]},
                            "Tmpfs": {p: "rw,nosuid,nodev,noexec,size=33554432,uid=10001,gid=10001"
@@ -35,7 +35,7 @@ class ContainerPolicyTests(unittest.TestCase):
     def test_independent_host_exposures(self):
         cases = {"Privileged": True, "ReadonlyRootfs": False, "CapAdd": ["SYS_ADMIN"],
                  "SecurityOpt": ["no-new-privileges=true", "seccomp=unconfined"], "PidsLimit": -1,
-                 "Memory": 0, "NanoCpus": 0, "NetworkMode": "host", "PidMode": "host", "IpcMode": "host",
+                 "Memory": 2147483648, "MemorySwap": -1, "NanoCpus": 2000000000, "NetworkMode": "host", "PidMode": "host", "IpcMode": "host",
                  "CgroupnsMode": "host", "Init": False, "DeviceRequests": [{"Count": -1}],
                  "PortBindings": {"3000/tcp": [{"HostIp": "0.0.0.0", "HostPort": "3001"}]}}
         for key, value in cases.items():

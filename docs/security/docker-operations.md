@@ -1,3 +1,5 @@
+> Current pull-only GHCR procedure: [ghcr-deployment.md](ghcr-deployment.md). CPU is fixed at 1.6 and memory at 1.5 GiB. Historical CI evidence below remains unchanged.
+
 # Docker 运行与维护
 
 用户已选择 Docker。采用单个应用容器（Next + Go）、SQLite 和本地私有媒体，沿用已有功能；不新增数据库或消息队列服务。推荐放在专用虚拟机/云服务器，避免与其他重要业务共用宿主机权限和数据。当前只是待验收交付，不表示已部署到 现有生产站点。
@@ -10,7 +12,7 @@
 - 仅向宿主机 127.0.0.1 发布前端 3000，8080 不对宿主机发布。专用 bridge 网络本身不阻止出站，必须另验宿主机出站 ACL。
 - 丢弃全部 capabilities、禁止提权，保留默认 seccomp，不允许 privileged、host namespace、额外设备或 Docker socket。优先评估 Rootless Docker；本次 CI 是标准 Linux Docker，不能据此宣称 Rootless 已验收。
 - Compose 显式传入应用必需的环境变量，数据库、媒体和日志固定在 /app/data 下。不再把整份 .env（例如意外的 NODE_OPTIONS、代理或动态库变量）注入应用。
-- 资源、认证速率、素材链接期限保持必填且无生产默认值。CI fixture 的 1 GiB、2 CPU、256 PID 等仅用于测试，不能自动用作生产配置；数据和日志磁盘配额、上传/并发等应用边界仍待确认。
+- CPU 1.6 核、内存 1.5 GiB 已由用户指定并固定在 Compose；其余资源、认证速率、素材链接期限保持必填。历史 CI fixture 的 1 GiB、2 CPU、256 PID 等不作为生产建议；数据和日志磁盘配额、上传/并发等应用边界仍待确认。
 
 ## 候选运行库与漏洞账目
 

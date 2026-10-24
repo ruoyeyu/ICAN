@@ -44,6 +44,9 @@ def violations(container, image, data_dir, host_port):
     require(not host.get("OomKillDisable"), "OOM protection disabled")
     for key in ("PidsLimit", "Memory", "NanoCpus"):
         require(isinstance(host.get(key), (int, float)) and host[key] > 0, "resource limit missing: " + key)
+    require(host.get("Memory") == 1610612736, "memory must be 1.5 GiB")
+    require(host.get("MemorySwap") == 1610612736, "additional swap is not permitted")
+    require(host.get("NanoCpus") == 1600000000, "CPU limit must be 1.6")
     require(host.get("NetworkMode") not in ("host", "bridge", "none", "default", ""), "dedicated network missing")
     networks = (container.get("NetworkSettings") or {}).get("Networks") or {}
     require(len(networks) == 1, "unexpected number of attached networks")

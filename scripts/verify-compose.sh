@@ -25,7 +25,7 @@ values = {'ICAN_IMAGE': sys.argv[2], 'ICAN_DATA_DIR': str(root / 'data'), 'ICAN_
           'ADMIN_PASSWORD': secrets.token_urlsafe(32), 'JWT_SECRET': secrets.token_urlsafe(48),
           'DATA_ENCRYPTION_KEY': base64.b64encode(secrets.token_bytes(32)).decode(),
           'AUTH_ATTEMPTS_PER_MINUTE': '1000', 'MEDIA_LINK_TTL_SECONDS': '60',
-          'ICAN_MEMORY_LIMIT': '1g', 'ICAN_CPU_LIMIT': '2', 'ICAN_PIDS_LIMIT': '256',
+          'ICAN_PIDS_LIMIT': '256',
           'ICAN_TMP_BYTES': '67108864', 'ICAN_CACHE_BYTES': '33554432'}
 with (root / 'fixture.env').open('w') as out:
     out.write('\n'.join(k + '=' + v for k, v in values.items()) + '\n')

@@ -1,4 +1,4 @@
-name: ICAN verification
+name: ICAN verification and GHCR publication
 on:
   push:
     branches: [main]
@@ -17,10 +17,12 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
-      - name: Build and test final image without publishing
-        run: docker build --progress=plain -t ican:verify .
-      - name: Test deployment policy rejection cases
-        run: python3 -B -m unittest discover -s scripts -p test_container_policy.py -v
+      - name: Build and test image without registry credentials
+        env:
+          SOURCE_REVISION: ${{ github.sha }}
+        run: docker build --progress=plain --build-arg SOURCE_REVISION="$SOURCE_REVISION" -t ican:verify .
+      - name: Test deployment and publication rejection cases
+        run: python3 -B -m unittest discover -s scripts -p 'test_*.py' -v
       - name: Verify final image isolation and restart recovery
         run: sh scripts/verify-image.sh
       - name: Verify native allocation, resolver and isolated TLS
@@ -43,3 +45,54 @@ jobs:
             runtime-regressions.log
             compose-policy.json
           if-no-files-found: warn
+      - name: Export the checked image
+        run: |
+          mkdir verified-image
+          docker image inspect ican:verify --format '{{.Id}}' > verified-image/image-id.txt
+          printf '%s\n' "$GITHUB_SHA" > verified-image/source-commit.txt
+          docker save ican:verify -o verified-image/image.tar
+          cd verified-image
+          sha256sum image.tar > image.tar.sha256
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: verified-image
+          path: verified-image/
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+  publish:
+    needs: isolated-build
+    if: github.repository == 'ruoyeyu/ICAN' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: verified-image
+          path: verified-image
+      - name: Load and validate the checked artifact
+        run: |
+          cd verified-image
+          sha256sum --check image.tar.sha256
+          test "$(cat source-commit.txt)" = "$GITHUB_SHA"
+          docker load -i image.tar
+          test "$(docker image inspect ican:verify --format '{{.Id}}')" = "$(cat image-id.txt)"
+          test "$(docker image inspect ican:verify --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$GITHUB_SHA"
+      - name: Publish checked image and verify immutable digest
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/publish-image.sh
+      - name: Preserve publication manifest
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: published-image
+          path: publication.json
+          if-no-files-found: error
+      - name: Remove registry credentials
+        if: always()
+        run: docker logout ghcr.io

@@ -12,7 +12,7 @@ WORKDIR /app/director
 RUN bun install --frozen-lockfile --ignore-scripts && bun audit && bun run test && bun run build
 RUN mkdir -p /app/web/public/director && cp dist/* /app/web/public/director/
 WORKDIR /app/web
-RUN bun test src && bun run build
+RUN bun audit && bun test src && bun run build
 
 FROM library/golang:1.27.3-bookworm@sha256:972b4110ba0f47539a975c31e52c64765e1ff19f2d74469ae4a595c6676e80a5 AS api-build
 WORKDIR /app
@@ -34,6 +34,10 @@ RUN mkdir -p /runtime-data /runtime-cache
 
 # Candidate runtime: signed Wolfi packages, pinned to the reviewed image digest.
 FROM cgr.dev/chainguard/glibc-dynamic@sha256:2827063c9efb4ba971d8621eb75f4e61b8d19850a6293a797df37358cc6f687b
+ARG SOURCE_REVISION
+LABEL org.opencontainers.image.source="https://github.com/ruoyeyu/ICAN" \
+      org.opencontainers.image.revision=$SOURCE_REVISION \
+      org.opencontainers.image.version="0.1.0"
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0
 COPY --from=web-build /usr/local/bin/node /usr/local/bin/node

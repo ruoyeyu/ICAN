@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Build/test on GitHub and publish the same checked image to GHCR with source commit and digest evidence; document pull-only deployment, persistent data and rollback.
+- Enforce the approved 1.6 CPU / 1.5 GiB Compose limits.
+
 ## ICAN v0.1.0
 
 - Keep the canvas, image/video workflows, account sync and custom API templates.

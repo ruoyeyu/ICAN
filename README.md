@@ -87,7 +87,7 @@ chmod 600 .env
 
 Set administrator credentials, separate secrets, your public URL, the persistent data directory, and runtime limits. There is no default administrator password or universal set of production limits.
 
-No ready-to-pull ICAN image has been published. Follow the [Docker operations guide](https://github.com/ruoyeyu/ICAN/blob/main/docs/security/docker-operations.md) to build and verify an image and set `ICAN_IMAGE`. Compose uses an already loaded, fixed image rather than automatically tracking the latest release.
+GitHub Actions now builds and checks the image before publishing it to GHCR. Deploy the immutable digest from the successful run; the server only pulls and runs the image. See [GHCR deployment, updates and rollback](docs/security/ghcr-deployment.md).
 
 ### Keep your data when updating
 
