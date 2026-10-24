@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">ICAN 创作流程示意</title>
+  <desc id="desc">带入图片、视频、音频和提示词，在画布中连接输入并选择自己配置的 API，生成结果与已同步配置保存在自己的 ICAN 服务器。此图不是界面截图。</desc>
+  <rect width="1200" height="620" rx="24" fill="#11151e"/>
+  <rect x="1" y="1" width="1198" height="618" rx="23" fill="none" stroke="#2c3444"/>
+  <g font-family="Arial,'Noto Sans CJK SC','Microsoft YaHei','PingFang SC',sans-serif">
+    <text x="48" y="75" font-size="42" font-weight="700" letter-spacing="2" fill="#f6f7fb">ICAN</text>
+    <text x="48" y="116" font-size="23" fill="#c1c8d8">从参考素材，到可以继续使用的创作结果。</text>
+    <text x="1152" y="67" text-anchor="end" font-size="15" fill="#8e9ab0">使用方式示意 · 非界面截图</text>
+
+    <path d="M338 314 H402 M393 307 402 314 393 321" fill="none" stroke="#a9a1ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M786 314 H850 M841 307 850 314 841 321" fill="none" stroke="#a9a1ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="48" y="168" width="290" height="292" rx="16" fill="#1b2130" stroke="#374054"/>
+    <text x="72" y="205" font-size="14" letter-spacing="2" fill="#a9a1ff">01 / INPUT</text>
+    <text x="72" y="242" font-size="26" fill="#f0f3fa">带入参考</text>
+    <rect x="72" y="267" width="242" height="101" rx="9" fill="#a5bad7"/>
+    <circle cx="266" cy="292" r="12" fill="#f4e7c6"/>
+    <path d="M72 344 136 294 190 342 232 310 314 351 V368 H72Z" fill="#5e6f92"/>
+    <path d="M72 357 122 334 183 356 252 329 314 349 V368 H72Z" fill="#3e526e"/>
+    <text x="72" y="404" font-size="19" fill="#d2d8e5">图片 · 视频 · 音频</text>
+    <text x="72" y="434" font-size="17" fill="#9caac0">参考素材与提示词一起整理</text>
+
+    <rect x="414" y="168" width="372" height="292" rx="16" fill="#211f36" stroke="#7567c4"/>
+    <text x="440" y="205" font-size="14" letter-spacing="2" fill="#beb6ff">02 / CANVAS</text>
+    <text x="440" y="242" font-size="26" fill="#f0f3fa">在画布中创作</text>
+    <path d="M450 286 V391" fill="none" stroke="#685c9a" stroke-width="2"/>
+    <circle cx="450" cy="286" r="5" fill="#b8aaff"/>
+    <circle cx="450" cy="338" r="5" fill="#b8aaff"/>
+    <circle cx="450" cy="390" r="5" fill="#b8aaff"/>
+    <text x="472" y="293" font-size="20" fill="#e4dff7">连接素材与提示词</text>
+    <text x="472" y="345" font-size="20" fill="#e4dff7">选择自己的 API 和模型</text>
+    <text x="472" y="397" font-size="20" fill="#e4dff7">调整参数，提交生成任务</text>
+    <text x="440" y="434" font-size="17" fill="#aea5c8">模型请求发送到你配置的服务</text>
+
+    <rect x="862" y="168" width="290" height="292" rx="16" fill="#1b2830" stroke="#3d5962"/>
+    <text x="886" y="205" font-size="14" letter-spacing="2" fill="#8bd3ce">03 / OUTPUT</text>
+    <text x="886" y="242" font-size="26" fill="#f0f3fa">留下结果</text>
+    <g stroke="#8bd3ce" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m888 289 5 5 10-11"/>
+      <path d="m888 341 5 5 10-11"/>
+      <path d="m888 393 5 5 10-11"/>
+    </g>
+    <text x="918" y="294" font-size="19" fill="#d9e6eb">生成结果与任务记录</text>
+    <text x="918" y="346" font-size="19" fill="#d9e6eb">项目、素材与配置</text>
+    <text x="918" y="398" font-size="19" fill="#d9e6eb">按账号保存与恢复</text>
+    <text x="886" y="434" font-size="17" fill="#9db6bf">登录后同步到自建服务器</text>
+
+    <path d="M48 496 H1152" stroke="#303a4b"/>
+    <text x="48" y="536" font-size="18" fill="#e0e5ef">你的模型服务</text>
+    <text x="48" y="567" font-size="16" fill="#97a6bd">接入已有 API，无需部署本地模型</text>
+    <text x="450" y="536" font-size="18" fill="#e0e5ef">你的 ICAN 服务器</text>
+    <text x="450" y="567" font-size="16" fill="#97a6bd">统一保存已同步的数据和媒体</text>
+    <text x="862" y="536" font-size="18" fill="#e0e5ef">你的持久数据目录</text>
+    <text x="862" y="567" font-size="16" fill="#97a6bd">升级保留，备份与密钥单独管理</text>
+  </g>
+</svg>
