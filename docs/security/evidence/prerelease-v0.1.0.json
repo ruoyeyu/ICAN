@@ -1,0 +1,43 @@
+{
+  "url": "https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0",
+  "id": 422759180,
+  "tag": "v0.1.0",
+  "prerelease": true,
+  "draft": false,
+  "sourceCommit": "4702d09c590769f5ec73ef3de6b312702bcea7e3",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40099763230",
+  "verification": "success; tag target, release state and all six asset checksums verified",
+  "assets": [
+    {
+      "name": "check-container.py",
+      "sha256": "sha256:c46e32de8ccca12dc8859fd9898112141aecbd0122d4d7e4becc2b2a11eb1a2d",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.0/check-container.py"
+    },
+    {
+      "name": "docker-compose.yml",
+      "sha256": "sha256:691274a47d2272973fe495828d047c50a2477f980e447d26ada2b68d4090539a",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.0/docker-compose.yml"
+    },
+    {
+      "name": "ican.env.example",
+      "sha256": "sha256:80de73fce13fc6a2b2268d120ae66f8018423eec3bef6919896727203013428b",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.0/ican.env.example"
+    },
+    {
+      "name": "image-security-evidence.zip",
+      "sha256": "sha256:86c24c2c046b56ccef0728c80434c8ab8226eddb7c50e2fbb3fc0abdba6ac882",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.0/image-security-evidence.zip"
+    },
+    {
+      "name": "publication.json",
+      "sha256": "sha256:7a22944d1200bfc7792f4a200bb81489cb52748295a6a77530938347844773de",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.0/publication.json"
+    },
+    {
+      "name": "SHA256SUMS",
+      "sha256": "sha256:7e80ba3011554c22e97cf9fe67f09e77466f0ebd07429c5e503e979f0844b3bc",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.0/SHA256SUMS"
+    }
+  ],
+  "serverModified": false
+}

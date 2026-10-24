@@ -89,6 +89,8 @@ chmod 600 .env
 
 GitHub Actions 在完成构建、测试和安全检查后发布 GHCR 镜像。服务器只拉取并运行成功记录中的不可变 digest，不执行编译；详见 [GHCR 部署、更新和回滚说明](docs/security/ghcr-deployment.zh-CN.md)。
 
+预发布入口：[ICAN v0.1.0](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0)，包含镜像拉取命令、配置附件及检查结果。
+
 ### 更新容器，保留数据
 
 ![容器与持久数据分离，数据库、媒体和密钥随更新保留。](docs/images/ican-data.svg)
