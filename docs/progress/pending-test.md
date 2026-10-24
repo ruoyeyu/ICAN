@@ -1,6 +1,6 @@
 # 本版本待验收
 
-- v0.1.2：修复两个渠道权限开关保存时本地存储类型被改写；新增可选图片参考编码、真实 multipart、原始参数和显式同源图片内容下载。平台品牌改为 ICAN/画布，登录标题与说明移除。配置、存储 ID 和密钥保留；说明及验证见 `../security/custom-api-templates.md`。CI 40110294471 构建、检查及 GHCR 发布全通过，记录见 `../security/evidence/ghcr-v0.1.2-publication.json`；Release 进入发布流程。没有操作服务器，真实供应商与生产验收待完成。
+- v0.1.2：修复两个渠道权限开关保存时本地存储类型被改写；新增可选图片参考编码、真实 multipart、原始参数和显式同源图片内容下载。平台品牌改为 ICAN/画布，登录标题与说明移除。配置、存储 ID 和密钥保留；说明及验证见 `../security/custom-api-templates.md`。CI 40110294471 构建、检查及 GHCR 发布全通过，记录见 `../security/evidence/ghcr-v0.1.2-publication.json`；Release 40110729630 发布成功，tag 与六个附件 SHA256 已核对，见 docs/security/evidence/prerelease-v0.1.2.json。没有操作服务器，真实供应商与生产验收待完成。
 
 - 按用户要求删除旧 v0.1.0 Release，已核对仅保留 v0.1.1 发布入口；新版附件和旧源码 tag 未改变。README 已清理旧入口，应用功能与部署待办不变。
 

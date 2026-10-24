@@ -1,0 +1,44 @@
+{
+  "releaseID": 422838968,
+  "tag": "v0.1.2",
+  "url": "https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.2",
+  "sourceCommit": "9b3b8db415e785c7e179e135185f257a016d697b",
+  "draft": false,
+  "prerelease": true,
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40110729630",
+  "assets": [
+    {
+      "name": "check-container.py",
+      "sha256": "sha256:c46e32de8ccca12dc8859fd9898112141aecbd0122d4d7e4becc2b2a11eb1a2d",
+      "size": 6659
+    },
+    {
+      "name": "docker-compose.yml",
+      "sha256": "sha256:691274a47d2272973fe495828d047c50a2477f980e447d26ada2b68d4090539a",
+      "size": 1776
+    },
+    {
+      "name": "ican.env.example",
+      "sha256": "sha256:80de73fce13fc6a2b2268d120ae66f8018423eec3bef6919896727203013428b",
+      "size": 693
+    },
+    {
+      "name": "image-security-evidence.zip",
+      "sha256": "sha256:0b7b44f7c1ab22c63de1c4563b3e805db73a961eb9bdf3151795760379823c7a",
+      "size": 25527
+    },
+    {
+      "name": "publication.json",
+      "sha256": "sha256:7906e074903b3da82a1a96d1eef7aa35cd2b6bcedb7c30af4b5abeed30cf8c7e",
+      "size": 2209
+    },
+    {
+      "name": "SHA256SUMS",
+      "sha256": "sha256:99181856a317bf3e3aa973d54555c1d8140a77a2af3c63eadb209067222aed53",
+      "size": 430
+    }
+  ],
+  "tagCommitVerified": true,
+  "allAssetDigestsVerified": true,
+  "serverModified": false
+}
