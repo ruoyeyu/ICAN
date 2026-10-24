@@ -1,16 +1,89 @@
 # ICAN
 
-基于 Infinite Canvas 的个人 API 画布工作台：无限画布，图片/视频/音频生成，账号配置与项目同步，服务器统一素材存储。
+**接自己的 API，在一张画布里整理参考、尝试想法、留下结果。**
 
-本分支为安全加固候选版本，**未通过生产部署验收，不应直接替换现站**。不附带供应商、付费模型、推广链接或一键安装脚本。注册需要管理员签发的一次性邀请码。
+ICAN 是一个可以自己部署的 AI 创作工作台，基于 [Infinite Canvas](https://github.com/tigerowo/infinite-canvas) 修改。它把提示词、参考素材和图片、视频生成放在一起，适合已经有模型 API、想自己管理项目和素材的个人或小团队。
 
-- [实施与验证报告](docs/security/hardening-review.md)
-- [运行组件与镜像审核](docs/security/runtime-review.md)
-- [部署门槛、备份和回滚](docs/security/deployment.md)
-- [Docker 运行、验收与更新](docs/security/docker-operations.md)
-- [交接记录](HANDOFF.md)
-- [文档索引](docs/index.md)
+模型通过你配置的外部 API 调用，运行画布本身不需要 GPU。项目不提供模型额度，也不预设付费渠道；调用费用由接入的服务决定。
 
-开发验证：Go 1.27.3 执行 `go test ./...`；Node 24.22.1、Bun 1.4.4 在 `web` 执行 `bun install --frozen-lockfile --ignore-scripts`、`bun test src`、`bun run build`。检查 `.env.example` 后自行配置独立密钥；不包含可用的默认管理员密码。
+![ICAN 使用方式：带入参考素材，在画布中连接提示词与模型配置，保存生成结果和账号数据。](docs/images/ican-workflow.svg)
 
-原项目及贡献者版权保留，采用 AGPL-3.0；见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。依赖许可证保留于相应组件中，静态引用的 shadcn 样式许可证位于 `LICENSES/`。
+*上图为使用方式示意，并非界面截图。*
+
+## 能用它做什么
+
+- **在画布上组织创作。** 把参考图、提示词和生成结果摆在一起，通过节点连线复用输入、比较结果；支持缩放、框选、撤销重做及项目导入导出。
+- **接入自己的模型服务。** 用户可以配置 API 地址、Key 和模型，管理员也可以维护统一渠道。兼容已有协议的中转站直接配置；特殊接口按需适配。
+- **调整图片与视频参数。** 视频比例、分辨率、时长支持选项和自定义输入，可使用图片、视频、音频参考。具体参数范围以接入的 API 为准。
+- **换设备继续做。** 登录后，已同步的画布、个人配置、素材和记录随账号保存；已有任务支持状态查询和恢复。未登录的数据保存在当前浏览器。
+- **统一保存素材。** 默认由服务器管理媒体，普通用户不用另搭 WebDAV。私人文件按账号访问，供应商需要读取参考素材时使用单独的授权链接。
+
+## 这个分支改了什么
+
+ICAN 沿用原项目的画布、账号、配置同步和素材管理，在这些基础上做精简和加固。
+
+| 调整 | 使用上的变化 |
+|---|---|
+| 自定义 API 优先 | 去掉默认付费渠道、模型预设、广告、推广和教程入口；清理固定第三方素材上传及远程订阅路径 |
+| 邀请码注册 | 管理员发放邀请码；退出、改密或禁用账号后，相关会话可撤销 |
+| 配置不静默替换 | 无效的模型或渠道明确报错，不自动换成另一个模型、地址或 Key；自定义视频参数保留原值 |
+| 私人素材与敏感配置保护 | 服务端敏感配置加密保存；检查素材所有权，拒绝 HTML、SVG 等主动内容，供应商授权链接可撤销 |
+| 收紧服务端网络访问 | 对出站地址、DNS 解析和重定向进行检查，限制访问回环、私网及云元数据地址 |
+| 缩小运行范围 | 首轮关闭导演台、Agent/Bridge、ComfyUI、RunningHub/AutoDL 工作流、OAuth 和积分计费；后端同步执行限制 |
+| Docker 部署 | 使用非 root、只读根目录和最小权限配置；固定依赖及基础镜像版本，减少最终镜像中的非必要组件 |
+
+个人 API 配置在浏览器侧也会使用，部分请求由浏览器直接发送；服务端加密保存不代表 Key 对客户端不可见。配置的模型服务仍会收到生成所需的提示词和参考素材。
+
+## Docker 试运行
+
+**当前为开发预览，建议先在独立测试环境运行。** Docker 候选的构建、容器/Compose 运行及自动化检查已经通过，未完成事项见下方「当前进度」。
+
+本轮 Docker 配置位于 [`security/runtime-isolation-candidate`](https://github.com/ruoyeyu/ICAN/tree/security/runtime-isolation-candidate) 分支，尚未合入 `main`。当前验证平台为 Linux / amd64，需要 Docker 和 Docker Compose。
+
+```sh
+git clone https://github.com/ruoyeyu/ICAN.git
+cd ICAN
+git switch security/runtime-isolation-candidate
+cp .env.example .env
+chmod 600 .env
+```
+
+先填写管理员凭据、独立密钥、访问域名、持久数据目录和各项运行限制。没有默认管理员密码，也不提供可直接用于生产的通用限额。
+
+目前没有发布可直接拉取的 ICAN 镜像。请按 [Docker 运行与更新说明](https://github.com/ruoyeyu/ICAN/blob/security/runtime-isolation-candidate/docs/security/docker-operations.md) 构建、验证镜像并填写 `ICAN_IMAGE`；Compose 使用已加载的固定镜像，不在启动时自动追踪最新版本。
+
+### 更新容器，保留数据
+
+数据库和媒体通过 `ICAN_DATA_DIR` 挂载在容器之外。新容器沿用原目录和加密密钥，就能继续读取账号、画布、已保存的个人 API 与管理员渠道配置。
+
+正常更新不应重新初始化数据库或生成新的 `DATA_ENCRYPTION_KEY`。表结构或配置格式发生变化时，需要迁移和恢复验证；**完整的版本化迁移机制仍在补齐，当前不能仅凭换镜像保证跨版本兼容。** 数据目录、媒体和密钥都需要备份。
+
+## 当前进度
+
+- 已完成画布与自定义 API 流程的精简、账号/素材权限加固、依赖更新，以及 Docker 自动化验证。
+- 尚待完成生产资源与网络边界、真实浏览器和供应商接口验收、旧数据及跨版本迁移演练。画境的真实接口合同与历史任务尚未完成验收，不作完整兼容承诺。
+
+安全检查的范围、证据和未完成事项都保存在仓库中。扫描结果只对应当次代码和镜像，不能代替部署环境的验收。
+
+- [安全改动与验证记录](docs/security/hardening-review.md)
+- [运行依赖、二进制与外部引用复核](docs/security/supply-chain-review.md)
+- [Docker 候选的实际 CI 记录](https://github.com/ruoyeyu/ICAN/actions/runs/40086299774)
+- [当前待办](https://github.com/ruoyeyu/ICAN/blob/security/runtime-isolation-candidate/docs/progress/todo.md)
+
+## 开发
+
+前端使用 Next.js、React、TypeScript；后端使用 Go、Gin、GORM。当前 Docker 配置使用 SQLite 和服务器本地媒体目录。
+
+构建工具链固定在 [Dockerfile](Dockerfile)，依赖版本以 `go.mod`、`go.sum` 和 `web/bun.lock` 为准。后端在项目根目录运行 `go test ./...`；前端在 `web` 目录运行：
+
+```sh
+bun install --frozen-lockfile --ignore-scripts
+bun test src
+bun run build
+```
+
+欢迎提交可复现的问题和明确的 API 适配需求。提交日志或请求示例前，请去掉 Key、登录凭据和私人素材链接。
+
+## 来源与许可
+
+感谢 [tigerowo/infinite-canvas](https://github.com/tigerowo/infinite-canvas) 及其贡献者提供的基础能力。ICAN 是在该项目上的修改分支，采用 [AGPL-3.0](LICENSE)，保留原作者署名和版权说明，详见 [NOTICE](NOTICE)。
