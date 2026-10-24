@@ -1,0 +1,68 @@
+{
+  "sourceVersion": "1:1.3.dfsg+really1.3.1-1",
+  "method": "Official Debian HTTPS archive; SHA256 matched .dsc. No .dsc signer or signed Release-index verification claimed. Static source inspection; no exploit executed.",
+  "archives": [
+    {
+      "url": "https://deb.debian.org/debian/pool/main/z/zlib/zlib_1.3.dfsg+really1.3.1.orig.tar.gz",
+      "sha256": "60dd315c07f616887caa029408308a018ace66e3d142726a97db164b3b8f69fb"
+    },
+    {
+      "url": "https://deb.debian.org/debian/pool/main/z/zlib/zlib_1.3.dfsg+really1.3.1-1.debian.tar.xz",
+      "sha256": "9ed525955ce9fb0c1b39be8ff98f73450dbfc6305a9a27e6149c8972d38a0a9e"
+    }
+  ],
+  "files": [
+    {
+      "path": "zlib-1.3.1/gzguts.h",
+      "sha256": "716fa648aca1bb06c219d7b97ad4846d8479206143bc39557bfd8283f5783e04",
+      "containsGzVacate": false,
+      "containsStateAgain": false
+    },
+    {
+      "path": "zlib-1.3.1/gzclose.c",
+      "sha256": "35ea6e991a63095f797d8c4cc25817fac7a7155c2ba7dcdbbf648f7871c7ea40",
+      "containsGzVacate": false,
+      "containsStateAgain": false
+    },
+    {
+      "path": "zlib-1.3.1/gzwrite.c",
+      "sha256": "469b1e58932ea11bdda2a153f6655f7b3c13254240fae157181b49ed1bc93b47",
+      "containsGzVacate": false,
+      "containsStateAgain": false
+    },
+    {
+      "path": "zlib-1.3.1/gzlib.c",
+      "sha256": "042c2be8ec67ad525a2812e508de7381c6766dde903acf5ae6ac4fa6b541946d",
+      "containsGzVacate": false,
+      "containsStateAgain": false
+    },
+    {
+      "path": "zlib-1.3.1/gzread.c",
+      "sha256": "72e481aca07b0b85a9783237b85dc67ff3a4c1d19878d0cec69f58d38634867b",
+      "containsGzVacate": false,
+      "containsStateAgain": false
+    },
+    {
+      "path": "debian/patches/series",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "containsGzVacate": false,
+      "containsStateAgain": false
+    }
+  ],
+  "packagingPatchFiles": [
+    "debian/patches/series"
+  ],
+  "assessment": {
+    "gzVacateAbsent": true,
+    "packagingPatchSeriesEmpty": true,
+    "writerErrorPath": "gz_comp returns -1 with Z_ERRNO after negative write; gzvprintf returns before memmove; subsequent writes reject non-Z_OK state. No retryable state->again in this source.",
+    "status": "Source evidence supports version-range mismatch for this CVE; Debian tracker still records vulnerable. Preserve raw finding pending upstream/distribution adjudication.",
+    "scope": "Static review of corresponding source, not a verified reproducible rebuild of installed library."
+  },
+  "debianBinary": {
+    "url": "https://deb.debian.org/debian/pool/main/z/zlib/zlib1g_1.3.dfsg+really1.3.1-1+b1_amd64.deb",
+    "archiveSHA256": "015be740d6236ad114582dea500c1d907f29e16d6db00566ca32fb68d71ac90d",
+    "libzSHA256": "85590dd58edf5445e18bc7193e5ebc01ac5841f1ae187e97705a662e90c6421e",
+    "method": "Official Debian HTTPS download; inspect ar/tar without running package or library; no signed package index verification claimed."
+  }
+}

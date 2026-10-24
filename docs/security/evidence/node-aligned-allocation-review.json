@@ -1,0 +1,18 @@
+{
+  "symbol": "_ZnamSt11align_val_t@CXXABI_1.3.11",
+  "nodeVersion": "24.22.1",
+  "sourceURL": "https://raw.githubusercontent.com/nodejs/node/v24.22.1/deps/v8/src/compiler-dispatcher/optimizing-compile-dispatcher.cc",
+  "sourceSHA256": "0871c7b2247d0893f2a39b3473fe464162236cb2c1025928b1ae997c8115befb",
+  "directPLTCallsFound": [
+    {
+      "function": "0000000000d9b440 <v8::internal::OptimizingCompileTaskExecutor::EnsureInitialized()>:",
+      "instruction": "d9b49e:\tcall   74e020 <operator new[](unsigned long, std::align_val_t)@plt>"
+    },
+    {
+      "function": "0000000000d9b440 <v8::internal::OptimizingCompileTaskExecutor::EnsureInitialized()>:",
+      "instruction": "d9b5e4:\tcall   74e020 <operator new[](unsigned long, std::align_val_t)@plt>"
+    }
+  ],
+  "assessment": "Observed direct calls are V8 OptimizingCompileTaskExecutor::EnsureInitialized allocations. max_tasks comes from platform worker-thread count or a V8 startup flag, not from an application request field. Keep the vulnerable system-library match; no proof of exhaustive indirect/static reachability or production flag validation.",
+  "method": "readelf + objdump parsing only; same official Node binary SHA256 as final image; no exploit or large allocation run."
+}

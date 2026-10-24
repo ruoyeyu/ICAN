@@ -1,0 +1,51 @@
+{
+  "candidateCommit": "271689883f215dcd65120cbb7fa9e8d507c4056c",
+  "candidateTree": "cb09fdc00a18828599990c3311900eb4a58b91f8",
+  "runURL": "https://github.com/ruoyeyu/ICAN/actions/runs/40084004422",
+  "jobID": 120843123687,
+  "conclusion": "success",
+  "platform": "linux/amd64",
+  "imageID": "sha256:ebf34c175fc925654ee14d51f40f8cbef40e1bf3a33be205bab4551989e27ab1",
+  "publishedImage": false,
+  "artifact": {
+    "id": 12556452341,
+    "sha256": "bd13d73c1f2ab0ffe0018d4e1ff55e6a0e15f60ea7113b727a80a64f1455394f"
+  },
+  "checks": [
+    "Go and frontend tests/build",
+    "UID 10001, read-only root, zero capabilities, NoNewPrivs, network none",
+    "Invitation registration, private media, grant revocation, logout, restart recovery",
+    "CSP header and disabled Next optimizer",
+    "Sharp and @img absent",
+    "Native file inventory with readelf (no executing ELF)",
+    "Complete scan and SBOM, no ignore filters"
+  ],
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 23,
+    "LOW": 8,
+    "UNKNOWN": 1
+  },
+  "packageCounts": {
+    "debian": 14,
+    "node-pkg": 13,
+    "gobinary": 49
+  },
+  "nativeInventory": {
+    "files": 285,
+    "groups": {
+      "app/server": 1,
+      "openssl-engines": 3,
+      "glibc-gconv": 253,
+      "system-libraries": 27,
+      "usr/local/bin/node": 1
+    },
+    "setIdFiles": [],
+    "webNativeFiles": [],
+    "nodeMatchesVerifiedOfficialBinary": true,
+    "libzMatchesDebianArchiveBinary": true,
+    "nodeImportsAlignedArrayNew": true
+  },
+  "deploymentApproved": false
+}

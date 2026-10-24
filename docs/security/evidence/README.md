@@ -17,3 +17,5 @@
 - image-ci.json：镜像构建、运行隔离、重启恢复与扫描的远端 CI 证据索引；详见 ../runtime-review.md。
 
 所有调用均为隔离 fixture、本地进程或公开依赖查询，没有使用真实供应商 Key 或执行付费生成。最终容器在 GitHub 独立 runner 验证，生产服务器不在本次测试范围。
+
+第二轮：`second-pass-advisories.json` 保存 25 个 CVE 的官方追踪器表格；`second-pass-*.log.gz` 为回归/构建原始记录；`second-pass-runtime-smoke.json` 为 19 项真实进程验证；`second-pass-native-runtime.json` 为 Node 静态组件版本；`second-pass-local-checks.json` 为锁图/打包/源码 blob 检查摘要。最终镜像 CI、SBOM 与二进制盘点已保存为 `second-pass-*`，历史报告不覆盖。`node-aligned-allocation-review.json` 为 Node 对齐分配导入和直接调用复核；`zlib-source-review.json` 记录源包及归档二进制核对范围。

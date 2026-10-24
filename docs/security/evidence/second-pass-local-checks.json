@@ -1,0 +1,12 @@
+{
+  "goTestsPassed": 179,
+  "frontendTestsPassed": 18,
+  "processSmokePassed": 19,
+  "sharpAndImgAbsentFromStandalone": true,
+  "lockPackageGraphUnchanged": true,
+  "trackedELF_PE_MachO_WASM": [],
+  "notes": [
+    "Final code differs from local production build only by removing the unused Agent tutorial component; final image CI builds that exact code.",
+    "No paid generation or production changes."
+  ]
+}

@@ -15,7 +15,7 @@
 | CVE | 触发前提及当前处置 |
 |---|---|
 | [2026-102010](https://security-tracker.debian.org/tracker/CVE-2026-102010) | libstdc++ PBDS 二叉堆 `erase_if` 悬空指针；没有发现应用调用，模板实例化不能只靠共享库版本判断。保留匹配，等待稳定版补丁。 |
-| [2026-95619](https://security-tracker.debian.org/tracker/CVE-2026-95619) | C++ aligned new 超大分配溢出；原 libvips 引入 aligned array-new，现移除；Node 动态导入未见该入口。不是对所有 C++ 静态路径的完整证明。 |
+| [2026-95619](https://security-tracker.debian.org/tracker/CVE-2026-95619) | C++ aligned new 超大分配溢出；原 libvips 已移除；**最终镜像盘点确认 Node 仍导入 aligned array-new**，不能宣称触发路径已全部移除。两处直接调用均定位到 V8 编译线程状态初始化，尺寸来自平台线程数/启动参数，未发现由业务请求控制；仍保留系统库匹配及部署参数复核，未作完整间接调用证明。见 `evidence/node-aligned-allocation-review.json`。 |
 | [2026-18374](https://security-tracker.debian.org/tracker/CVE-2026-18374) | 攻击者控制 `fopen` mode 中空 `,ccs=`；应用未提供该 mode 参数入口，保留底层匹配。 |
 | [2026-19499](https://security-tracker.debian.org/tracker/CVE-2026-19499) | `strfmon[_l]` 特定宽度补齐及过小目标缓冲；未见 Node/应用导入或调用。 |
 | [2026-19542](https://security-tracker.debian.org/tracker/CVE-2026-19542) | `tdelete` 特定深度的大树；未见应用调用，未运行百万节点资源耗尽复现。 |
@@ -38,7 +38,7 @@
 | [2019-1010024](https://security-tracker.debian.org/tracker/CVE-2019-1010024) | 线程栈/堆缓存帮助绕过 ASLR；上游不作为独立安全问题，保留原记录。 |
 | [2019-1010025](https://security-tracker.debian.org/tracker/CVE-2019-1010025) | 线程堆地址可预测帮助绕过 ASLR；同上。 |
 | [2026-27171](https://security-tracker.debian.org/tracker/CVE-2026-27171) | zlib `crc32_combine64`/`crc32_combine_gen64` 循环；系统库版本仍匹配，Node 并非动态链接此系统 zlib。Node 内置版本单列盘点，不能借系统包扫描覆盖它。 |
-| [2026-85091](https://security-tracker.debian.org/tracker/CVE-2026-85091) | 非阻塞 gzwrite 停滞后 gzprintf/gzvprintf 缓冲溢出。公告描述从 1.3.1.2 引入，但 Debian 仍标记 1.3.1 受影响；**范围存在矛盾，尚未完成 Debian 源包回移补丁核对，不自行改成误报**。未见 Node 动态链接系统 zlib 或业务调用 gz*。 |
+| [2026-85091](https://security-tracker.debian.org/tracker/CVE-2026-85091) | 非阻塞 gzwrite 停滞后 gzprintf/gzvprintf 缓冲溢出。公告描述从 1.3.1.2 引入，但 Debian 仍标记 1.3.1 受影响；**范围存在矛盾**。已从官方 Debian 归档核对相应源包及 .dsc 校验和：patch series 为空，五个 gz* 文件无 gz_vacate/state->again；旧写入路径在 write 失败后返回 Z_ERRNO，gzvprintf 在 memmove 前退出。源码证据支持版本范围误匹配，保留扫描原项等待发行版裁定；未宣称已验证 .dsc 签名或可复现构建。见 `evidence/zlib-source-review.json`。 |
 
 另有 UNKNOWN `GO-2026-5932`：模块为 x/crypto，涉及未导入的 openpgp；保留源码 govulncheck 与运行包清单证据，不把模块匹配当成 bcrypt 可利用问题。
 
@@ -46,7 +46,7 @@
 
 - Git 跟踪源码未发现 ELF、PE、Mach-O、WASM 魔数的可执行 blob。检查不等于证明没有混淆/编码载荷。
 - 最终 Go 服务由仓库源码、go.sum 固定依赖、CGO_ENABLED=0 构建；SQLite 为纯 Go 路径，不下载闭源驱动。
-- Node 为官方镜像的开源预编译二进制；最终 Debian glibc/libstdc++ 等来自签名验证且摘要固定的 Distroless。保留 Node license 和镜像原有版权文件。
+- Node 24.22.1 为[官方安全维护版](https://nodejs.org/en/blog/release/v24.22.1)，已包含该轮 TLS、DNS、Brotli 等修复；Node 自带库版本见 `evidence/second-pass-native-runtime.json`。它是官方镜像的开源预编译二进制；最终 Debian glibc/libstdc++ 等来自签名验证且摘要固定的 Distroless。保留 Node license 和镜像原有版权文件。
 - 构建期 Bun、Next SWC/Tailwind 原生包、原 Sharp/libvips 都有公开源码和开源许可证；“预编译”不等于“闭源”。未对这些上游发布品进行完整可复现构建比对，因此不宣称可排除上游编译链投毒。
 - Sharp/libvips 及其捆绑字体、XML、各类图片编解码库不再进入最终运行层。浏览器使用的系统/WebCodecs 编解码器是客户端平台组件，不在本服务器镜像审核范围。
 - `scripts/inventory-image.py` 从最终镜像 tar 流读取文件魔数、SHA256、动态依赖/未定义符号、set-ID 位和许可证路径；不执行被检查的 ELF。清单与 SBOM 一并作为 CI artifact 保存。静态内置 Node 库另用 `process.versions` 记录，SBOM 不能覆盖全部静态组件的函数可达性。
@@ -75,6 +75,6 @@
 
 ## 验证、限制与回滚
 
-本地 179 个 Go 测试及子测试通过，新增固定上传阻断、关闭协议和关闭自定义渠道回归；18 个前端测试及生产构建通过，19 项 Go/Next 实际进程联通验证通过，standalone 无 Sharp/@img。最终镜像 CI 结果随后写入 `evidence/second-pass-ci.json`。生产未部署，未付费调用。真实浏览器 CSP/媒体体验、DNS 配置、容量并发边界、画境合同、旧数据和回滚演练仍是上线门槛。
+本地 179 个 Go 测试及子测试通过，新增固定上传阻断、关闭协议和关闭自定义渠道回归；18 个前端测试及生产构建通过，19 项 Go/Next 实际进程联通验证通过，standalone 无 Sharp/@img。[最终镜像 CI 40084004422](https://github.com/ruoyeyu/ICAN/actions/runs/40084004422) 全部通过，绑定代码 `271689883f215dcd65120cbb7fa9e8d507c4056c`；结果见 `evidence/second-pass-ci.json`。完整扫描仍为 0 HIGH/CRITICAL、23 MEDIUM、8 LOW、1 UNKNOWN；Node 包由 19 降至 13。最终 285 个 ELF 中，253 个为 glibc 字符转换模块、27 个系统库、3 个 OpenSSL engine，另有官方 Node 和本项目 Go 服务；无 Web 原生文件、无 set-ID 文件。Node 哈希与此前核验的官方二进制一致，系统 libz 哈希与实际下载的 Debian 二进制包一致。没有把保留的系统 gconv 模块说成已删除。生产未部署，未付费调用。真实浏览器 CSP/媒体体验、DNS 配置、容量并发边界、画境合同、旧数据和回滚演练仍是上线门槛。
 
 本轮无数据结构修改。可在独立测试实例回退到上一候选提交 `9f1a91e53c6ccc11c5918ecb4241e65c07b6cf3f` 复现对比，但会恢复此次移除的第三方上传和 native 组件，不建议作为生产回退目标；线上原站保持不变。数据库/密钥/用户媒体的生产备份回滚仍按 deployment.md 执行。
