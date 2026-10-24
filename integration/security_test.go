@@ -122,6 +122,31 @@ func TestSecurityBoundaries(t *testing.T) {
 			t.Fatal("expired invitation accepted")
 		}
 	})
+	t.Run("anonymous-workspace-and-upload-rejected", func(t *testing.T) {
+		for _, token := range []string{"", "forged-session"} {
+			for _, path := range []string{"/api/v1/files", "/api/v1/canvas/projects", "/api/v1/canvas/projects/sync"} {
+				if got := request("POST", path, token, "not-even-valid-input"); got.Code != 401 {
+					t.Fatalf("unauthenticated write accepted %s: %d", path, got.Code)
+				}
+			}
+			for _, path := range []string{"/api/assets", "/api/prompts"} {
+				if got := request("GET", path, token, ""); got.Code != 401 {
+					t.Fatalf("anonymous library %s: %d", path, got.Code)
+				}
+			}
+		}
+		if request("POST", "/api/anonymous/files", "", "fixture").Code != 404 {
+			t.Fatal("anonymous upload enabled")
+		}
+	})
+	t.Run("page-session-cookie-scope", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		service.WriteSessionCookie(w, alice.Token)
+		cookies := w.Result().Cookies()
+		if len(cookies) != 2 || cookies[0].Path != "/api" || cookies[0].MaxAge != -1 || cookies[1].Path != "/" || !cookies[1].HttpOnly || !cookies[1].Secure || cookies[1].SameSite != http.SameSiteStrictMode {
+			t.Fatal("invalid page or legacy cookie policy")
+		}
+	})
 	t.Run("roles-and-disabled-surfaces", func(t *testing.T) {
 		for _, token := range []string{"", alice.Token} {
 			if successful(request("GET", "/api/admin/invitations", token, "")) {

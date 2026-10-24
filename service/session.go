@@ -28,7 +28,9 @@ func WriteSessionCookie(w http.ResponseWriter, token string) {
 	if claims, err := ParseToken(token); err == nil {
 		maxAge = int(claims.ExpiresAt.Unix() - claims.IssuedAt.Unix())
 	}
-	http.SetCookie(w, &http.Cookie{Name: SessionCookieName, Value: token, Path: "/api", MaxAge: maxAge, HttpOnly: true, Secure: strings.HasPrefix(config.Cfg.PublicOrigin, "https://"), SameSite: http.SameSiteStrictMode})
+	// Remove the legacy API-only cookie before using the page-wide session.
+	http.SetCookie(w, &http.Cookie{Name: SessionCookieName, Path: "/api", MaxAge: -1, HttpOnly: true, Secure: strings.HasPrefix(config.Cfg.PublicOrigin, "https://"), SameSite: http.SameSiteStrictMode})
+	http.SetCookie(w, &http.Cookie{Name: SessionCookieName, Value: token, Path: "/", MaxAge: maxAge, HttpOnly: true, Secure: strings.HasPrefix(config.Cfg.PublicOrigin, "https://"), SameSite: http.SameSiteStrictMode})
 }
 
 func RevokeSession(token string) error {

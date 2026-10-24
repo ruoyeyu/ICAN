@@ -2,7 +2,7 @@
 
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { App, Button, Form, Input, Segmented, Space } from "antd";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 import { useConfigStore } from "@/stores/use-config-store";
@@ -35,7 +35,6 @@ export default function LoginPage() {
 
 function LoginContent() {
     const { message } = App.useApp();
-    const router = useRouter();
     const searchParams = useSearchParams();
     const login = useUserStore((state) => state.login);
     const register = useUserStore((state) => state.register);
@@ -60,11 +59,9 @@ function LoginContent() {
                 return;
             }
             const action = mode === "register" ? register : login;
-            const user = await action({ username: values.username, password: values.password, invitationCode: values.invitationCode });
+            await action({ username: values.username, password: values.password, invitationCode: values.invitationCode });
             message.success(mode === "register" ? "注册成功" : "登录成功");
-            router.replace(redirect);
-            router.refresh();
-            if (user.role !== "admin") router.replace("/");
+            window.location.assign(redirect);
         } catch (error) {
             message.error(error instanceof Error ? error.message : "登录失败");
         }
@@ -83,7 +80,7 @@ function LoginContent() {
                         aria-label="无限画布"
                     />
                     <h1 className="text-3xl font-semibold tracking-normal text-stone-950 dark:text-stone-100">账号登录</h1>
-                    <p className="mt-3 text-base leading-7 text-stone-500 dark:text-stone-400">支持账号密码和 Linux.do 登录。</p>
+                    <p className="mt-3 text-base leading-7 text-stone-500 dark:text-stone-400">登录后使用画布，新账号需要邀请码。</p>
                 </div>
 
                 <Form<LoginFormValues> layout="vertical" size="large" requiredMark={false} onFinish={submit}>

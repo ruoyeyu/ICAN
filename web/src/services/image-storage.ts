@@ -1,6 +1,6 @@
 "use client";
 
-import localforage from "localforage";
+import { accountBlobStorage } from "@/lib/account-storage";
 
 import { nanoid } from "nanoid";
 import { readImageMeta } from "@/lib/image-utils";
@@ -54,7 +54,7 @@ export type StorageConfig = {
     autoSyncAllAssets: boolean;
 };
 
-const store = localforage.createInstance({ name: "infinite-canvas", storeName: "image_files" });
+const store = accountBlobStorage("image_files");
 const objectUrls = new Map<string, string>();
 const serverUrls = new Map<string, string>();
 export const USER_STORAGE_PROVIDER_KEY = "infinite-canvas:user_storage_provider";
@@ -170,6 +170,7 @@ export function getProxyUrl(url: string): string {
 }
 
 export async function uploadImage(input: string | Blob, options: UploadImageOptions = {}): Promise<UploadedImage> {
+    if (!useUserStore.getState().user || !useUserStore.getState().token) throw new Error("请先登录后再上传素材");
     const url = typeof input === "string" ? getProxyUrl(input) : input;
     let blob: Blob;
     if (typeof url === "string") {
@@ -200,6 +201,7 @@ export async function uploadImage(input: string | Blob, options: UploadImageOpti
 }
 
 export async function uploadRemoteImageToServer(url: string, filename: string): Promise<UploadedImage> {
+    if (!useUserStore.getState().user || !useUserStore.getState().token) throw new Error("请先登录后再上传素材");
     const response = await fetch(getProxyUrl(url));
     if (!response.ok) {
         const payload = await response.json().catch(() => null) as { msg?: string } | null;

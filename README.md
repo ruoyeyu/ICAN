@@ -17,7 +17,7 @@ Models run through the external APIs you configure. The canvas itself does not n
 - **Work on a canvas.** Arrange references, prompts, and results side by side. Connect nodes to reuse inputs and compare outputs, with zoom, selection, undo/redo, and project import/export.
 - **Custom templates for model APIs and API gateways.** Users can set their API URL, key, and models; administrators can maintain shared channels. Custom templates configure request parameters and response parsing. Services using a supported protocol can be configured directly; other protocols may need an adapter.
 - **Control generation parameters.** Video aspect ratio, resolution, and duration support presets and custom values, with image, video, and audio references. Supported values depend on the API.
-- **Continue on another device.** Signed-in users can recover synced canvases, settings, media, and records. Existing tasks support status checks and recovery. Guest data stays in the current browser.
+- **Continue on another device.** Signed-in users can recover synced canvases, settings, media, and records. Existing tasks support status checks and recovery. All workspaces require login; registration requires an invitation.
 - **Keep media in one place.** The server manages media storage, so users do not need their own WebDAV setup. Private files require account access; providers receive separate authorized reference links.
 
 ![API configuration and video parameters, including custom values.](docs/images/ican-api-en.svg)

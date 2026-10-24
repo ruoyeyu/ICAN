@@ -18,9 +18,17 @@ assert.match(loginPage.headers.get('content-security-policy'),/script-src 'self'
 assert.ok([400,404].includes((await fetch(origin+'/_next/image?url=https%3A%2F%2Fsupplier.invalid%2Ffixture.png&w=64&q=75')).status));
 assert.equal(existsSync('/app/web/node_modules/sharp'),false);
 assert.equal(existsSync('/app/web/node_modules/@img'),false);
+for (const path of ['/canvas','/image','/video','/asset-library','/director/index.html']) {
+ const response=await fetch(origin+path,{redirect:'manual'});
+ assert.equal(response.status,307,'anonymous page '+path);
+ assert.match(response.headers.get('location'),/\/login\?redirect=/);
+}
+assert.equal((await fetch(origin+'/api/v1/files',{method:'POST',body:'fixture'})).status,401,'anonymous upload rejected');
+assert.equal((await fetch(origin+'/api/anonymous/files',{method:'POST',body:'fixture'})).status,404,'legacy anonymous upload disabled');
 const admin=await api('/api/auth/login',{username:process.env.ADMIN_USERNAME,password:process.env.ADMIN_PASSWORD});
 const code=(await api('/api/admin/invitations',{},admin.token)).code;
 const user=await api('/api/auth/register',{username:'image-fixture-user',password:'fixture-password-only',invitationCode:code});
+const page=await fetch(origin+'/canvas',{headers:{Cookie:`ican_session=${user.token}`},redirect:'manual'});assert.equal(page.status,200,'authenticated canvas');
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jGZkAAAAASUVORK5CYII=','base64');
 const form=new FormData();form.append('file',new Blob([png],{type:'image/png'}),'fixture.png');
 const upload=await fetch(origin+'/api/v1/files',{method:'POST',body:form,headers:{Origin:origin,Authorization:`Bearer ${user.token}`}});
@@ -31,4 +39,5 @@ const link=(await api('/api/v1/files/'+item.data.id+'/share',{},user.token)).url
 assert.equal((await fetch(link)).status,200,'supplier grant');
 await api('/api/v1/files/'+item.data.id+'/share',undefined,user.token,'DELETE');assert.equal((await fetch(link)).status,404,'revoked grant');
 await api('/api/auth/logout',{},user.token);assert.equal((await api('/api/auth/me',undefined,user.token)).role,'guest');
+assert.equal((await fetch(origin+'/canvas',{headers:{Cookie:`ican_session=${user.token}`},redirect:'manual'})).status,307,'revoked page session');
 console.log(JSON.stringify({productionImageSmoke:'passed',user:process.getuid(),seccompFilter:true,readOnlyRoot:true}));

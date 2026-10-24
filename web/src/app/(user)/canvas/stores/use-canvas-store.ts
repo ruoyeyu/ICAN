@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, type PersistStorage, type StorageValue } from "zustand/middleware";
 
 import { nanoid } from "nanoid";
+import { accountStorageKey, waitForAccount } from "@/lib/account-storage";
 import { localForageStorage } from "@/lib/localforage-storage";
 import { listCanvasProjects, saveCanvasProject, syncCanvasProjects } from "@/services/api/canvas-tasks";
 import { fetchUserConfig } from "@/services/api/user-config";
@@ -55,25 +56,10 @@ type PersistedCanvasState = Pick<CanvasStore, "projects">;
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let queuedPersistState: PersistedCanvasState | null = null;
 let accountCanvasSyncEnabled = false;
+let canvasAccountKey: string | null = null;
 const projectSaveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const pendingProjectSaves = new Map<string, { token: string; project: CanvasProject }>();
 const savingProjects = new Set<string>();
-
-function waitForUserStoreHydration() {
-    if (useUserStore.persist.hasHydrated()) return Promise.resolve();
-
-    return new Promise<void>((resolve) => {
-        let unsubscribe = () => { };
-        unsubscribe = useUserStore.persist.onFinishHydration(() => {
-            unsubscribe();
-            resolve();
-        });
-        if (useUserStore.persist.hasHydrated()) {
-            unsubscribe();
-            resolve();
-        }
-    });
-}
 
 async function flushProjectSave(id: string) {
     if (savingProjects.has(id) || projectSaveTimers.has(id)) return;
@@ -88,6 +74,7 @@ async function flushProjectSave(id: string) {
 }
 
 function queueProjectSave(project: CanvasProject) {
+    if (accountStorageKey(CANVAS_STORE_KEY) !== canvasAccountKey) return;
     const token = useUserStore.getState().token;
     const previous = projectSaveTimers.get(project.id);
     if (previous) clearTimeout(previous);
@@ -158,10 +145,14 @@ async function reconcileCanvasProjects(
 }
 
 const canvasStorage: PersistStorage<CanvasStore> = {
-    getItem: async (name) => {
-        await waitForUserStoreHydration();
-        const localValue = await localForageStorage.getItem(name);
+    getItem: async (baseName) => {
+        await waitForAccount();
+        const name = accountStorageKey(baseName);
+        if (!name) return null;
+        canvasAccountKey = name;
         const token = useUserStore.getState().token;
+        const localValue = await localForageStorage.getItem(name);
+        if (useUserStore.getState().token !== token || accountStorageKey(baseName) !== name) return null;
         const localParsed = localValue
             ? (JSON.parse(localValue) as StorageValue<CanvasStore>)
             : null;
@@ -176,6 +167,7 @@ const canvasStorage: PersistStorage<CanvasStore> = {
                     fetchUserConfig(token),
                     listCanvasProjects(token),
                 ]);
+                if (useUserStore.getState().token !== token || accountStorageKey(baseName) !== name) return null;
                 accountCanvasSyncEnabled =
                     userConfig.syncCapabilities?.userData === true;
 
@@ -186,6 +178,7 @@ const canvasStorage: PersistStorage<CanvasStore> = {
                         localProjects,
                     );
 
+                    if (useUserStore.getState().token !== token || accountStorageKey(baseName) !== name) return null;
                     const nextState = { projects };
                     const parsed = {
                         state: nextState,
@@ -223,12 +216,14 @@ const canvasStorage: PersistStorage<CanvasStore> = {
             }
         }
 
-        if (!localParsed) return null;
+        if (!localParsed || useUserStore.getState().token !== token || accountStorageKey(baseName) !== name) return null;
         queuedPersistState = localParsed.state as PersistedCanvasState;
         return localParsed;
     },
 
-    setItem: (name, value) => {
+    setItem: (baseName, value) => {
+        const name = accountStorageKey(baseName);
+        if (!name || name !== canvasAccountKey) return;
         const nextState = value.state as PersistedCanvasState;
         if (
             queuedPersistState &&
@@ -243,7 +238,7 @@ const canvasStorage: PersistStorage<CanvasStore> = {
             void localForageStorage.setItem(name, JSON.stringify(value));
         }, 400);
     },
-    removeItem: (name) => localForageStorage.removeItem(name),
+    removeItem: (baseName) => { const name = accountStorageKey(baseName); if (name) return localForageStorage.removeItem(name); },
 };
 
 export const useCanvasStore = create<CanvasStore>()(
@@ -349,13 +344,15 @@ export const useCanvasStore = create<CanvasStore>()(
                 queueProjectSave(nextProject);
             },
             syncWithRemote: async (token, syncEnabled) => {
+                if (accountStorageKey(CANVAS_STORE_KEY) !== canvasAccountKey || useUserStore.getState().token !== token) return;
                 accountCanvasSyncEnabled = syncEnabled;
                 if (!syncEnabled) return;
+                const ownerKey = accountStorageKey(CANVAS_STORE_KEY)!;
                 const localProjects = get().projects;
                 const remoteProjects = await listCanvasProjects(token).catch(
                     () => null,
                 );
-                if (!remoteProjects) return;
+                if (!remoteProjects || useUserStore.getState().token !== token) return;
                 const projects = await reconcileCanvasProjects(
                     token,
                     remoteProjects,
@@ -365,11 +362,12 @@ export const useCanvasStore = create<CanvasStore>()(
                     clearTimeout(saveTimer);
                     saveTimer = null;
                 }
+                if (useUserStore.getState().token !== token || accountStorageKey(CANVAS_STORE_KEY) !== ownerKey) return;
                 const nextState = { projects };
                 queuedPersistState = nextState;
                 set(nextState);
                 await localForageStorage.setItem(
-                    CANVAS_STORE_KEY,
+                    ownerKey,
                     JSON.stringify({ state: nextState, version: 0 }),
                 );
             },

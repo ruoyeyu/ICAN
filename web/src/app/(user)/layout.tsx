@@ -7,7 +7,6 @@ import { AppTopNav } from "@/components/layout/app-top-nav";
 import { fetchUserConfig } from "@/services/api/user-config";
 import { useUserStore } from "@/stores/use-user-store";
 
-const protectedPrefixes = ["/asset-library"];
 
 export default function UserLayout({ children }: { children: ReactNode }) {
     const pathname = usePathname();
@@ -15,7 +14,7 @@ export default function UserLayout({ children }: { children: ReactNode }) {
     const user = useUserStore((state) => state.user);
     const isReady = useUserStore((state) => state.isReady);
     const wasLoggedOutRef = useRef(false);
-    const isProtectedPage = protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+    const isProtectedPage = pathname !== "/login";
 
     useEffect(() => {
         if (!isReady || !isProtectedPage || user) return;
@@ -51,7 +50,7 @@ export default function UserLayout({ children }: { children: ReactNode }) {
 
     return (
         <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
-            <AppTopNav />
+            {isReady && user ? <AppTopNav /> : null}
             <div className="min-h-0 flex-1 overflow-hidden">{isProtectedPage && (!isReady || !user) ? null : children}</div>
         </div>
     );

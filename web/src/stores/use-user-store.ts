@@ -27,8 +27,12 @@ export const useUserStore = create<UserStore>()(
             setSession: (token, user) => set({ token, user, isReady: true }),
             clearSession: async () => {
                 const token = get().token;
-                if (token) await logout(token);
-                set({ token: "", user: null, isReady: true });
+                try {
+                    if (token) await logout(token);
+                } finally {
+                    set({ token: "", user: null, isReady: true });
+                    if (typeof window !== "undefined") window.location.replace("/login");
+                }
             },
             hydrateUser: async () => {
                 const token = get().token;
@@ -39,12 +43,14 @@ export const useUserStore = create<UserStore>()(
                 set({ isLoading: true });
                 try {
                     const user = await fetchCurrentUser(token);
+                    if (get().token !== token) return;
                     if (user.role === "guest") {
                         set({ token: "", user: null, isReady: true, isLoading: false });
                         return;
                     }
                     set({ user, isReady: true, isLoading: false });
                 } catch {
+                    if (get().token !== token) return;
                     set({ token: "", user: null, isReady: true, isLoading: false });
                 }
             },

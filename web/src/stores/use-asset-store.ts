@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist, type PersistStorage, type StorageValue } from "zustand/middleware";
 
 import { nanoid } from "nanoid";
-import { localForageStorage } from "@/lib/localforage-storage";
+import { accountStateStorage as localForageStorage } from "@/lib/account-storage";
 import { cleanupUnusedImages, resolveImageUrl, uploadImage } from "@/services/image-storage";
 import { cleanupUnusedMedia, resolveMediaUrl } from "@/services/file-storage";
 import { fetchUserAssetData, syncUserAssetData } from "@/services/api/user-config";
@@ -184,6 +184,7 @@ export const useAssetStore = create<AssetStore>()(
                             asset.kind === "image" && asset.data.storageKey?.startsWith("image:") ? resolveStoredAsset(asset) : asset,
                         ),
                     );
+                    if (useUserStore.getState().token !== token) return;
                     if (syncEnabled) {
                         set({ assets: remoteAssets });
                     } else {

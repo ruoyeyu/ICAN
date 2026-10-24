@@ -1,6 +1,6 @@
 "use client";
 
-import localforage from "localforage";
+import { accountBlobStorage } from "@/lib/account-storage";
 import { nanoid } from "nanoid";
 
 import { deleteAnonymousStorageFile, uploadAnonymousStorageFile } from "@/services/anonymous-storage";
@@ -10,11 +10,12 @@ import { useUserStore } from "@/stores/use-user-store";
 
 export type UploadedFile = { url: string; storageKey: string; bytes: number; mimeType: string; width?: number; height?: number; durationMs?: number };
 
-const store = localforage.createInstance({ name: "infinite-canvas", storeName: "media_files" });
+const store = accountBlobStorage("media_files");
 const objectUrls = new Map<string, string>();
 let storageConfigPromise: Promise<StorageConfig> | null = null;
 
 export async function uploadMediaFile(input: string | Blob, prefix = "file", syncId?: string, tokenOverride?: string): Promise<UploadedFile> {
+    if (!useUserStore.getState().user || !useUserStore.getState().token) throw new Error("请先登录后再上传素材");
     const blob = typeof input === "string" ? await (await fetch(input)).blob() : input;
     const uploaded = await autoSyncToCloud(syncId || blob, async () => {
         const metadataUrl = blob.type.startsWith("video/") ? URL.createObjectURL(blob) : undefined;
@@ -66,6 +67,7 @@ export async function uploadRemoteMediaToServer(url: string, filename: string): 
 }
 
 async function uploadMediaBlobToServer(blob: Blob, filename: string, metadataUrl?: string, tokenOverride?: string): Promise<UploadedFile> {
+    if (!useUserStore.getState().user || !useUserStore.getState().token) throw new Error("请先登录后再上传素材");
     const config = await loadStorageConfig().catch(() => null);
     if (tokenOverride !== undefined && useUserStore.getState().token !== tokenOverride) {
         throw new Error("登录状态已变化");

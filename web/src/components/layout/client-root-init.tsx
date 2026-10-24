@@ -5,6 +5,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { App } from "antd";
 
+import { AUTH_TOKEN_KEY } from "@/services/api/auth";
 import { fetchUserConfig } from "@/services/api/user-config";
 import { replaceWorkflowChannels } from "@/services/workflow-channel-storage";
 import { STORAGE_SYNC_FAILED_EVENT, defaultUserStorageProvider, defaultUserWebDAVStorageProvider, saveUserStorageProvider, saveUserWebDAVStorageProvider } from "@/services/image-storage";
@@ -43,7 +44,18 @@ export function ClientRootInit({ children }: { children: ReactNode }) {
     }, [loadPublicSettings]);
 
     useEffect(() => {
-        if (!isLoginPage) void hydrateUser();
+        if (isLoginPage) return;
+        void hydrateUser();
+        const checkSession = () => { void hydrateUser(); };
+        const changedSession = (event: StorageEvent) => {
+            if (event.key === AUTH_TOKEN_KEY && event.oldValue !== event.newValue) window.location.reload();
+        };
+        window.addEventListener("focus", checkSession);
+        window.addEventListener("storage", changedSession);
+        return () => {
+            window.removeEventListener("focus", checkSession);
+            window.removeEventListener("storage", changedSession);
+        };
     }, [hydrateUser, isLoginPage]);
 
 	useEffect(() => {

@@ -1,0 +1,20 @@
+{
+  "anonymousPages": "blocked",
+  "anonymousUpload": 401,
+  "login": "passed",
+  "directorCapture": "passed",
+  "revokedSession": "blocked",
+  "accountIsolation": "passed",
+  "unownedLegacyCache": "preserved/not shown/not uploaded",
+  "pageErrors": [],
+  "environment": "isolated temporary database and media; local Go API and Next production build; Chromium",
+  "goTests": "go test ./... passed",
+  "frontendTests": {
+    "passed": 24,
+    "failed": 0
+  },
+  "productionWebBuild": "passed",
+  "paidAPICalls": 0,
+  "productionServerModified": false,
+  "databaseSchemaChanged": false
+}
