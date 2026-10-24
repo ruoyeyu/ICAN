@@ -39,6 +39,19 @@ func TestSecurityBoundaries(t *testing.T) {
 	sqlDB.SetMaxOpenConns(1)
 	defer sqlDB.Close()
 	r := router.New()
+	t.Run("disabled-handlers-not-registered", func(t *testing.T) {
+		for _, route := range r.Routes() {
+			for _, fragment := range []string{"/agent-skills", "/comfy-bridges", "/bridge/", "/workflow", "/ai/autodl/", "/auth/linux-do/", "/anonymous/", "/credit-logs", "/prompt-categories/sync"} {
+				if strings.Contains(route.Path, fragment) {
+					t.Errorf("disabled handler still registered: %s %s", route.Method, route.Path)
+				}
+			}
+			if strings.HasSuffix(route.Path, "/credits") {
+				t.Errorf("credit handler still registered: %s", route.Path)
+			}
+		}
+	})
+
 	request := func(method, path, token, body string) *httptest.ResponseRecorder {
 		req := httptest.NewRequest(method, path, strings.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")

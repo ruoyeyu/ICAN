@@ -1,0 +1,52 @@
+{
+  "version": "0.1.0",
+  "baseline_tree": "debd16d471d7ecbfc9402a8ccd77887d4ea558c8",
+  "logs": {
+    "go-tests": {
+      "sha256": "7f612551eb5eacc71b21751b3348a7204b29f1196cdabe11e60074ca033161bc",
+      "bytes": 627
+    },
+    "director-tests": {
+      "sha256": "b18b38a2dbf137ca2fa462295306d3fff2fbaf08083311c993d79af414c0ecb4",
+      "bytes": 255
+    },
+    "web-tests": {
+      "sha256": "640b5df16b5dff23e7acb799abbea3bed3174dc85c8901ebd7d9a0e50e2667cb",
+      "bytes": 1841
+    },
+    "director-build": {
+      "sha256": "47b608d92c4c924ada3299dfd1bb425f1b3cebb41572f0a1d3800f4a0f39d398",
+      "bytes": 1244
+    },
+    "web-build": {
+      "sha256": "b7502d988e7bd584774f27520cfd66819e32956db09971f6c49e8593fa20bdd5",
+      "bytes": 1113
+    },
+    "browser-integration": {
+      "sha256": "6fcc7a6281cc20fef574dc308121de559e8ce75254d5c3350639539ee1f6f048",
+      "bytes": 808
+    },
+    "director-audit": {
+      "sha256": "667c8ca6e0e3383a92977e1dce3bd7f6d112c3ea24d28f47098d99bf081d3316",
+      "bytes": 86
+    },
+    "web-audit": {
+      "sha256": "0461e2bbb5e5e553b21039f3506f1b196ede31ac8ec834d5881f25f42e48c543",
+      "bytes": 86
+    }
+  },
+  "go_suite": "passed",
+  "director_tests": 294,
+  "web_tests": 18,
+  "production_builds": [
+    "director",
+    "web"
+  ],
+  "browser_smoke": "camera/capture/canvas/reload passed; external requests empty",
+  "persistence_schema_changed": false,
+  "production_deployed": false,
+  "limitations": [
+    "Real account cross-device verification and existing data migration remain pending",
+    "Remote merged branch deletion is pending browser authentication"
+  ]
+}

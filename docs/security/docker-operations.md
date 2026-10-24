@@ -14,7 +14,7 @@
 
 ## 候选运行库与漏洞账目
 
-独立分支 `security/runtime-isolation-candidate` 试验 `cgr.dev/chainguard/glibc-dynamic@sha256:2827063c9efb4ba971d8621eb75f4e61b8d19850a6293a797df37358cc6f687b`。公开 Starter 为 Wolfi 开源软件包，无 shell/包管理器；仅 C.UTF-8 locale。它与原 Debian 基础镜像是不同发行版，变更须单独验收，原已验证版本仍保留。
+已合入 `main` 的运行镜像方案采用 `cgr.dev/chainguard/glibc-dynamic@sha256:2827063c9efb4ba971d8621eb75f4e61b8d19850a6293a797df37358cc6f687b`。公开 Starter 为 Wolfi 开源软件包，无 shell/包管理器；仅 C.UTF-8 locale。它与原 Debian 基础镜像是不同发行版，变更须单独验收，原已验证版本仍保留。
 
 基础镜像签名已按发布者 GitHub Actions 身份和 OIDC issuer 验证，见 evidence/runtime-candidate-base-signature.log；扫描原始证据独立保存。基础层七个包包含 glibc 2.44-r9、GCC runtime 16.2.0-r1，当前该基础层没有扫描匹配，但不等于最终应用镜像无漏洞，也不等于原来的 25 个 CVE 全部修复。Wolfi 公告覆盖与 Debian 不同，保留 supply-chain-review.md 中的原始记录和未完成事项。
 

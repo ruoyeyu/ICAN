@@ -75,19 +75,19 @@ Personal API settings are also used in the browser, and some requests go directl
 
 **This is a development preview. Start in a separate test environment.** The Docker candidate has passed build, container/Compose, and automated checks. Remaining work is listed below.
 
-The current Docker setup lives on [`security/runtime-isolation-candidate`](https://github.com/ruoyeyu/ICAN/tree/security/runtime-isolation-candidate) and has not been merged into `main`. The tested platform is Linux / amd64. Docker and Docker Compose are required.
+ICAN **0.1.0** is maintained on `main`, including the Docker setup and 3D Director. The tested platform is Linux / amd64. Docker and Docker Compose are required.
 
 ```sh
 git clone https://github.com/ruoyeyu/ICAN.git
 cd ICAN
-git switch security/runtime-isolation-candidate
+git switch main
 cp .env.example .env
 chmod 600 .env
 ```
 
 Set administrator credentials, separate secrets, your public URL, the persistent data directory, and runtime limits. There is no default administrator password or universal set of production limits.
 
-No ready-to-pull ICAN image has been published. Follow the [Docker operations guide](https://github.com/ruoyeyu/ICAN/blob/security/runtime-isolation-candidate/docs/security/docker-operations.md) to build and verify an image and set `ICAN_IMAGE`. Compose uses an already loaded, fixed image rather than automatically tracking the latest release.
+No ready-to-pull ICAN image has been published. Follow the [Docker operations guide](https://github.com/ruoyeyu/ICAN/blob/main/docs/security/docker-operations.md) to build and verify an image and set `ICAN_IMAGE`. Compose uses an already loaded, fixed image rather than automatically tracking the latest release.
 
 ### Keep your data when updating
 
@@ -107,7 +107,7 @@ Security scope, evidence, and outstanding work are recorded in the repository. A
 - [Security changes and verification](docs/security/hardening-review.md)
 - [Runtime dependencies, binaries, and external references](docs/security/supply-chain-review.md)
 - [Docker candidate CI run](https://github.com/ruoyeyu/ICAN/actions/runs/40086299774)
-- [Open work](https://github.com/ruoyeyu/ICAN/blob/security/runtime-isolation-candidate/docs/progress/todo.md)
+- [Open work](https://github.com/ruoyeyu/ICAN/blob/main/docs/progress/todo.md)
 
 Detailed engineering and operations documents are currently in Chinese.
 

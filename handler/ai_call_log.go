@@ -8,51 +8,6 @@ import (
 	"github.com/tigerowo/infinite-canvas/service"
 )
 
-func UserWorkflows(w http.ResponseWriter, r *http.Request) {
-	workflows, err := service.ListCreativeWorkflows(r.Context())
-	if err != nil {
-		FailError(w, err)
-		return
-	}
-	OK(w, workflows)
-}
-
-func SaveUserWorkflow(w http.ResponseWriter, r *http.Request) {
-	var request service.CreativeWorkflowPayload
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		Fail(w, "工作流数据格式错误")
-		return
-	}
-	workflow, err := service.SaveCreativeWorkflow(r.Context(), request)
-	if err != nil {
-		FailError(w, err)
-		return
-	}
-	OK(w, workflow)
-}
-
-func DeleteUserWorkflow(w http.ResponseWriter, r *http.Request, id string) {
-	if err := service.DeleteCreativeWorkflow(r.Context(), id); err != nil {
-		FailError(w, err)
-		return
-	}
-	OK(w, true)
-}
-
-func DraftUserWorkflow(w http.ResponseWriter, r *http.Request) {
-	var request service.WorkflowAgentDraftRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		Fail(w, "工作流需求格式错误")
-		return
-	}
-	result, err := service.DraftCreativeWorkflow(r.Context(), request)
-	if err != nil {
-		FailError(w, err)
-		return
-	}
-	OK(w, result)
-}
-
 func AdminAICallLogs(w http.ResponseWriter, r *http.Request) {
 	list, err := service.ListAICallLogs(parseQuery(r))
 	if err != nil {

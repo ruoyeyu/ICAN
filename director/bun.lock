@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "storyai-3d-director-desk-demo",
+      "name": "ican-director",
       "dependencies": {
         "@react-three/drei": "9.122.0",
         "@react-three/fiber": "8.18.0",

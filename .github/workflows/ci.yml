@@ -1,7 +1,7 @@
 name: ICAN verification
 on:
   push:
-    branches: [main, security/runtime-isolation-candidate]
+    branches: [main]
     paths-ignore:
       - 'docs/**'
       - '*.md'

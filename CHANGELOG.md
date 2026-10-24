@@ -2,10 +2,17 @@
 
 ## Unreleased
 
-- Restore a source-built, sandboxed 3D Director in the security candidate, with canvas persistence and dependency patches.
+## ICAN v0.1.0
 
-+ [新增] 全局配置增加视频音频生成开关
-+ [修复] 修复画布提示词面板内容复制素材引用未还原 `@` 文本的问题
+- Keep the canvas, image/video workflows, account sync and custom API templates.
+- Add invitation-only registration, private media authorization, outbound request controls, encrypted server-side configuration and hardened Docker packaging.
+- Restore a source-built, sandboxed 3D Director with canvas persistence and bilingual documentation screenshots.
+- Remove unreachable Director components, disabled Bridge/workflow/OAuth/credit HTTP handlers and unused Agent skill templates. Preserve shared protocol helpers and existing database schemas.
+- Maintain `main` only. This development release still requires the production, migration and real-account checks listed in `docs/progress/todo.md`.
+
+## Upstream history
+
+The entries below describe the inherited upstream project, not ICAN release versions or enabled features.
 
 ## v0.8.2 - 2026-10-23
 

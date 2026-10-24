@@ -75,19 +75,19 @@ ICAN 沿用原项目的画布、账号、配置同步和素材管理，在这些
 
 **当前为开发预览，建议先在独立测试环境运行。** Docker 候选的构建、容器/Compose 运行及自动化检查已经通过，未完成事项见下方「当前进度」。
 
-本轮 Docker 配置位于 [`security/runtime-isolation-candidate`](https://github.com/ruoyeyu/ICAN/tree/security/runtime-isolation-candidate) 分支，尚未合入 `main`。当前验证平台为 Linux / amd64，需要 Docker 和 Docker Compose。
+ICAN 当前版本为 **0.1.0**，Docker 配置和导演台均已合入 `main`，后续只维护主线。当前验证平台为 Linux / amd64，需要 Docker 和 Docker Compose。
 
 ```sh
 git clone https://github.com/ruoyeyu/ICAN.git
 cd ICAN
-git switch security/runtime-isolation-candidate
+git switch main
 cp .env.example .env
 chmod 600 .env
 ```
 
 先填写管理员凭据、独立密钥、访问域名、持久数据目录和各项运行限制。没有默认管理员密码，也不提供可直接用于生产的通用限额。
 
-目前没有发布可直接拉取的 ICAN 镜像。请按 [Docker 运行与更新说明](https://github.com/ruoyeyu/ICAN/blob/security/runtime-isolation-candidate/docs/security/docker-operations.md) 构建、验证镜像并填写 `ICAN_IMAGE`；Compose 使用已加载的固定镜像，不在启动时自动追踪最新版本。
+目前没有发布可直接拉取的 ICAN 镜像。请按 [Docker 运行与更新说明](https://github.com/ruoyeyu/ICAN/blob/main/docs/security/docker-operations.md) 构建、验证镜像并填写 `ICAN_IMAGE`；Compose 使用已加载的固定镜像，不在启动时自动追踪最新版本。
 
 ### 更新容器，保留数据
 
@@ -107,7 +107,7 @@ chmod 600 .env
 - [安全改动与验证记录](docs/security/hardening-review.md)
 - [运行依赖、二进制与外部引用复核](docs/security/supply-chain-review.md)
 - [Docker 候选的实际 CI 记录](https://github.com/ruoyeyu/ICAN/actions/runs/40086299774)
-- [当前待办](https://github.com/ruoyeyu/ICAN/blob/security/runtime-isolation-candidate/docs/progress/todo.md)
+- [当前待办](https://github.com/ruoyeyu/ICAN/blob/main/docs/progress/todo.md)
 
 ## 开发
 
