@@ -5,6 +5,7 @@
 本分支为安全加固候选版本，**未通过生产部署验收，不应直接替换现站**。不附带供应商、付费模型、推广链接或一键安装脚本。注册需要管理员签发的一次性邀请码。
 
 - [实施与验证报告](docs/security/hardening-review.md)
+- [运行组件与镜像审核](docs/security/runtime-review.md)
 - [部署门槛、备份和回滚](docs/security/deployment.md)
 - [交接记录](HANDOFF.md)
 - [文档索引](docs/index.md)

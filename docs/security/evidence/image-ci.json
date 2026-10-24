@@ -1,0 +1,96 @@
+{
+  "upstreamCommit": "e13006fbaeabe14e4a6d27cba667ff1473009ebc",
+  "candidateCommit": "a98014b6e1add88b35ce2587bac4cd8f09a81b4c",
+  "candidateTree": "0b4e0e2c897618fbdf83d4ed9f55cde4adac58ac",
+  "runURL": "https://github.com/ruoyeyu/ICAN/actions/runs/40081455482",
+  "jobID": 120835710082,
+  "conclusion": "success",
+  "platform": "linux/amd64",
+  "imageID": "sha256:d6ed20d0f4378a0f08011d7bf28f312047da8669f6b644389640ae3b2cb05d41",
+  "publishedImage": false,
+  "artifact": {
+    "id": 12554933576,
+    "sha256": "22bc48bcde95d4135e023904ce38ded73043d595564d501a80ff5b6ac6143e23"
+  },
+  "checks": [
+    "Go tests and production build",
+    "18 frontend tests and Next production build",
+    "UID 10001",
+    "read-only root filesystem",
+    "effective capabilities zero",
+    "NoNewPrivs 1",
+    "network none",
+    "shell/package-manager/mount tools absent",
+    "invitation registration",
+    "private media upload/owner read/anonymous denial",
+    "supplier grant revocation",
+    "logout invalidation",
+    "persistent account after restart",
+    "Node/Sharp native loading",
+    "complete vulnerability scan without ignore filters"
+  ],
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 23,
+    "LOW": 8,
+    "UNKNOWN": 1
+  },
+  "unknownFinding": {
+    "id": "GO-2026-5932",
+    "module": "golang.org/x/crypto@v0.58.0",
+    "affectedPackage": "openpgp",
+    "assessment": "not imported; bcrypt used; source govulncheck and go-runtime-packages evidence retained"
+  },
+  "packages": {
+    "debian": 14,
+    "node": 19,
+    "goBinary": 49
+  },
+  "nativeRuntime": {
+    "node": "v24.22.1",
+    "sharp": {
+      "aom": "3.15.1",
+      "archive": "3.8.9",
+      "cairo": "1.18.6",
+      "cgif": "0.5.4",
+      "exif": "0.6.26",
+      "expat": "2.8.5",
+      "ffi": "3.8.0",
+      "fontconfig": "2.18.3",
+      "freetype": "2.14.3",
+      "fribidi": "1.0.17",
+      "glib": "2.90.0",
+      "harfbuzz": "14.5.0",
+      "heif": "1.23.5",
+      "highway": "1.4.0",
+      "imagequant": "2.4.1",
+      "lcms": "2.19.1",
+      "mozjpeg": "0826579",
+      "pango": "1.58.2",
+      "pixman": "0.46.4",
+      "png": "1.6.58",
+      "proxy-libintl": "0.5",
+      "rsvg": "2.63.2",
+      "tiff": "4.7.2",
+      "uhdr": "2.0.2",
+      "vips": "8.18.7",
+      "webp": "1.6.0",
+      "xml2": "2.15.4",
+      "zlib-ng": "2.3.3",
+      "sharp": "0.35.5"
+    }
+  },
+  "earlierRejectedImage": {
+    "commit": "4d0db1cedb2439b8e9f819483fb27934dbb77404",
+    "runURL": "https://github.com/ruoyeyu/ICAN/actions/runs/40081045726",
+    "imageID": "sha256:92b8f2adf76c6faf2d6893b9fd7b8ea6872332ee2afde269d6f25a1ee4e493bd",
+    "runtimeChecks": "passed",
+    "vulnerabilityGate": "blocked",
+    "high": 56,
+    "critical": 1,
+    "artifactID": 12555621038,
+    "artifactSHA256": "271a3f37bd2dc691adfcf410c89cdb6ecc8e517aa884f30914f3fa29b509364b"
+  },
+  "limits": "CI fixture limits are not production settings; no vendor generation or production-host test. Medium/low findings and bundled native components require contextual review, not a claim of zero vulnerabilities."
+}

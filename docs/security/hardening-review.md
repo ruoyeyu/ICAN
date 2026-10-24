@@ -29,7 +29,7 @@
 | 登录与会话 | 无默认管理员密码；邀请码哈希保存、原子消费、撤销/过期；JWT 固定算法/issuer/expiry/JTI，持久会话表；退出删会话，改密/禁用/角色变更撤销；敏感用户更新使用版本条件；cookie HttpOnly/SameSite；跨来源写请求拒绝 | 管理员/普通用户/匿名、邀请码重用和过期、退出、改密、禁用及重新启用旧令牌、CSRF、登录限流；生产 cookie 联通 |
 | 密钥与日志 | 个人模型/存储配置和管理员私有配置以 AES-256-GCM 加密，关联数据绑定账号/字段；拒绝静默读取旧明文；应用日志只记固定事件和错误类型，AI 日志不存请求/响应正文；Gin panic 和 Next 代理不输出敏感 URL/请求 | 数据库密文、不同设备登录恢复、另一账号无法读取、密钥错误/移植失败；日志实现复核 |
 | 意外替换 | 移除模型自动选择与渠道随机选择；失效配置报错，清理回退 Key/地址；自定义视频协议跳过按名称推断的转换 | 请求捕获验证 model、prompt、9:16、720p/自定义分辨率、27.5 秒原样；显式无效模型和渠道不替换 |
-| 运行隔离 | Docker 固定基础镜像摘要，UID 10001，后端回环监听；Compose 只读根目录、drop ALL、no-new-privileges、有限写目录、单独 bridge、只绑定宿主机回环；资源值由部署人明确配置 | 本地 Go/Next 生产产物联通；Docker 最终镜像与宿主机规则尚需实际验收 |
+| 运行隔离 | Docker 固定基础镜像摘要，UID 10001，后端回环监听；Compose 只读根目录、drop ALL、no-new-privileges、有限写目录、单独 bridge、只绑定宿主机回环；资源值由部署人明确配置 | 本地 Go/Next 联通；最终镜像 CI 验证非 root、只读、断网、capabilities、重启恢复；宿主机规则未验收 |
 
 ## 实际依赖审核
 
@@ -39,7 +39,7 @@
 - Next `16.4.3`、React/ReactDOM `19.3.1`、Sharp `0.35.5`、Axios `1.20.0`，以及实际受影响的 pgx、quic-go、x/net、x/crypto 等依赖已升级，锁文件更新。
 - 移除只为一个 CSS import 安装的整套 shadcn CLI；原 `4.22.1` CSS 原样保留及注明 MIT 许可证。未改变使用中的 UI 样式实现，也未把依赖改列为 dev 来掩盖公告。
 - 对锁文件所有平台包和 Go 模块图共 569 项查询 OSV；更新后的 npm 图无匹配。Go 仍有 3 个模块级公告匹配：goldmark 与 rsc.io/pdf 不在主程序编译依赖中；x/crypto 的匹配为不维护的 openpgp，本程序使用 bcrypt，不导入 openpgp。govulncheck 未报告可达漏洞函数。详见 `evidence/osv-results.json`、`go-module-paths.txt`、`go-runtime-packages.txt`，不能将模块匹配数解释为已证实可利用漏洞数。
-- 已实际加载 Node/Sharp 并记录 libvips、rsvg、libpng、libtiff、libwebp、libheif 等 native 组件版本于 `evidence/native-runtime.json`。这是组件清单与运行验证，**不是所有原生组件/最终 Debian 镜像已完成逐项 CVE 验收**。
+- 已实际加载 Node/Sharp 并记录 libvips、rsvg、libpng、libtiff、libwebp、libheif 等 native 组件版本于 `evidence/native-runtime.json`；后续补充最终镜像扫描、签名核验及运行隔离检查，见 [运行组件审核](runtime-review.md)。对静态捆绑原生库仍不能仅凭 npm/OS 扫描宣称全部 CVE 已验收。
 - `scripts/security-scan.py` 可重跑锁文件 OSV 和 Go 可达性分析；公告会更新，需要上线前重新执行。
 
 官方基准：[Next 安全公告](https://nextjs.org/blog/nextjs-security-update-october-14-2026)、[Node 安全版本](https://nodejs.org/en/blog/release/v24.22.1)、[Go 发布记录](https://go.dev/doc/devel/release)。
@@ -52,6 +52,6 @@
 
 ## 本次证据与剩余门槛
 
-`evidence/go-tests.jsonl` 记录 Go 测试；`web-tests.log` 记录 17 项前端协议测试；`production-build.log` 为生产构建与 TypeScript 检查；`runtime-smoke.json` 为 17 项真实 Go + Next 生产进程联通检查。fixture 限额/密钥均仅用于临时测试，没有使用生产凭据。
+`evidence/go-tests.jsonl` 记录 Go 测试；`web-tests.log` 记录 18 项前端协议测试；`production-build.log` 为生产构建与 TypeScript 检查；`runtime-smoke.json` 为 17 项真实 Go + Next 生产进程联通检查。fixture 限额/密钥均仅用于临时测试，没有使用生产凭据。
 
-剩余部署阻断项：上传/请求体与后台任务并发等资源边界尚未完成确认和全路径实施；最终镜像与 OS/native 漏洞验收；宿主机出站 ACL、Nginx/TLS/日志审查；真实浏览器和外部供应商参考素材读取；画境标准接口与历史任务；旧数据迁移演练、独立加密备份、恢复及回滚演练。没有在生产执行攻击性测试，也没有替换 hb.lightnest.cn。细节见 deployment.md。
+剩余部署阻断项：上传/请求体与后台任务并发等资源边界尚未完成确认和全路径实施；最终镜像的中低危匹配及静态捆绑 native 组件进一步复核；宿主机出站 ACL、Nginx/TLS/日志审查；真实浏览器和外部供应商参考素材读取；画境标准接口与历史任务；旧数据迁移演练、独立加密备份、恢复及回滚演练。没有在生产执行攻击性测试，也没有替换 hb.lightnest.cn。细节见 deployment.md。
