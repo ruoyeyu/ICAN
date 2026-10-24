@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Restore a source-built, sandboxed 3D Director in the security candidate, with canvas persistence and dependency patches.
+
 + [新增] 全局配置增加视频音频生成开关
 + [修复] 修复画布提示词面板内容复制素材引用未还原 `@` 文本的问题
 

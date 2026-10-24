@@ -7,3 +7,10 @@ Reviewed and adopted source commit: e13006fbaeabe14e4a6d27cba667ff1473009ebc
 Original contributor copyrights and AGPL-3.0 obligations are retained.
 Modified for invitation-only access, custom API configuration and security hardening.
 The shadcn 4.22.1 stylesheet is redistributed unchanged under MIT (LICENSES/shadcn-MIT.txt).
+
+Director editor source: https://github.com/jiguang132/storyai-3d-director-desk
+Pinned commit: 8c8bd361790be4d37158a7430365e65546e358fe
+Copyright (c) 2026 YZ, MIT (director/LICENSE).
+ICAN modifications: source build, isolated embedding, validated scene interchange,
+canvas persistence, procedural characters and dependency security updates.
+The third-party UE mannequin binary and external model catalog are not included.

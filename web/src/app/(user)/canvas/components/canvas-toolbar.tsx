@@ -98,6 +98,9 @@ export function CanvasToolbar({
                 <ToolbarButton id="tool-panorama" label="全景图" hovered={hovered} hoverStyle={hoverStyle} wrapRef={wrapRef} onTipX={setTipX} onHover={setHovered} onClick={onAddPanorama}>
                     <Globe2 className="size-4.5" />
                 </ToolbarButton>
+                <ToolbarButton id="tool-director" label="导演台" hovered={hovered} hoverStyle={hoverStyle} wrapRef={wrapRef} onTipX={setTipX} onHover={setHovered} onClick={onAddDirector}>
+                    <Layers3 className="size-4.5" />
+                </ToolbarButton>
                 <ToolbarButton id="tool-config" label="生成配置" hovered={hovered} hoverStyle={hoverStyle} wrapRef={wrapRef} onTipX={setTipX} onHover={setHovered} onClick={onAddConfig}>
                     <Settings2 className="size-4.5" />
                 </ToolbarButton>

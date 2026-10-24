@@ -19,3 +19,8 @@ Docker 候选代码 dcbd8399213cf290994fcd69fa224697535d280c 的 CI 40086299774 
 31 条中低危匹配是 25 个去重 CVE，已按官方公告和触发条件逐项复核。zlib-85091 相应 Debian 源包核查支持版本范围误匹配，但保留官方标记分歧；glibc DNS search/LOCALDOMAIN 必须结合真实宿主机检查。没有将未见调用等同于证明安全，没有使用 ignore 或替换为不稳定系统库清零。
 
 第二轮最终 [CI 40084004422](https://github.com/ruoyeyu/ICAN/actions/runs/40084004422) 全通过；镜像仍为 23 中危、8 低危、1 UNKNOWN，无高危/严重匹配。原生清单 285 个 ELF 均位于预期系统库/Node/Go 路径，Web native 与 set-ID 文件为零。Node 保留 aligned array-new 导入，两处直接调用定位到 V8 平台线程初始化，记录证据而非声明漏洞已修复。部署门槛仍未满足。
+
+
+## Director candidate continuation
+
+See docs/security/director-integration.md and director/README.md. Director is built from pinned MIT source with opaque iframe isolation. No ComfyUI/RunningHub backend enablement, schema migration or production deployment. Final image and account/cross-device acceptance remain separate gates.

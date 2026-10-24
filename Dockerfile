@@ -7,6 +7,11 @@ ENV NEXT_TELEMETRY_DISABLED=1 DO_NOT_TRACK=1
 COPY web/package.json web/bun.lock ./
 RUN bun install --frozen-lockfile --ignore-scripts
 COPY web ./
+COPY director /app/director
+WORKDIR /app/director
+RUN bun install --frozen-lockfile --ignore-scripts && bun audit && bun run test && bun run build
+RUN mkdir -p /app/web/public/director && cp dist/* /app/web/public/director/
+WORKDIR /app/web
 RUN bun test src && bun run build
 
 FROM library/golang:1.27.3-bookworm@sha256:972b4110ba0f47539a975c31e52c64765e1ff19f2d74469ae4a595c6676e80a5 AS api-build

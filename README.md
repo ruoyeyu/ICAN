@@ -47,7 +47,7 @@ Interface previews use local example data, not live model outputs. English label
 
 </details>
 
-Director mode is disabled in this build and is not presented as an available feature. [Screenshot scope](docs/images/screenshots/README.md).
+The security candidate restores a source-built 3D Director for scene composition, cameras and screenshots. Timeline/video export is not included; production acceptance remains pending. [Screenshot scope](docs/images/screenshots/README.md).
 
 ## What changed in this fork
 
@@ -60,7 +60,7 @@ ICAN keeps the original canvas, accounts, settings sync, and media management, w
 | No silent substitutions | Invalid models or channels return errors instead of switching the model, URL, or key; custom video parameters retain their values |
 | Private media and sensitive settings | Server-side sensitive settings are encrypted; media ownership is checked, active content such as HTML and SVG is rejected, and provider links can be revoked |
 | Restricted server requests | Outbound addresses, DNS resolution, and redirects are checked to restrict loopback, private-network, and cloud metadata access |
-| Smaller enabled feature set | Director, Agent/Bridge, ComfyUI, RunningHub/AutoDL workflows, OAuth, and credit billing are disabled in this iteration, with backend enforcement |
+| Smaller enabled feature set | Agent/Bridge, ComfyUI, RunningHub/AutoDL workflows, OAuth, and credit billing are disabled in this iteration, with backend enforcement |
 | Docker deployment | Non-root execution, a read-only root filesystem, and reduced privileges; pinned dependencies and base images, with fewer unnecessary runtime components |
 
 Personal API settings are also used in the browser, and some requests go directly from the browser to the provider. Server-side encryption does not hide keys from the client. Your configured model provider receives the prompts and references needed for generation.

@@ -1,0 +1,36 @@
+{
+  "upstreamCommit": "8c8bd361790be4d37158a7430365e65546e358fe",
+  "directorTests": {
+    "files": 34,
+    "passed": 307,
+    "failed": 0
+  },
+  "webTests": {
+    "passed": 18,
+    "failed": 0
+  },
+  "productionBuilds": [
+    "director",
+    "next"
+  ],
+  "browserChecks": [
+    "WebGL procedural character",
+    "camera creation",
+    "PNG screenshot",
+    "capture reaches actual canvas image node",
+    "scene restored after canvas reload",
+    "parent DOM denied",
+    "cookies denied",
+    "localStorage denied",
+    "same-origin API fetch denied"
+  ],
+  "externalRequests": 0,
+  "paidCalls": 0,
+  "notVerified": [
+    "final Docker image for this change",
+    "authenticated cross-device sync",
+    "old binary scene migration",
+    "production host"
+  ],
+  "directorAudit": {}
+}
