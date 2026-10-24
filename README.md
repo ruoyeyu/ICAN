@@ -24,26 +24,26 @@ Models run through the external APIs you configure. The canvas itself does not n
 
 ## Interface preview
 
-Actual frontend screenshots with local demo data: the LLM text, image and video records are simulated, not live model outputs. No paid API calls were made. The application UI remains unchanged; the green workflow illustrations above are explanatory artwork.
+Interface previews use local example data, not live model outputs. English labels are translated for this documentation; the application itself has not been localized or restyled. No paid API calls were made. The diagrams use the same dark neutral palette as the platform.
 
 **Canvas: brief → LLM text → image → video**
 
-![Actual canvas with locally simulated text, image and video nodes.](docs/images/screenshots/canvas-demo.png)
+![Actual canvas with locally simulated text, image and video nodes.](docs/images/screenshots/canvas-demo-en.png)
 
 <details>
 <summary>Image workspace, video workspace, and API settings</summary>
 
-**Image workspace — simulated result and generation controls**
+**Image workspace — results and generation controls**
 
-![Image workspace with a local fixture result.](docs/images/screenshots/image-demo.png)
+![Image workspace with a local fixture result.](docs/images/screenshots/image-demo-en.png)
 
-**Video workspace — simulated clip and generation controls**
+**Video workspace — clips and generation controls**
 
-![Video workspace with a local fixture clip.](docs/images/screenshots/video-demo.png)
+![Video workspace with a local fixture clip.](docs/images/screenshots/video-demo-en.png)
 
 **API settings — example endpoint and placeholder credentials**
 
-![Actual API settings dialog with demo models.](docs/images/screenshots/config-demo.png)
+![Actual API settings dialog with demo models.](docs/images/screenshots/config-demo-en.png)
 
 </details>
 
