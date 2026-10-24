@@ -85,3 +85,22 @@ scene passed. No external requests or paid model calls occurred. This was a gues
 fixture; authenticated cross-device synchronization remains unverified.
 The first integration attempt exposed blocked `data:` image reads in the parent
 CSP; the policy was corrected and the complete flow rerun successfully.
+
+## Final image acceptance
+
+[CI 40093383952](https://github.com/ruoyeyu/ICAN/actions/runs/40093383952) passed on
+`fbc1b4bea836566f5422ba104867984de9d64f6d`: Docker build, backend/frontend tests,
+deployment policy rejection cases, isolation/restart recovery, native regressions,
+Compose, binary inventory and vulnerability scan. The director dependency audit
+checked 270 packages with no advisory matches. Browser T-pose application and
+persistence also passed.
+
+Image: `sha256:8045d84c5ab1ee150c14535ea048dd88f89c17dbbdc407d21c498df29525b615`.
+Raw final-image scan: 0 critical/high/medium/low, 1 UNKNOWN (`GO-2026-5932`).
+The prior OpenPGP non-applicability finding remains valid: no Go dependency or
+call-path changes were made. The raw record is preserved, not suppressed.
+[Artifact 12560196957](https://github.com/ruoyeyu/ICAN/actions/runs/40093383952/artifacts/12560196957)
+contains the scan, SBOM, binary inventory, native and Compose evidence; downloaded
+ZIP SHA-256 was verified as
+`171c4723d7445ea866e4543107cabef3ae1d4a9ee9c157c3e2a41595d2e5c4bb`.
+This is isolated CI acceptance, not deployment to the production host.
