@@ -7,6 +7,11 @@ ENV NEXT_TELEMETRY_DISABLED=1 DO_NOT_TRACK=1
 COPY web/package.json web/bun.lock ./
 RUN bun install --frozen-lockfile --ignore-scripts
 COPY web ./
+COPY director /app/director
+WORKDIR /app/director
+RUN bun install --frozen-lockfile --ignore-scripts && bun audit && bun run test && bun run build
+RUN mkdir -p /app/web/public/director && cp dist/* /app/web/public/director/
+WORKDIR /app/web
 RUN bun test src && bun run build
 
 FROM library/golang:1.27.3-bookworm@sha256:972b4110ba0f47539a975c31e52c64765e1ff19f2d74469ae4a595c6676e80a5 AS api-build
@@ -27,7 +32,8 @@ COPY main.go ./
 RUN CGO_ENABLED=0 go test ./... && CGO_ENABLED=0 go build -trimpath -o /server .
 RUN mkdir -p /runtime-data /runtime-cache
 
-FROM gcr.io/distroless/cc-debian13:nonroot@sha256:3ee00291cf386ec52a552e6a858d555debd74776eb4bfa53fa3df2cd6677515e
+# Candidate runtime: signed Wolfi packages, pinned to the reviewed image digest.
+FROM cgr.dev/chainguard/glibc-dynamic@sha256:2827063c9efb4ba971d8621eb75f4e61b8d19850a6293a797df37358cc6f687b
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0
 COPY --from=web-build /usr/local/bin/node /usr/local/bin/node

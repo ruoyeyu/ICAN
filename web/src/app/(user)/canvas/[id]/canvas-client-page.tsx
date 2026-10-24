@@ -2287,7 +2287,7 @@ function InfiniteCanvasPage({ projectId }: { projectId: string }) {
             try {
                 const images = await Promise.all(
                     captures.map(async (capture) => {
-                        const image = await uploadImage(capture.dataUrl, { localOnly: true });
+                        const image = await uploadImage(capture.dataUrl);
                         return {
                             id: nanoid(),
                             title: capture.fileName,
@@ -4529,7 +4529,7 @@ function InfiniteCanvasPage({ projectId }: { projectId: string }) {
                             }
                             renderNodeContent={(contentNode) =>
                                 contentNode.type === CanvasNodeType.Director ? (
-                                    <div>导演台未启用</div>
+                                    <CanvasDirectorNodePanel onOpen={() => setOpenDirectorNodeId(contentNode.id)} />
                                 ) : (
                                     <CanvasConfigNodePanel
                                         node={contentNode}

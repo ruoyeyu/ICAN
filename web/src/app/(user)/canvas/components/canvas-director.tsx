@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { directorProjectSchema } from "@/lib/director-project";
 import type { CanvasDirectorCapture, CanvasDirectorPanorama, CanvasDirectorVideo } from "../types";
 
 type PanoramaRemoval = Pick<CanvasDirectorPanorama, "edgeId" | "sourceNodeId">;
@@ -16,7 +17,6 @@ export function CanvasDirector({
     onProjectChange,
     onPanoramaRemoved,
     onCapturesSent,
-    onVideoSent,
 }: {
     nodeId: string;
     project: unknown;
@@ -33,6 +33,7 @@ export function CanvasDirector({
     const themeRef = useRef(theme);
     const sessionSentRef = useRef(false);
     const [ready, setReady] = useState(false);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         projectRef.current = project;
@@ -43,14 +44,15 @@ export function CanvasDirector({
     }, [theme]);
 
     const postToDesk = useCallback((type: string, payload: unknown) => {
-        iframeRef.current?.contentWindow?.postMessage({ type, payload }, window.location.origin);
+        iframeRef.current?.contentWindow?.postMessage({ type, payload }, "*");
     }, []);
 
     useEffect(() => {
         function handleMessage(event: MessageEvent) {
-            if (event.origin !== window.location.origin || event.source !== iframeRef.current?.contentWindow) return;
+            if (event.origin !== "null" || event.source !== iframeRef.current?.contentWindow) return;
 
             const type = event.data?.type;
+            if (type === "storyai:director-error") { setError("场景格式无法读取，原始数据已保留。"); return; }
             if (type === "storyai:director-ready") {
                 setReady(true);
                 return;
@@ -63,7 +65,8 @@ export function CanvasDirector({
 
             if (type === "storyai:director-project-changed") {
                 const nextProject = event.data?.payload?.project;
-                if (nextProject && typeof nextProject === "object" && !Array.isArray(nextProject)) onProjectChange(nextProject);
+                const parsed = directorProjectSchema.safeParse(nextProject);
+                if (parsed.success) onProjectChange(parsed.data);
                 return;
             }
 
@@ -77,36 +80,19 @@ export function CanvasDirector({
             if (type === "storyai:director-captures-sent") {
                 const captures = Array.isArray(event.data?.payload?.captures)
                     ? event.data.payload.captures
-                        .filter((capture: DirectorCapturePayload): capture is { dataUrl: string; fileName?: unknown } => typeof capture?.dataUrl === "string" && capture.dataUrl.startsWith("data:image/"))
+                        .filter((capture: DirectorCapturePayload): capture is { dataUrl: string; fileName?: unknown } => typeof capture?.dataUrl === "string" && /^data:image\/png;base64,iVBORw0KGgo[A-Za-z0-9+/]*={0,2}$/.test(capture.dataUrl))
                         .map((capture: { dataUrl: string; fileName?: unknown }, index: number) => ({ dataUrl: capture.dataUrl, fileName: typeof capture.fileName === "string" && capture.fileName.trim() ? capture.fileName.trim() : "导演台截图-" + (index + 1) + ".png" }))
                     : [];
                 if (captures.length) void onCapturesSent(nodeId, captures);
                 return;
             }
 
-            if (type === "storyai:director-video-sent") {
-                const blob = event.data?.payload?.blob;
-                if (!(blob instanceof Blob) || !blob.size || !blob.type.startsWith("video/mp4")) return;
-                const fileName = typeof event.data?.payload?.fileName === "string" && event.data.payload.fileName.trim()
-                    ? event.data.payload.fileName.trim()
-                    : "导演台视频.mp4";
-                const width = Number(event.data?.payload?.width);
-                const height = Number(event.data?.payload?.height);
-                const durationSeconds = Number(event.data?.payload?.durationSeconds);
-                void onVideoSent(nodeId, {
-                    blob,
-                    fileName,
-                    width: Number.isFinite(width) && width > 0 ? width : 1280,
-                    height: Number.isFinite(height) && height > 0 ? height : 720,
-                    durationSeconds: Number.isFinite(durationSeconds) ? durationSeconds : 0,
-                });
-                return;
-            }
+
         }
 
         window.addEventListener("message", handleMessage);
         return () => window.removeEventListener("message", handleMessage);
-    }, [nodeId, onCapturesSent, onClose, onPanoramaRemoved, onProjectChange, onVideoSent]);
+    }, [nodeId, onCapturesSent, onClose, onPanoramaRemoved, onProjectChange]);
 
     useEffect(() => {
         if (!ready || sessionSentRef.current) return;
@@ -120,12 +106,30 @@ export function CanvasDirector({
 
     useEffect(() => {
         if (!ready || !sessionSentRef.current) return;
-        postToDesk("storyai:director-panoramas", { panoramas });
+        let cancelled = false;
+        void Promise.all(panoramas.map(async panorama => {
+            const url = new URL(panorama.imageUrl, window.location.href);
+            if (!["data:", "blob:"].includes(url.protocol) && url.origin !== window.location.origin) throw new Error("请先保存外部全景图");
+            const response = await fetch(url, { redirect: "error" });
+            if (!response.ok) throw new Error("全景图读取失败");
+            const bitmap = await createImageBitmap(await response.blob());
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = bitmap.width; canvas.height = bitmap.height;
+                const context = canvas.getContext("2d");
+                if (!context) throw new Error("全景图转换失败");
+                context.drawImage(bitmap, 0, 0);
+                return { ...panorama, imageUrl: canvas.toDataURL("image/png") };
+            } finally { bitmap.close(); }
+        })).then(items => { if (!cancelled) postToDesk("storyai:director-panoramas", { panoramas: items }); })
+            .catch(() => { if (!cancelled) setError("全景图读取失败，请先将图片保存为画布素材。"); });
+        return () => { cancelled = true; };
     }, [panoramas, postToDesk, ready]);
 
     return (
         <div className="fixed inset-0 z-[2000]">
-            <iframe ref={iframeRef} title="3D导演台" src="/director/index.html" className="block h-full w-full border-0" />
+            {error ? <div role="alert" className="absolute inset-x-0 top-0 z-10 p-4" style={{ background: "Canvas", color: "CanvasText" }}>{error}<button onClick={onClose} className="ml-4 underline">关闭</button></div> : null}
+            <iframe sandbox="allow-scripts allow-downloads" referrerPolicy="no-referrer" ref={iframeRef} title="3D导演台" src="/director/index.html" className="block h-full w-full border-0" />
         </div>
     );
 }

@@ -1,0 +1,10 @@
+{
+  "configurationChecks": "passed",
+  "violations": [],
+  "productionApproved": false,
+  "remaining": [
+    "effective seccomp/AppArmor",
+    "host patches and network ACL",
+    "product and data acceptance"
+  ]
+}

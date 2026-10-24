@@ -4,7 +4,8 @@ node_modules/
 .env*
 !.env.example
 data/
-/director/
+/director/dist/
+/web/public/director/
 *.log
 *.tsbuildinfo
 web/public/InfiniteCanvas-ComfyBridge*
@@ -13,3 +14,6 @@ web/public/InfiniteCanvas-ComfyBridge*
 
 # Public verification output for this security review (no production logs).
 !docs/security/evidence/*.log
+/director/package-lock.json
+/director/vite.config.js
+/director/vite.config.d.ts

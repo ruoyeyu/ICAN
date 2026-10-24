@@ -1,0 +1,53 @@
+{
+  "upstreamCommit": "8c8bd361790be4d37158a7430365e65546e358fe",
+  "directorTests": {
+    "files": 34,
+    "passed": 307,
+    "failed": 0
+  },
+  "webTests": {
+    "passed": 18,
+    "failed": 0
+  },
+  "productionBuilds": [
+    "director",
+    "next"
+  ],
+  "browserChecks": [
+    "WebGL procedural character",
+    "camera creation",
+    "PNG screenshot",
+    "capture reaches actual canvas image node",
+    "scene restored after canvas reload",
+    "parent DOM denied",
+    "cookies denied",
+    "localStorage denied",
+    "same-origin API fetch denied",
+    "T-pose applied and preserved"
+  ],
+  "externalRequests": 0,
+  "paidCalls": 0,
+  "notVerified": [
+    "authenticated cross-device sync",
+    "old binary scene migration",
+    "production host"
+  ],
+  "directorAudit": {},
+  "ci": {
+    "run": 40093383952,
+    "commit": "fbc1b4bea836566f5422ba104867984de9d64f6d",
+    "conclusion": "success",
+    "image": "sha256:8045d84c5ab1ee150c14535ea048dd88f89c17dbbdc407d21c498df29525b615",
+    "artifact": 12560196957,
+    "artifactZipSha256": "171c4723d7445ea866e4543107cabef3ae1d4a9ee9c157c3e2a41595d2e5c4bb",
+    "directorAuditPackages": 270,
+    "rawImageMatches": {
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 0,
+      "LOW": 0,
+      "UNKNOWN": 1
+    },
+    "unknown": "GO-2026-5932 / golang.org/x/crypto; retained in raw evidence. The previously reviewed OpenPGP package is not imported; this change does not alter Go dependencies or call paths."
+  }
+}

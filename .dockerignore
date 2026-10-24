@@ -12,3 +12,7 @@ web/out
 *.log
 .env*
 !.env.example
+
+director/node_modules
+director/dist
+web/public/director

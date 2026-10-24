@@ -1,0 +1,18 @@
+{
+  "commit": "eb48a81fafdeb2a308139bb70d3ff81e61593722",
+  "runURL": "https://github.com/ruoyeyu/ICAN/actions/runs/40085871246",
+  "jobID": 120848568096,
+  "conclusion": "failure",
+  "passed": [
+    "Go/frontend tests and production build",
+    "deployment policy negative tests",
+    "image isolation, media, account and restart smoke",
+    "bounded aligned allocation, long DNS config and isolated TLS"
+  ],
+  "failure": "CI fixture container could chown with CAP_CHOWN but could not chmod a runner-owned directory without CAP_FOWNER. Set directory mode as its host owner before the isolated chown; production capabilities unchanged.",
+  "notRun": [
+    "actual Compose application smoke",
+    "native inventory",
+    "final image scan"
+  ]
+}

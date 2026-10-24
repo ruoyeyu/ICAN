@@ -1,0 +1,82 @@
+{
+  "candidateCommit": "dcbd8399213cf290994fcd69fa224697535d280c",
+  "candidateTree": "e1913ec700bf93d2081b4fe25b0e0a26a5714483",
+  "runURL": "https://github.com/ruoyeyu/ICAN/actions/runs/40086299774",
+  "jobID": 120849830042,
+  "conclusion": "success",
+  "platform": "linux/amd64",
+  "imageID": "sha256:33f6705156851ae767376806ddd56453557ef7c03705062c11ebc77cc10521ae",
+  "publishedImage": false,
+  "scanCreatedAt": "2026-10-24T10:37:57.312073457Z",
+  "artifact": {
+    "id": 12557755065,
+    "sha256": "76a1f6fbcf4a38c57064150f9bf137f72f2610f2b0e738d84f383ea7e605d6ff"
+  },
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "packageCounts": {
+    "wolfi": 7,
+    "node-pkg": 13,
+    "gobinary": 49
+  },
+  "nativeInventory": {
+    "files": 23,
+    "previousFiles": 285,
+    "setIdFiles": [],
+    "webNativeFiles": [],
+    "unchangedBinaries": {
+      "app/server": true,
+      "usr/local/bin/node": true
+    }
+  },
+  "checks": [
+    "Go tests, 18 frontend tests and production build",
+    "5 container-policy tests including independent unsafe configuration cases",
+    "UID 10001, read-only root, capabilities zero, NoNewPrivs, effective seccomp filter",
+    "Invitation account, private media, supplier grant revocation, logout and restart recovery",
+    "Bounded scalar/array aligned allocation and long LOCALDOMAIN parsing",
+    "Isolated DNS/TLS trusted-CA success and untrusted certificate rejection",
+    "Actual Compose creation, read-only metadata checks, application smoke and loopback publication",
+    "Native binary inventory, full vulnerability report and SBOM without ignore filters"
+  ],
+  "baselineCvesAutomaticallyClosed": false,
+  "deploymentApproved": false,
+  "blockers": [
+    "25 baseline CVEs need individual source/fix/absence reconciliation across distributions; scan counts alone are insufficient",
+    "Production CPU, rootless/cgroup, kernel/runtime patches, egress ACL and Nginx acceptance",
+    "User-confirmed upload/concurrency/storage/auth/link boundaries",
+    "Real Huajing contract and existing HB data, backup and rollback acceptance"
+  ],
+  "effectiveScanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "excludedMatches": [
+    {
+      "id": "GO-2026-5932",
+      "module": "golang.org/x/crypto@v0.58.0",
+      "affectedPackage": "golang.org/x/crypto/openpgp and its subpackages",
+      "disposition": "not_affected",
+      "reason": "Affected package absent from compiled runtime dependency graph; govulncheck has only a module-level finding, no affected package/function path.",
+      "scope": {
+        "imageID": "sha256:33f6705156851ae767376806ddd56453557ef7c03705062c11ebc77cc10521ae",
+        "serverSHA256": "bb2db2c5522021c81d36359bf9095cbf53db2652aea833774a01815bbab853c6"
+      },
+      "evidence": [
+        "go-runtime-packages.txt",
+        "govulncheck.json",
+        "runtime-candidate-image-native-inventory.json.gz",
+        "runtime-candidate-ci.json:nativeInventory.unchangedBinaries"
+      ],
+      "reassessWhen": "Relevant dependency, source or compiled artifact changes. Does not exclude unrelated unreviewed baseline CVEs."
+    }
+  ]
+}

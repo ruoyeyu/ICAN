@@ -1,0 +1,14 @@
+{
+  "base-scan.json": {
+    "sha256": "7045e6c90f30daa757e634691a3d1aace5e40c040479695bc0e383c76ea281b6",
+    "bytes": 15060
+  },
+  "base-signature.json": {
+    "sha256": "c6bb3a806c5679d61612d82985d5d7feb31ae26afd91dd99afc733b4d98fd769",
+    "bytes": 6145
+  },
+  "base-signature.log": {
+    "sha256": "53b2d3c87e62aa79a0546f4aecfac08ed47f09201034b979d62582834bdebbfe",
+    "bytes": 396
+  }
+}
