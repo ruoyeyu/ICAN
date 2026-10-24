@@ -1,5 +1,7 @@
 # ICAN 交接
 
+用户要求删除泛化安全免责声明；公开说明按具体措施、测试结果与待办表达。真实上线阻断项和原始检查证据继续保留。
+
 v0.1.0 预发布已发布，流水线 40099763230 全通过；已核对 tag 指向镜像源码、预发布状态和六个附件 SHA256。证据见 `docs/security/evidence/prerelease-v0.1.0.json`。用户授权增加 v0.1.0 预发布入口。`.github/workflows/release.yml` 复核已发布镜像的源码、成功流水线和 digest 后发布；只使用 GitHub 临时令牌，不要求网页登录。源码 tag 指向镜像对应的 `4702d09c590769f5ec73ef3de6b312702bcea7e3`，说明和附件不代表生产验收通过。
 
 本轮用户授权 GitHub 构建、检查后发布 GHCR，禁止自动部署服务器。Compose 固定 1.6 CPU / 1.5 GiB；服务器仅拉 digest，更新保留原数据和密钥。流程见 `docs/security/ghcr-deployment.md`，现有生产阻断项继续生效。首次 GHCR 流水线 40098999311 全通过，源码 `4702d09c590769f5ec73ef3de6b312702bcea7e3`；实际 digest 和检查证据见 `docs/security/evidence/ghcr-publication.json`。

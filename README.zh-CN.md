@@ -131,4 +131,4 @@ bun run build
 
 ICAN 沿用所采用代码版本的 [AGPL-3.0](LICENSE) 协议，保留原作者署名和版权说明，详见 [NOTICE](NOTICE)。
 
-本分支修改了上游界面和默认接入，新增邀请码注册与会话撤销、敏感配置加密、素材归属检查和受控供应商链接、服务端出站请求防护，并更新依赖、补充容器隔离与验证。具体修改、证据和限制见[安全加固记录](docs/security/hardening-review.md)与[供应链复核](docs/security/supply-chain-review.md)。这些补丁不代表绝对安全：生产网络与资源边界、真实供应商验收、迁移及备份恢复仍是上线门槛。
+本分支修改了上游界面和默认接入，新增邀请码注册与会话撤销、敏感配置加密、素材归属检查和受控供应商链接、服务端出站请求防护，并更新依赖、补充容器隔离与验证。具体实现与验证结果见[安全加固记录](docs/security/hardening-review.md)与[供应链复核](docs/security/supply-chain-review.md)。

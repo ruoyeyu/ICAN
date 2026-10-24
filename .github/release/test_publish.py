@@ -13,18 +13,29 @@ spec.loader.exec_module(release)
 
 
 class ReleaseGateTests(unittest.TestCase):
-    def execute(self, failure=None):
+    def execute(self, failure=None, existing=False):
         evidence = json.loads(Path('docs/security/evidence/ghcr-publication.json').read_text())
         source = evidence['sourceCommit']
         mutations = []
-        draft = {'id': 42, 'draft': True, 'prerelease': True, 'html_url': 'https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0'}
+        self.payloads = []
+        body = Path('.github/release/v0.1.0.md').read_text()
+        archive = Path('docs/security/evidence') / evidence['evidenceArchive']['path']
+        assets = {'docker-compose.yml': b'fixture', 'ican.env.example': b'fixture',
+                  'check-container.py': b'fixture',
+                  'publication.json': Path('docs/security/evidence/ghcr-publication.json').read_bytes(),
+                  'image-security-evidence.zip': archive.read_bytes()}
+        assets['SHA256SUMS'] = ''.join(hashlib.sha256(data).hexdigest() + '  ' + name + '\n'
+                                      for name, data in assets.items()).encode()
+        draft = {'id': 42, 'tag_name': release.TAG, 'draft': not existing, 'prerelease': True, 'target_commitish': source, 'body': 'old notes' if existing else body, 'html_url': 'https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0'}
         def api(path, method='GET', data=None, binary=False):
             if method != 'GET':
                 mutations.append((path, method))
+                if not binary:
+                    self.payloads.append(data)
                 if binary:
                     return {'digest': 'invalid' if failure == 'upload' else 'sha256:' + hashlib.sha256(data).hexdigest()}
                 if method == 'PATCH':
-                    return {**draft, 'draft': False}
+                    return {**draft, **data, 'draft': False}
                 return draft
             if path.endswith('/jobs?per_page=100'):
                 return {'jobs': [{'name': n, 'conclusion': 'success'} for n in ('isolated-build', 'publish')]}
@@ -35,8 +46,11 @@ class ReleaseGateTests(unittest.TestCase):
                         'path': '.github/workflows/ci.yml', 'event': 'push'}
             if '/git/ref/tags/' in path:
                 return {'object': {'sha': source}}
-            if path == '/releases?per_page=100' or '/assets?' in path:
-                return []
+            if path == '/releases?per_page=100':
+                return [draft] if existing else []
+            if '/assets?' in path:
+                return [{'name': name, 'digest': 'bad' if failure == 'assets' else 'sha256:' + hashlib.sha256(data).hexdigest()}
+                        for name, data in assets.items()] if existing else []
             raise AssertionError(path)
         inspected = [{'Id': 'wrong' if failure == 'image' else evidence['imageId'],
                       'Config': {'Labels': {'org.opencontainers.image.revision': source}}}]
@@ -62,6 +76,13 @@ class ReleaseGateTests(unittest.TestCase):
     def test_upload_failure_leaves_unpublished_draft(self):
         mutations = self.execute('upload')
         self.assertFalse(any(method == 'PATCH' for _, method in mutations))
+
+    def test_existing_release_changes_only_notes(self):
+        self.assertEqual(self.execute(existing=True), [('/releases/42', 'PATCH')])
+        self.assertEqual(set(self.payloads[0]), {'body'})
+
+    def test_existing_asset_mismatch_blocks_notes_update(self):
+        self.assertEqual(self.execute('assets', existing=True), [])
 
     def test_publish_only_after_all_six_assets(self):
         mutations = self.execute()

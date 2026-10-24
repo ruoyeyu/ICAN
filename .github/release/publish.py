@@ -88,11 +88,11 @@ def main():
     assets['SHA256SUMS'] = ''.join(hashlib.sha256(data).hexdigest() + '  ' + name + '\n'
                                   for name, data in assets.items()).encode()
     body = Path('.github/release/v0.1.0.md').read_text()
-    # Retry only our identical draft. Never overwrite a different release or tag.
+    # Existing releases may update notes after validating the same source and assets.
     releases = request('/releases?per_page=100')
     existing = next((r for r in releases if r['tag_name'] == TAG), None)
     if existing:
-        if existing['body'] != body or existing['target_commitish'] != source or not existing['prerelease']:
+        if existing['target_commitish'] != source or not existing['prerelease']:
             raise RuntimeError('Existing release differs; refusing to overwrite')
         release = existing
     else:
@@ -115,6 +115,8 @@ def main():
     if release['draft']:
         release = request(f"/releases/{release['id']}", 'PATCH',
                           {'draft': False, 'prerelease': True, 'make_latest': 'false'})
+    if release.get('body') != body:
+        release = request(f"/releases/{release['id']}", 'PATCH', {'body': body})
     final_tag = request('/git/ref/tags/' + TAG)
     if final_tag['object']['sha'] != source or release['draft'] or not release['prerelease']:
         raise RuntimeError('Final release state mismatch')
