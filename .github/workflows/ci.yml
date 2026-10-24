@@ -1,0 +1,20 @@
+name: ICAN verification
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Build and test final image without publishing
+        run: docker build --progress=plain -t ican:verify .
+      - name: Check final image user and native dependencies
+        run: |
+          test "$(docker image inspect ican:verify --format '{{.Config.User}}')" = '10001:10001'
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges ican:verify node -e 'console.log(JSON.stringify({node:process.version,sharp:require("/app/web/node_modules/sharp").versions}))'

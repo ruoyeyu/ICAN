@@ -1,0 +1,30 @@
+bun test v1.4.4 (38afee6c8)
+
+src/lib/model-channel.test.ts:
+(pass) configuration starts without vendor destinations or purchase links [1.67ms]
+
+src/services/api/custom-video.test.ts:
+(pass) custom video preserves explicit model, prompt, aspect ratio, resolution and duration [1.76ms]
+
+src/services/api/protocols/kling-models.test.ts:
+(pass) Kling panel matching keeps channel descriptions distinct from protocol selection [0.25ms]
+(pass) same model on different channels retains the selected channel identity [0.08ms]
+(pass) Kling model variants keep existing exact normalized matches [0.50ms]
+(pass) KIE Grok detection remains protocol-based, unlike Kling panel detection [0.08ms]
+(pass) panel duration and ratio normalization preserve all existing boundaries [0.19ms]
+
+src/services/api/protocols/direct-registry.test.ts:
+(pass) direct protocols preserve polling paths and task ID precedence [0.27ms]
+(pass) created video status retains provider-specific behavior [0.11ms]
+(pass) APIMart synchronous images keep URL order, nesting and deduplication [0.19ms]
+(pass) image polling keeps status aliases, result shapes and failure precedence [0.45ms]
+(pass) video polling preserves result URL, progress types and error precedence [0.34ms]
+(pass) shared parsing keeps business errors and does not treat plain messages as failures [0.25ms]
+(pass) recursive URL parsing retains its original depth boundary [0.08ms]
+(pass) AutoDL uses raw token and polls the workflow result endpoint without adding v1 [0.15ms]
+(pass) AutoDL separates output media from input and preview URLs and does not invent progress [0.28ms]
+(pass) AutoDL reports string business errors, task failures and completed tasks without outputs [0.23ms]
+
+ 17 pass
+ 0 fail
+Ran 17 tests across 4 files. [74.00ms]

@@ -1,0 +1,26 @@
+# Deployment values must be reviewed and explicitly chosen before use.
+services:
+  app:
+    build: .
+    image: ican:reviewed
+    env_file: [.env]
+    user: "10001:10001"
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: ${ICAN_PIDS_LIMIT:?confirm process limit}
+    mem_limit: ${ICAN_MEMORY_LIMIT:?confirm memory limit}
+    cpus: ${ICAN_CPU_LIMIT:?confirm CPU limit}
+    volumes:
+      - ${ICAN_DATA_DIR:?set backed-up isolated data directory}:/app/data
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=${ICAN_TMP_BYTES:?confirm temporary storage limit},uid=10001,gid=10001
+      - /app/web/.next/cache:rw,nosuid,nodev,noexec,size=${ICAN_CACHE_BYTES:?confirm cache limit},uid=10001,gid=10001
+    ports:
+      - "127.0.0.1:${ICAN_HOST_PORT:?choose unused staging port}:3000"
+    restart: unless-stopped
+    networks: [ican]
+networks:
+  ican:
+    driver: bridge

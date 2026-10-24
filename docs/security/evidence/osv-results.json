@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-10-24T08:36:05.734785+00:00",
+  "queries": 569,
+  "matched": [
+    {
+      "dependency": {
+        "package": {
+          "ecosystem": "Go",
+          "name": "github.com/yuin/goldmark"
+        },
+        "version": "v1.4.13"
+      },
+      "vulns": [
+        {
+          "id": "GO-2026-5320",
+          "modified": "2026-07-22T20:59:36.886153Z"
+        }
+      ]
+    },
+    {
+      "dependency": {
+        "package": {
+          "ecosystem": "Go",
+          "name": "golang.org/x/crypto"
+        },
+        "version": "v0.58.0"
+      },
+      "vulns": [
+        {
+          "id": "GO-2026-5932",
+          "modified": "2026-07-10T05:44:31.101996Z"
+        }
+      ]
+    },
+    {
+      "dependency": {
+        "package": {
+          "ecosystem": "Go",
+          "name": "rsc.io/pdf"
+        },
+        "version": "v0.1.1"
+      },
+      "vulns": [
+        {
+          "id": "GO-2026-5781",
+          "modified": "2026-07-27T17:00:22.688826Z"
+        }
+      ]
+    }
+  ]
+}

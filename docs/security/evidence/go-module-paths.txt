@@ -1,0 +1,9 @@
+# github.com/yuin/goldmark
+(main module does not need module github.com/yuin/goldmark)
+
+# rsc.io/pdf
+(main module does not need module rsc.io/pdf)
+
+# golang.org/x/crypto
+github.com/tigerowo/infinite-canvas/service
+golang.org/x/crypto/bcrypt
