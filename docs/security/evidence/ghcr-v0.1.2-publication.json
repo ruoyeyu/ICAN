@@ -1,0 +1,63 @@
+{
+  "sourceCommit": "9b3b8db415e785c7e179e135185f257a016d697b",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:4898ff358185dcb049c3460b79d54f2aef8e28239396c9849507d5ba2f3cebc5",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-9b3b8db415e785c7e179e135185f257a016d697b-run-40110294471-1",
+  "imageId": "sha256:f9d74fb6c639de93939fb1593df349d69524ecd27d1bd5109fdd2b5f34c193a8",
+  "platform": "linux/amd64",
+  "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
+  "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40110294471",
+  "runAttempt": "1",
+  "productionApproved": false,
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "unknownMatch": {
+    "id": "GO-2026-5932",
+    "package": "golang.org/x/crypto",
+    "note": "Raw module match retained. Current source dependency list does not import the affected openpgp package; not counted as an effective finding. No ignore filter added.",
+    "dependencyListSHA256": "50065e8f1e5dca3faa8b9a5540fa9b00575d34edd666226c21177204e9d7657b"
+  },
+  "effectiveRiskCounts": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "tests": {
+    "goSuite": "passed",
+    "web": 26,
+    "director": 294,
+    "deploymentAndPublicationPolicies": 7,
+    "imageAndRestart": "passed",
+    "runtimeRegression": "passed",
+    "actualComposeAtRequestedLimits": "passed",
+    "localBrowserEvidence": "custom-api-local.json",
+    "privateTemplateFixtures": 85
+  },
+  "runtimeLimits": {
+    "cpus": 1.6,
+    "memoryBytes": 1610612736,
+    "additionalSwap": false
+  },
+  "evidenceArchive": {
+    "path": "ghcr-40110294471-evidence.zip",
+    "sha256": "0b7b44f7c1ab22c63de1c4563b3e805db73a961eb9bdf3151795760379823c7a",
+    "artifactId": 12565494586
+  },
+  "publicationArtifact": {
+    "id": 12565619354,
+    "sha256": "dc9b27fc4fbadd3ec6deeb5e8cfd3404dda100396a6e4c279aae23491bb4c73c"
+  },
+  "anonymousRegistryPullCheck": {
+    "passed": true,
+    "manifestDigestVerified": true,
+    "configDigestVerified": true,
+    "sourceAndVersionLabelsVerified": true
+  }
+}

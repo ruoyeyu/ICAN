@@ -11,9 +11,9 @@ import urllib.parse
 import urllib.request
 
 REPO = 'ruoyeyu/ICAN'
-TAG = 'v0.1.1'
-EVIDENCE_PATH = Path('docs/security/evidence/ghcr-v0.1.1-publication.json')
-NOTES_PATH = Path('.github/release/v0.1.1.md')
+TAG = 'v0.1.2'
+EVIDENCE_PATH = Path('docs/security/evidence/ghcr-v0.1.2-publication.json')
+NOTES_PATH = Path('.github/release/v0.1.2.md')
 API = f'https://api.github.com/repos/{REPO}'
 
 

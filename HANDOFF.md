@@ -1,6 +1,6 @@
 # ICAN 交接
 
-v0.1.2 本轮修改：修复后台 local 存储误转 s3，保留渠道权限与配置；扩展现有图片模板的参考编码、二进制 multipart、原始参数、显式同源内容下载；统一 ICAN/画布文案，删去登录页标题和说明。未运行外部插件，专用供应商配置不入公共仓库。见 docs/security/custom-api-templates.md。Go 全套、Web 26 项、导演台 294 项、生产前端构建、真实浏览器登录/双账号/导演台及后台保存回归通过；85 组专用模板请求 fixture 通过，证据为 docs/security/evidence/custom-api-local.json。镜像等待本次 CI，未操作服务器。
+v0.1.2 本轮修改：修复后台 local 存储误转 s3，保留渠道权限与配置；扩展现有图片模板的参考编码、二进制 multipart、原始参数、显式同源内容下载；统一 ICAN/画布文案，删去登录页标题和说明。未运行外部插件，专用供应商配置不入公共仓库。见 docs/security/custom-api-templates.md。Go 全套、Web 26 项、导演台 294 项、生产前端构建、真实浏览器登录/双账号/导演台及后台保存回归通过；85 组专用模板请求 fixture 通过，证据为 docs/security/evidence/custom-api-local.json。CI 40110294471 构建、测试、扫描、实际 Compose 与发布全通过；镜像源码 9b3b8db415e785c7e179e135185f257a016d697b，digest 见 docs/security/evidence/ghcr-v0.1.2-publication.json。已核对匿名 manifest、配置 digest、源码及版本标签。Release 进入发布流程，未操作服务器。
 
 按用户要求删除 v0.1.0 GitHub Release 及其附件，一次性任务 40105399560 成功，随后移除该任务定义。v0.1.1 Release/附件、源码 tag 和 GHCR 历史镜像保留；README 旧下载入口已移除。证据见 docs/security/evidence/removed-release-v0.1.0.json。未改应用或服务器，生产待办无需调整。
 

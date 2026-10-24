@@ -2,17 +2,17 @@
 
 [简体中文](ghcr-deployment.zh-CN.md)
 
-ICAN 0.1.0 is built on GitHub Actions for **linux/amd64**. The server needs Docker Engine, Compose v2 and Python 3 for the read-only policy checker; it does not compile Go, Node or Director code. No workflow connects to a deployment server.
+ICAN 0.1.2 is built on GitHub Actions for **linux/amd64**. The server needs Docker Engine, Compose v2 and Python 3 for the read-only policy checker; it does not compile Go, Node or Director code. No workflow connects to a deployment server.
 
 ## Verified publication
 
-[CI 40098999311](https://github.com/ruoyeyu/ICAN/actions/runs/40098999311) passed, including publication and registry digest verification. Source: `4702d09c590769f5ec73ef3de6b312702bcea7e3`.
+[CI 40110294471](https://github.com/ruoyeyu/ICAN/actions/runs/40110294471) passed, including publication and registry digest verification. Source: `9b3b8db415e785c7e179e135185f257a016d697b`.
 
 ```text
-ghcr.io/ruoyeyu/ican@sha256:a61bbefa35ae1c3121b9fd54530591b94891d62e2347054514ba1188c419a386
+ghcr.io/ruoyeyu/ican@sha256:4898ff358185dcb049c3460b79d54f2aef8e28239396c9849507d5ba2f3cebc5
 ```
 
-[Publication and check results](evidence/ghcr-publication.json) · [Raw security evidence](evidence/ghcr-40098999311-evidence.zip). These records describe this exact image; later builds require their own records.
+[Publication and check results](evidence/ghcr-v0.1.2-publication.json) · [Raw security evidence](evidence/ghcr-40110294471-evidence.zip). These records describe this exact image; later builds require their own records.
 
 The manifest above was also retrieved anonymously and its digest verified. This published image is accessible without a GitHub login.
 

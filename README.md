@@ -89,7 +89,7 @@ Set administrator credentials, separate secrets, your public URL, the persistent
 
 GitHub Actions now builds and checks the image before publishing it to GHCR. Deploy the immutable digest from the successful run; the server only pulls and runs the image. See [GHCR deployment, updates and rollback](docs/security/ghcr-deployment.md).
 
-Prebuilt public version: [ICAN v0.1.1](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.1), with the [login-required image and verification record](docs/security/login-required.md).
+Prebuilt public version: [ICAN v0.1.2](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.2), with the [image and verification record](docs/security/evidence/ghcr-v0.1.2-publication.json).
 
 ### Keep your data when updating
 
