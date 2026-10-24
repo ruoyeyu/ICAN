@@ -1,16 +1,12 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	log "github.com/tigerowo/infinite-canvas/internal/safelog"
 	"io"
 	"math"
 	"mime/multipart"
 	"net/http"
-	"net/textproto"
 	"net/url"
 	"strconv"
 	"strings"
@@ -19,8 +15,6 @@ import (
 	"github.com/tigerowo/infinite-canvas/model"
 	"github.com/tigerowo/infinite-canvas/service"
 )
-
-const kieFileStreamUploadURL = "https://kieai.redpandaai.co/api/file-stream-upload"
 
 func mergeKIEFormFiles(payload map[string]any, files map[string][]*multipart.FileHeader, channel model.ModelChannel) error {
 	for key, headers := range files {
@@ -48,64 +42,8 @@ func mergeKIEFormFiles(payload map[string]any, files map[string][]*multipart.Fil
 	return nil
 }
 
-func uploadKIEReferenceFile(channel model.ModelChannel, header *multipart.FileHeader) (string, error) {
-	data, contentType := readKIEFormFileBytes(header)
-	if len(data) == 0 || strings.TrimSpace(channel.APIKey) == "" {
-		return "", errors.New("KIE file upload failed: empty file or missing API key")
-	}
-
-	uploadPath := "images/user-uploads"
-	if strings.HasPrefix(strings.ToLower(contentType), "audio/") {
-		uploadPath = "audios/user-uploads"
-	} else if strings.HasPrefix(strings.ToLower(contentType), "video/") {
-		uploadPath = "videos/user-uploads"
-	}
-
-	var requestBody bytes.Buffer
-	writer := multipart.NewWriter(&requestBody)
-	filename := normalizeKIEReferenceFilename(header.Filename, contentType)
-	partHeader := textproto.MIMEHeader{}
-	partHeader.Set("Content-Disposition", fmt.Sprintf(`form-data; name="file"; filename="%s"`, escapeKIEFormFilename(filename)))
-	partHeader.Set("Content-Type", contentType)
-	part, err := writer.CreatePart(partHeader)
-	if err != nil {
-		return "", err
-	}
-	if _, err := part.Write(data); err != nil {
-		return "", err
-	}
-	_ = writer.WriteField("uploadPath", uploadPath)
-	if filename != "" {
-		_ = writer.WriteField("fileName", filename)
-	}
-	_ = writer.Close()
-
-	request, err := http.NewRequest(http.MethodPost, kieFileStreamUploadURL, &requestBody)
-	if err != nil {
-		return "", err
-	}
-	request.Header.Set("Authorization", "Bearer "+channel.APIKey)
-	request.Header.Set("Content-Type", writer.FormDataContentType())
-
-	response, err := service.HTTPClientForChannel(channel).Do(request)
-	if err != nil {
-		log.Printf("KIE file upload failed: filename=%s err=%v", header.Filename, err)
-		return "", fmt.Errorf("KIE file upload failed: %v", err)
-	}
-	defer response.Body.Close()
-
-	body, _ := io.ReadAll(io.LimitReader(response.Body, 512*1024))
-	if response.StatusCode >= http.StatusBadRequest {
-		log.Printf("KIE file upload error: filename=%s status=%d body=%s", header.Filename, response.StatusCode, strings.TrimSpace(string(body)))
-		return "", fmt.Errorf("KIE file upload failed: %s", readUpstreamAIErrorMessage(body, response.StatusCode))
-	}
-
-	url := readKIEUploadedFileURL(body)
-	if url == "" {
-		log.Printf("KIE file upload returned no URL: filename=%s body=%s", header.Filename, strings.TrimSpace(string(body)))
-		return "", errors.New("KIE file upload failed: no file URL returned")
-	}
-	return url, nil
+func uploadKIEReferenceFile(_ model.ModelChannel, _ *multipart.FileHeader) (string, error) {
+	return "", errors.New("内置第三方上传已移除；请使用自定义 API 和服务器素材授权链接")
 }
 
 func readKIEUploadedFileURL(body []byte) string {

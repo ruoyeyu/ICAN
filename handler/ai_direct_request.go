@@ -46,6 +46,10 @@ type directAIUpload struct {
 }
 
 func PrepareDirectAIRequest(w http.ResponseWriter, r *http.Request) {
+	if err := service.RequireCustomChannels(); err != nil {
+		FailError(w, err)
+		return
+	}
 	r.Body = http.MaxBytesReader(w, r.Body, directAIRequestBodyLimit)
 	var input directAIRequestInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -66,6 +70,9 @@ func PrepareDirectAIRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func prepareDirectAIRequest(input directAIRequestInput) (directAIRequestPlan, error) {
+	if err := service.RequireCoreProtocol(input.Channel.Protocol); err != nil {
+		return directAIRequestPlan{}, err
+	}
 	input.Model = strings.TrimSpace(input.Model)
 	input.Endpoint = strings.TrimSpace(input.Endpoint)
 	input.Channel.Protocol = strings.TrimSpace(input.Channel.Protocol)

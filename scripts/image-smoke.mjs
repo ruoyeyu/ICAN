@@ -12,7 +12,11 @@ async function api(path,body,token,method=body===undefined?'GET':'POST') {
  const value=await r.json();assert.equal(r.status,200,path);assert.equal(value.code,0,path);return value.data;
 }
 for(let i=0;i<60;i++){try{if((await fetch(origin+'/api/health')).ok)break;}catch{}await setTimeout(500);}
-assert.equal((await fetch(origin+'/login')).status,200);
+const loginPage=await fetch(origin+'/login');assert.equal(loginPage.status,200);
+assert.match(loginPage.headers.get('content-security-policy'),/script-src 'self' 'unsafe-inline' 'unsafe-eval';/);
+assert.ok([400,404].includes((await fetch(origin+'/_next/image?url=https%3A%2F%2Fsupplier.invalid%2Ffixture.png&w=64&q=75')).status));
+assert.equal(existsSync('/app/web/node_modules/sharp'),false);
+assert.equal(existsSync('/app/web/node_modules/@img'),false);
 const admin=await api('/api/auth/login',{username:process.env.ADMIN_USERNAME,password:process.env.ADMIN_PASSWORD});
 const code=(await api('/api/admin/invitations',{},admin.token)).code;
 const user=await api('/api/auth/register',{username:'image-fixture-user',password:'fixture-password-only',invitationCode:code});

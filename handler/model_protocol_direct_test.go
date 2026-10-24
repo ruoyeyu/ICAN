@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/tigerowo/infinite-canvas/config"
 	"github.com/tigerowo/infinite-canvas/service"
 	"io"
 	"net/http"
@@ -85,13 +86,7 @@ func TestModelProtocolRequestGoldens(t *testing.T) {
 			body: `{"prompt":"scene","resolution":"4K","quality":"high","n":4,"output_format":"jpg"}`,
 			want: `{"model":"seedream-5-0-pro","prompt":"scene","resolution":"2K"}`,
 		},
-		{
-			name: "kie upload metadata", protocol: "kie", model: "bytedance/seedance-2", endpoint: "/videos",
-			url:     "https://upstream.invalid/v1/jobs/createTask",
-			body:    `{"prompt":"scene","input_reference[]":["https://direct-reference.invalid/run/image/0","https://direct-reference.invalid/run/image/1"],"video_reference[]":["https://direct-reference.invalid/run/video/0"],"audio_reference[]":["https://direct-reference.invalid/run/audio/0"]}`,
-			want:    `{"model":"bytedance/seedance-2","input":{"prompt":"scene","reference_image_urls":["https://direct-reference.invalid/run/image/0","https://direct-reference.invalid/run/image/1"],"reference_video_urls":["https://direct-reference.invalid/run/video/0"],"reference_audio_urls":["https://direct-reference.invalid/run/audio/0"],"return_last_frame":false}}`,
-			uploads: `{"image":{"url":"https://kieai.redpandaai.co/api/file-stream-upload","fileField":"file","fileNameField":"fileName","extraFields":{"uploadPath":"images/user-uploads"},"responsePaths":["data.downloadUrl","data.fileUrl","data.url"]},"video":{"url":"https://kieai.redpandaai.co/api/file-stream-upload","fileField":"file","fileNameField":"fileName","extraFields":{"uploadPath":"videos/user-uploads"},"responsePaths":["data.downloadUrl","data.fileUrl","data.url"]},"audio":{"url":"https://kieai.redpandaai.co/api/file-stream-upload","fileField":"file","fileNameField":"fileName","extraFields":{"uploadPath":"audios/user-uploads"},"responsePaths":["data.downloadUrl","data.fileUrl","data.url"]}}`,
-		},
+
 		{
 			name: "apimart upload metadata", protocol: "apimart", model: "gpt-image-2-apimart", endpoint: "/images/edits",
 			url:     "https://upstream.invalid/v1/images/generations",
@@ -173,6 +168,9 @@ func TestModelProtocolDirectSecurityContract(t *testing.T) {
 
 func TestModelProtocolDirectHTTPEnvelope(t *testing.T) {
 	blockProtocolNetwork(t)
+	previous := config.Cfg
+	config.Cfg.StorageDriver, config.Cfg.DatabaseDSN = "sqlite", ":memory:"
+	t.Cleanup(func() { config.Cfg = previous })
 	tests := []struct {
 		name, body, want string
 	}{

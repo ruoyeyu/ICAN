@@ -22,4 +22,4 @@ docker run -d --name "$ICAN_TEST_CONTAINER" --network none --read-only --cap-dro
 docker exec -i "$ICAN_TEST_CONTAINER" node < scripts/image-smoke.mjs
 docker restart "$ICAN_TEST_CONTAINER" >/dev/null
 docker exec "$ICAN_TEST_CONTAINER" node -e '(async()=>{for(let i=0;i<60;i++){try{const r=await fetch("http://127.0.0.1:3000/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:"image-fixture-user",password:"fixture-password-only"})});const v=await r.json();if(v.code===0){console.log("Persistent account restored after container restart");return}}catch{}await new Promise(r=>setTimeout(r,500))}process.exit(1)})()'
-docker exec "$ICAN_TEST_CONTAINER" node -e 'console.log(JSON.stringify({node:process.version,sharp:require("/app/web/node_modules/sharp").versions}))'
+docker exec "$ICAN_TEST_CONTAINER" node -e 'console.log(JSON.stringify({node:process.version,components:process.versions,sharpBundled:false}))'

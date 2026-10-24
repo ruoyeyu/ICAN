@@ -54,6 +54,9 @@ func SaveSettings(settings model.Settings) (model.Settings, error) {
 	keepPrivateAuthSecrets(&settings, normalizeSettings(saved))
 	keepPrivateStorageSecrets(&settings, normalizeSettings(saved))
 	for _, channel := range settings.Private.Channels {
+		if err := RequireCoreProtocol(channel.Protocol); err != nil {
+			return model.Settings{}, err
+		}
 		if _, err := ParameterTranslationModels(channel.ParameterTranslation); err != nil {
 			return model.Settings{}, fmt.Errorf("渠道 %s：%w", channel.Name, err)
 		}
@@ -514,6 +517,9 @@ func isWorkflowChannelProtocol(protocol string) bool {
 }
 
 func resolveAdminChannel(index *int, channel model.ModelChannel) (model.ModelChannel, error) {
+	if err := RequireCoreProtocol(channel.Protocol); err != nil {
+		return model.ModelChannel{}, err
+	}
 	resolved := normalizeModelChannel(channel)
 	if strings.TrimSpace(resolved.APIKey) == "" {
 		settings, err := repository.GetSettings()

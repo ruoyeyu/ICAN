@@ -1,0 +1,78 @@
+[
+  {
+    "check": "production login page",
+    "passed": true
+  },
+  {
+    "check": "CSP returned",
+    "passed": true
+  },
+  {
+    "check": "Sharp excluded",
+    "passed": true
+  },
+  {
+    "check": "unoptimized Next image endpoint",
+    "passed": true
+  },
+  {
+    "check": "/api/auth/login: success",
+    "passed": true
+  },
+  {
+    "check": "/api/admin/invitations: success",
+    "passed": true
+  },
+  {
+    "check": "/api/auth/register: success",
+    "passed": true
+  },
+  {
+    "check": "/api/admin/invitations: success",
+    "passed": true
+  },
+  {
+    "check": "/api/auth/register: success",
+    "passed": true
+  },
+  {
+    "check": "central local media upload",
+    "passed": true
+  },
+  {
+    "check": "owner media bytes",
+    "passed": true
+  },
+  {
+    "check": "anonymous media denied",
+    "passed": true
+  },
+  {
+    "check": "other-account media denied",
+    "passed": true
+  },
+  {
+    "check": "/api/v1/files/f7f32995-3c23-4da9-af91-5962c8ac667e/share: success",
+    "passed": true
+  },
+  {
+    "check": "supplier grant",
+    "passed": true
+  },
+  {
+    "check": "/api/v1/files/f7f32995-3c23-4da9-af91-5962c8ac667e/share: success",
+    "passed": true
+  },
+  {
+    "check": "grant revoked",
+    "passed": true
+  },
+  {
+    "check": "/api/auth/logout: success",
+    "passed": true
+  },
+  {
+    "check": "cookie logout",
+    "passed": true
+  }
+]

@@ -8,7 +8,7 @@ import { canvasThemes } from "@/lib/canvas-theme";
 import { useThemeStore } from "@/stores/use-theme-store";
 import type { useCodexAgent } from "../agent/use-codex-agent";
 
-const pluginCommand = "codex plugin marketplace add https://github.com/tigerowo/infinite-canvas.git\ncodex plugin add canvas-agent@infinite-canvas";
+const pluginCommand = "此部署未启用本地 Agent";
 const startCommand = "npx -y @tigerowo/canvas-agent@latest";
 
 export function CanvasCodexConnectView({ agent, onChat }: {

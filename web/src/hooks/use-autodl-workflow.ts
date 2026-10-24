@@ -19,7 +19,7 @@ export function useAutoDLWorkflow(config: AiConfig, model = config.model) {
 type AutoDLChannel = { protocol?: string; baseUrl?: string };
 
 export function useAutoDLWorkflowNames(channels: AutoDLChannel[]) {
-    const baseUrls = [...new Set(channels.filter((channel) => channel.protocol === "autodl").map((channel) => (channel.baseUrl || "https://autodl.art").trim().replace(/\/+$/, "")))];
+    const baseUrls = [...new Set(channels.filter((channel) => channel.protocol === "autodl").map((channel) => (channel.baseUrl || "").trim().replace(/\/+$/, "")))];
     const queries = useQueries({ queries: baseUrls.map((baseUrl) => ({
         queryKey: ["autodl", baseUrl, "workflows"],
         queryFn: () => fetchAutoDLWorkflows(baseUrl),
@@ -27,7 +27,7 @@ export function useAutoDLWorkflowNames(channels: AutoDLChannel[]) {
     })) });
     return (model: string, channel?: AutoDLChannel | null) => {
         if (channel?.protocol !== "autodl") return model;
-        const baseUrl = (channel.baseUrl || "https://autodl.art").trim().replace(/\/+$/, "");
+        const baseUrl = (channel.baseUrl || "").trim().replace(/\/+$/, "");
         return queries[baseUrls.indexOf(baseUrl)]?.data?.find((workflow) => workflow.uuid === model)?.name || model;
     };
 }

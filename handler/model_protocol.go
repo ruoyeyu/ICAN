@@ -260,16 +260,10 @@ var builtinAIProtocols = []aiProtocolAdapter{
 			return readKIECreateTaskErrorMessage(payload)
 		},
 		uploads: func(_ model.ModelChannel, kinds map[string]bool) (map[string]directAIUpload, error) {
-			uploads := map[string]directAIUpload{}
-			for kind, uploadPath := range map[string]string{"image": "images/user-uploads", "video": "videos/user-uploads", "audio": "audios/user-uploads"} {
-				if kinds[kind] {
-					uploads[kind] = directAIUpload{
-						URL: kieFileStreamUploadURL, FileField: "file", FileNameField: "fileName",
-						ExtraFields: map[string]string{"uploadPath": uploadPath}, ResponsePaths: []string{"data.downloadUrl", "data.fileUrl", "data.url"},
-					}
-				}
+			if len(kinds) > 0 {
+				return nil, errors.New("内置第三方上传已移除；请使用自定义 API 和服务器素材授权链接")
 			}
-			return uploads, nil
+			return map[string]directAIUpload{}, nil
 		},
 	},
 	{

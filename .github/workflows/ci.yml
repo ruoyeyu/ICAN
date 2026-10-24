@@ -12,7 +12,7 @@ permissions:
   contents: read
 jobs:
   isolated-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -21,6 +21,8 @@ jobs:
         run: docker build --progress=plain -t ican:verify .
       - name: Verify final image isolation and restart recovery
         run: sh scripts/verify-image.sh
+      - name: Inventory native binaries without executing them
+        run: python3 scripts/inventory-image.py
       - name: Scan installed image components
         run: python3 scripts/scan-image.py
       - name: Preserve image scan evidence
@@ -28,5 +30,8 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: image-security-evidence
-          path: image-vulnerabilities.json
+          path: |
+            image-vulnerabilities.json
+            image-native-inventory.json
+            image-sbom.cdx.json
           if-no-files-found: warn

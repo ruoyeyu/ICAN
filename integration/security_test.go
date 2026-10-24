@@ -154,9 +154,25 @@ func TestSecurityBoundaries(t *testing.T) {
 		if _, err := service.SelectUserLocalModelChannelForModel(alice.User.ID, "my-video", "private"); err == nil {
 			t.Fatal("disabled custom channel usable")
 		}
+		if w := request("POST", "/api/ai/direct-request", alice.Token, `{"channel":{"protocol":"kie","baseUrl":"https://supplier.invalid"},"model":"fixture","endpoint":"/videos","body":{}}`); !strings.Contains(w.Body.String(), "管理员已关闭自定义渠道") {
+			t.Fatal("direct translation bypassed disabled custom channels")
+		}
 		on := true
 		settings.Public.ModelChannel.AllowCustomChannel = &on
 		repository.SaveSettings(settings, "fixture")
+	})
+	t.Run("admin-cannot-enable-removed-protocols", func(t *testing.T) {
+		for _, protocol := range []string{"tokendance", "autodl", "runninghub", "comfyui"} {
+			channel := model.ModelChannel{Protocol: protocol, BaseURL: "https://supplier.invalid", APIKey: "fixture-key"}
+			if _, err := service.AdminChannelModels(nil, channel); err == nil || !strings.Contains(err.Error(), "未启用") {
+				t.Fatalf("admin discovery accepted disabled protocol %s: %v", protocol, err)
+			}
+			settings, _ := repository.GetSettings()
+			settings.Private.Channels = []model.ModelChannel{channel}
+			if _, err := service.SaveSettings(settings); err == nil {
+				t.Fatalf("admin saved disabled protocol %s", protocol)
+			}
+		}
 	})
 	var buf bytes.Buffer
 	png.Encode(&buf, image.NewRGBA(image.Rect(0, 0, 2, 2)))

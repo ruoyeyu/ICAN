@@ -134,10 +134,7 @@ export async function workflowMediaSource(url: string, ref?: WorkflowRef, provid
     if (!response.ok) throw new Error(`读取工作流素材失败：${response.status}`);
     const blob = await response.blob();
     if (comfyVideo) {
-        const uploaded = await fetch("http://127.0.0.1:8189/upload", { method: "POST", headers: { "Content-Type": blob.type || "video/mp4" }, body: blob });
-        const filename = await uploaded.text();
-        if (!uploaded.ok) throw new Error(filename || "ComfyUI 参考视频上传失败");
-        return filename;
+        throw new Error("此部署未启用本地 ComfyUI 上传");
     }
     return readFileAsDataUrl(new File([blob], "workflow-media", { type: blob.type }), "读取素材失败：workflow-media");
 }

@@ -7,6 +7,7 @@ if hashlib.sha256(blob).hexdigest()!=SHA256:raise SystemExit('Scanner checksum m
 with tempfile.TemporaryDirectory(prefix='ican-scanner-') as tmp:
  with tarfile.open(fileobj=io.BytesIO(blob)) as archive:archive.extract(archive.getmember('trivy'),tmp,filter='data')
  subprocess.run([tmp+'/trivy','image','--image-src','docker','--scanners','vuln','--format','json','--output','image-vulnerabilities.json','ican:verify'],check=True)
+ subprocess.run([tmp+'/trivy','convert','--format','cyclonedx','--output','image-sbom.cdx.json','image-vulnerabilities.json'],check=True)
 report=json.loads(pathlib.Path('image-vulnerabilities.json').read_text())
 high=[]
 for result in report.get('Results',[]):

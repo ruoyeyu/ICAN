@@ -94,7 +94,7 @@ func InspectRunningHub(ctx context.Context, input RunningHubInspectInput) (model
 
 func runningHubBaseURL(value string) (string, error) {
 	if strings.TrimSpace(value) == "" {
-		value = "https://www.runninghub.cn"
+		return "", errors.New("请明确配置自己的 API 地址")
 	}
 	value = strings.TrimRight(strings.TrimSpace(value), "/")
 	for _, suffix := range []string{"/openapi/v2", "/openapi"} {

@@ -167,7 +167,7 @@ export function WorkflowChannelPane({ channel, workflows, token, admin, onChanne
 
     return <div className={`${styles.root} space-y-3`} inert={busy}>
         {channel.protocol === "runninghub" ? <div className="grid gap-3 md:grid-cols-2">
-            <Form.Item label="Base URL" className="!mb-0"><AutoComplete value={channel.baseUrl} options={[{ label: "中国站 · https://www.runninghub.cn", value: "https://www.runninghub.cn" }, { label: "国际站 · https://www.runninghub.ai", value: "https://www.runninghub.ai" }]} onChange={(baseUrl) => onChannelChange({ baseUrl })}><Input /></AutoComplete></Form.Item>
+            <Form.Item label="Base URL" className="!mb-0"><AutoComplete value={channel.baseUrl} options={[]} onChange={(baseUrl) => onChannelChange({ baseUrl })}><Input /></AutoComplete></Form.Item>
             <Form.Item label="积分 API Key（提交、查询）" className="!mb-0"><Input.Password value={channel.apiKey} onChange={(event) => onChannelChange({ apiKey: event.target.value })} placeholder={admin?.index === undefined ? "" : "留空沿用已保存密钥"} /></Form.Item>
             <Form.Item label="素材上传 API Key（企业级）" className="!mb-0 md:col-span-2"><Input.Password value={channel.uploadApiKey || ""} onChange={(event) => onChannelChange({ uploadApiKey: event.target.value })} placeholder="没有参考素材可以留空" /></Form.Item>
         </div> : <div className="space-y-3">
