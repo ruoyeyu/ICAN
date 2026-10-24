@@ -1,0 +1,53 @@
+name: Remove explicitly requested v0.1.0 release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/remove-v0.1.0-release.yml']
+permissions:
+  contents: read
+jobs:
+  remove-release:
+    if: github.repository == 'ruoyeyu/ICAN' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Delete only release 422759180 and verify preserved objects
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+          base = 'https://api.github.com/repos/ruoyeyu/ICAN'
+          def api(path, method='GET'):
+              request = urllib.request.Request(base + path, method=method, headers={
+                  'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
+                  'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'})
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      return None if response.status == 204 else json.load(response)
+              except urllib.error.HTTPError as error:
+                  if error.code == 404 and method == 'GET': return None
+                  raise
+          new = api('/releases/tags/v0.1.1')
+          assert new and new['id'] == 422792574 and not new['draft']
+          assert new['target_commitish'] == '8b5d9aeb06d5ea1ad967f36b31fdfe2798efc0a0'
+          tag = api('/git/ref/tags/v0.1.0')
+          assert tag['object']['sha'] == '4702d09c590769f5ec73ef3de6b312702bcea7e3'
+          old = api('/releases/422759180')
+          if old:
+              assert old['tag_name'] == 'v0.1.0' and old['prerelease'] and not old['draft']
+              assert old['target_commitish'] == '4702d09c590769f5ec73ef3de6b312702bcea7e3'
+              api('/releases/422759180', 'DELETE')
+          assert api('/releases/422759180') is None
+          assert api('/releases/tags/v0.1.0') is None
+          assert api('/releases/tags/v0.1.1')['id'] == new['id']
+          assert api('/git/ref/tags/v0.1.0')['object'] == tag['object']
+          result = {'deletedReleaseId': 422759180, 'deletedTagRelease': 'v0.1.0',
+                    'preservedRelease': 'v0.1.1', 'sourceTagPreserved': True,
+                    'registryAndServerUnchanged': True}
+          print(json.dumps(result))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
+              output.write('Deleted the user-requested v0.1.0 Release and its attached assets. '
+                           'v0.1.1, source tags, GHCR images and servers were not changed.\n')
+          PY
