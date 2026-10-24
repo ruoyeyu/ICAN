@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="570" viewBox="0 0 1200 570" role="img" aria-labelledby="title desc" font-family="Arial, 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif">
   <title id="title">Update the app. Keep your data.</title>
   <desc id="desc">Reuse the persistent directory and encryption key. Test migrations before upgrading.</desc>
-  <rect x="0" y="0" width="1200" height="570" rx="18" fill="#f4f2ed" stroke="#dedbd2" />
-  <path d="M860 88 Q1000 130 1135 54" fill="none" stroke="#c6d7cc" stroke-width="1.5" />
-  <ellipse cx="170" cy="470" rx="145" ry="58" fill="#eee4d3" opacity=".65" />
-  <ellipse cx="1020" cy="110" rx="160" ry="85" fill="#dfe9e2" opacity=".7" />
-  <g fill="#d7d6ca">
+  <rect x="0" y="0" width="1200" height="570" rx="18" fill="#28332f" stroke="#45514a" />
+  <path d="M860 88 Q1000 130 1135 54" fill="none" stroke="#617a6b" stroke-width="1.5" />
+  <ellipse cx="170" cy="470" rx="145" ry="58" fill="#535044" opacity=".65" />
+  <ellipse cx="1020" cy="110" rx="160" ry="85" fill="#40564b" opacity=".7" />
+  <g fill="#566258">
     <circle cx="24" cy="140" r=".65" />
     <circle cx="24" cy="204" r=".65" />
     <circle cx="24" cy="268" r=".65" />
@@ -141,11 +141,11 @@
     <circle cx="1176" cy="524" r=".65" />
   </g>
   <g font-family="Arial, 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif">
-    <path d="M36 106 H1164" stroke="#d7d9cd" />
-    <text x="36" y="45" font-size="23" fill="#365f50" font-weight="700">ICAN</text>
-    <text x="140" y="45" font-size="19" fill="#292524" font-weight="600">Update the app. Keep your data.</text>
-    <text x="36" y="86" font-size="16" fill="#57534e">Reuse the persistent directory and encryption key. Test migrations before upgrading.</text>
-    <text x="36" y="546" font-size="13" fill="#78716c">WORKFLOW ILLUSTRATION · NOT A SCREENSHOT</text>
+    <path d="M36 106 H1164" stroke="#536157" />
+    <text x="36" y="45" font-size="23" fill="#f1f1e8" font-weight="700">ICAN</text>
+    <text x="140" y="45" font-size="19" fill="#f1f1e8" font-weight="600">Update the app. Keep your data.</text>
+    <text x="36" y="86" font-size="16" fill="#c7d1c8">Reuse the persistent directory and encryption key. Test migrations before upgrading.</text>
+    <text x="36" y="546" font-size="13" fill="#c7d1c8">WORKFLOW ILLUSTRATION · NOT A SCREENSHOT</text>
     <rect x="50" y="164.0" width="320" height="302" rx="12" fill="#d8d6cb" stroke="none" opacity=".38" />
     <rect x="50" y="159" width="320" height="302" rx="14" fill="#fffefa" stroke="#dedbd2" />
     <text x="76" y="201" font-size="24" fill="#292524">Application container</text>
