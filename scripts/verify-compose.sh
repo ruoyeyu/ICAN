@@ -12,6 +12,7 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 mkdir "$ICAN_COMPOSE_TMP/data"
+chmod 700 "$ICAN_COMPOSE_TMP/data"
 ICAN_REVIEWED_ID=$(docker image inspect ican:verify --format '{{.Id}}')
 python3 - "$ICAN_COMPOSE_TMP" "$ICAN_REVIEWED_ID" <<'PY'
 import base64, os, pathlib, secrets, socket, sys
@@ -32,7 +33,7 @@ os.chmod(root / 'fixture.env', 0o600)
 (root / 'port').write_text(str(port))
 PY
 # Directory ownership initialization is confined to an empty fixture directory.
-docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --security-opt no-new-privileges --user 0:0 --mount "type=bind,source=$ICAN_COMPOSE_TMP/data,target=/fixture" --entrypoint node ican:verify -e 'const fs=require("node:fs");fs.chmodSync("/fixture",0o700);fs.chownSync("/fixture",10001,10001)'
+docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --security-opt no-new-privileges --user 0:0 --mount "type=bind,source=$ICAN_COMPOSE_TMP/data,target=/fixture" --entrypoint node ican:verify -e 'require("node:fs").chownSync("/fixture",10001,10001)'
 compose config --quiet
 compose create --no-build app
 ICAN_COMPOSE_CONTAINER=$(compose ps -aq app)

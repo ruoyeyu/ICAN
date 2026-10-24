@@ -1,0 +1,93 @@
+{
+  "status": "candidate-only",
+  "baselineCvesClosedByScanCount": false,
+  "sources": [
+    {
+      "url": "https://api.github.com/repos/wolfi-dev/os/contents/glibc-2.44.yaml",
+      "sha256": "74590c83f15a5bce6b89f1d50bf984687d6313237ae462d41e482cb86a16adb6",
+      "selectedBuildLines": [
+        "version: \"2.44\"",
+        "epoch: 9",
+        "expected-commit: 045c51476c7abf6144815a4db44f51a118b4cb3e",
+        "repository: https://gitlab.com/gnutools/glibc.git",
+        "branch: release/${{package.version}}/master",
+        "echo \"binary floor: ${hi:-none}, dev version: $ver\"",
+        "version: ${{package.version}}",
+        "version: ${{package.version}}",
+        "version: ${{package.version}}",
+        "version: ${{package.version}}",
+        "version: ${{package.version}}",
+        "version: ${{package.version}}",
+        "version: ${{package.version}}",
+        "version: ${{package.version}}",
+        "version: ${{package.version}}",
+        "version: ${{package.version}}"
+      ]
+    },
+    {
+      "url": "https://api.github.com/repos/wolfi-dev/os/contents/gcc.yaml",
+      "sha256": "fb752401e14aff7c4401ed6621a68bdb82d90adef841e41ef1ad8d5d7ebd90be",
+      "selectedBuildLines": [
+        "version: \"16.2.0\"",
+        "epoch: 1",
+        "glibc-version: \"2.44\"",
+        "expected-commit: 78d4ac73dd391005b895a6148cd9831e28e1208b",
+        "repository: https://gitlab.com/gnutools/gcc.git",
+        "tag: releases/gcc-${{package.version}}",
+        "march=armv8-a+crc+crypto",
+        "march=x86-64-v2"
+      ]
+    },
+    {
+      "url": "https://github.com/wolfi-dev/advisories/blob/main/gcc.advisories.yaml",
+      "sha256": "77c318a6617eb27974ddb1e4188d36821074abddf6141e7fa024c7c5dc701dc7",
+      "CVEReferences": [
+        "CVE-2023-4039"
+      ]
+    },
+    {
+      "url": "https://github.com/wolfi-dev/advisories/blob/main/glibc.advisories.yaml",
+      "sha256": "af60027a21c59cc8a7f77cc156c4a350c6b5e90cafda557015e0fb3bd416e87e",
+      "CVEReferences": [
+        "CVE-2010-4756",
+        "CVE-2019-1010022",
+        "CVE-2019-1010023",
+        "CVE-2019-1010024",
+        "CVE-2019-1010025",
+        "CVE-2022-39046",
+        "CVE-2023-0687",
+        "CVE-2023-25139",
+        "CVE-2023-4527",
+        "CVE-2023-4911",
+        "CVE-2023-5156",
+        "CVE-2023-6246",
+        "CVE-2023-6779",
+        "CVE-2023-6780",
+        "CVE-2024-2961",
+        "CVE-2024-33599",
+        "CVE-2024-33600",
+        "CVE-2024-33601",
+        "CVE-2024-33602",
+        "CVE-2025-0395",
+        "CVE-2025-5702",
+        "CVE-2025-5745",
+        "CVE-2025-8058"
+      ]
+    },
+    {
+      "url": "https://github.com/gcc-mirror/gcc/blob/78d4ac73dd391005b895a6148cd9831e28e1208b/libstdc%2B%2B-v3/libsupc%2B%2B/new_opa.cc",
+      "sha256": "d627537aefa2322ead4eef1013bff53e0910f97f9ed1c977f0f9374a4cdd689b",
+      "CVEReferences": []
+    }
+  ],
+  "unverified": [
+    "glibc source snapshot and individual fix ancestry",
+    "complete native/static function reachability",
+    "production CPU, locale and Rootless compatibility"
+  ],
+  "allocationSourceObservation": "GCC new_opa.cc prefers POSIX_MEMALIGN when configured; source text alone does not establish built binary behavior. Bounded CI checks test scalar/array aligned allocation in the actual final runtime.",
+  "localeAndTimezoneReview": {
+    "sourceSearch": "No application Go time.LoadLocation call found; server code uses time.Local for AI log date parsing and otherwise RFC3339/UTC. Browser formatting uses JS Intl/toLocale APIs.",
+    "limitations": "Candidate only supplies C.UTF-8 and omits distro tzdata. Custom server TZ/locales are not accepted by current Compose; actual locale/date display still requires product acceptance."
+  }
+}
