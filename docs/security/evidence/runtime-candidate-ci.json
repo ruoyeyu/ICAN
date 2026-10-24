@@ -51,5 +51,32 @@
     "Production CPU, rootless/cgroup, kernel/runtime patches, egress ACL and Nginx acceptance",
     "User-confirmed upload/concurrency/storage/auth/link boundaries",
     "Real Huajing contract and existing HB data, backup and rollback acceptance"
+  ],
+  "effectiveScanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "excludedMatches": [
+    {
+      "id": "GO-2026-5932",
+      "module": "golang.org/x/crypto@v0.58.0",
+      "affectedPackage": "golang.org/x/crypto/openpgp and its subpackages",
+      "disposition": "not_affected",
+      "reason": "Affected package absent from compiled runtime dependency graph; govulncheck has only a module-level finding, no affected package/function path.",
+      "scope": {
+        "imageID": "sha256:33f6705156851ae767376806ddd56453557ef7c03705062c11ebc77cc10521ae",
+        "serverSHA256": "bb2db2c5522021c81d36359bf9095cbf53db2652aea833774a01815bbab853c6"
+      },
+      "evidence": [
+        "go-runtime-packages.txt",
+        "govulncheck.json",
+        "runtime-candidate-image-native-inventory.json.gz",
+        "runtime-candidate-ci.json:nativeInventory.unchangedBinaries"
+      ],
+      "reassessWhen": "Relevant dependency, source or compiled artifact changes. Does not exclude unrelated unreviewed baseline CVEs."
+    }
   ]
 }

@@ -1,5 +1,7 @@
 # ICAN 交接
 
+用户最新要求：确认不影响当前构建的扫描项不计入有效风险数；原始证据保留。runtime-candidate-ci.json 为 GO-2026-5932 增加按具体镜像绑定的排除及有效计数，旧待复核 CVE 不随之自动排除。用户还明确要求频繁更新容器时保留既有账号、媒体、个人 API 和管理员中转站配置；AGENTS.md 已改为要求版本化增量迁移。现有绑定目录和加密配置支持持久保存，但当前启动 AutoMigrate 不等于完整迁移机制，跨版本恢复/迁移仍列入阻断项。详见 docker-operations.md 数据保留章节。
+
 用户已确认采用 Docker。当前独立分支 security/runtime-isolation-candidate 增加不可变镜像部署、显式环境变量、只读容器策略检查、实际 Compose 与原生运行回归；同时试验签名验证后的 Wolfi glibc-dynamic 基础层。参见 docs/security/docker-operations.md。这个候选不自动升级为生产，原 Debian 的中低危账目仍保留；源补丁/公告覆盖、服务器隔离和功能/迁移门槛未完成前保留现站。
 
 Docker 候选代码 dcbd8399213cf290994fcd69fa224697535d280c 的 CI 40086299774 全通过。实际 Compose、非 root/只读/seccomp、账号/私有媒体/重启、原生分配及封闭 DNS/TLS、SBOM/扫描均已验证；23 个 ELF（原 285），Node/Go 二进制与原基线一致。扫描 0 严重/高/中/低、1 UNKNOWN；没有自动关闭原 25 个 CVE。完整证据为 evidence/runtime-candidate-*，没有发布镜像或切换服务器。首次 fixture 初始化失败及其最小权限修正也保留记录。
