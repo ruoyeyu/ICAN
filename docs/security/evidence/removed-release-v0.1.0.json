@@ -1,0 +1,13 @@
+{
+  "requestedAction": "Delete only the v0.1.0 GitHub Release",
+  "releaseId": 422759180,
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40105399560",
+  "result": "success",
+  "verifiedAbsentFromReleases": true,
+  "preservedRelease": "v0.1.1",
+  "preservedReleaseId": 422792574,
+  "newReleaseAndAssetDigestsUnchanged": true,
+  "sourceTagPreserved": "4702d09c590769f5ec73ef3de6b312702bcea7e3",
+  "registryAndServerModified": false,
+  "oneTimeWorkflowRemovedAfterExecution": true
+}

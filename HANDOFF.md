@@ -1,5 +1,7 @@
 # ICAN 交接
 
+按用户要求删除 v0.1.0 GitHub Release 及其附件，一次性任务 40105399560 成功，随后移除该任务定义。v0.1.1 Release/附件、源码 tag 和 GHCR 历史镜像保留；README 旧下载入口已移除。证据见 docs/security/evidence/removed-release-v0.1.0.json。未改应用或服务器，生产待办无需调整。
+
 v0.1.1 公共镜像已完成重新编译与发布，CI 40103981848 全通过；源码 8b5d9aeb06d5ea1ad967f36b31fdfe2798efc0a0，digest 及匿名拉取验证见 docs/security/evidence/ghcr-v0.1.1-publication.json。Release 使用新版本源码及同一份已验证镜像，保留 v0.1.0 tag/附件；Release 40104375905 发布成功，源码 tag、公开预发布状态与六个附件 SHA256 已核对，证据为 docs/security/evidence/prerelease-v0.1.1.json。没有服务器部署。
 
 用户要求重新编译并提供可共同使用的公共版本，本轮发布目标为 v0.1.1。版本号、Web/Director 包元数据和 OCI 标签同步更新；主线流水线重新构建并验证镜像后才发布 Release。无需生产服务器编译，不操作线上部署。
