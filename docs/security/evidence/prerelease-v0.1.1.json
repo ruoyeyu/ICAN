@@ -1,0 +1,50 @@
+{
+  "tag": "v0.1.1",
+  "sourceCommit": "8b5d9aeb06d5ea1ad967f36b31fdfe2798efc0a0",
+  "releaseId": 422792574,
+  "url": "https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.1",
+  "draft": false,
+  "prerelease": true,
+  "releaseWorkflow": "https://github.com/ruoyeyu/ICAN/actions/runs/40104375905",
+  "buildWorkflow": "https://github.com/ruoyeyu/ICAN/actions/runs/40103981848",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:d4517b26856b2062b2a6c05d3992ac89a96722d33f40266efbae336e471dd832",
+  "assets": [
+    {
+      "id": 672526165,
+      "name": "check-container.py",
+      "digest": "sha256:c46e32de8ccca12dc8859fd9898112141aecbd0122d4d7e4becc2b2a11eb1a2d",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.1/check-container.py"
+    },
+    {
+      "id": 672526156,
+      "name": "docker-compose.yml",
+      "digest": "sha256:691274a47d2272973fe495828d047c50a2477f980e447d26ada2b68d4090539a",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.1/docker-compose.yml"
+    },
+    {
+      "id": 672526159,
+      "name": "ican.env.example",
+      "digest": "sha256:80de73fce13fc6a2b2268d120ae66f8018423eec3bef6919896727203013428b",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.1/ican.env.example"
+    },
+    {
+      "id": 672526192,
+      "name": "image-security-evidence.zip",
+      "digest": "sha256:01b76882f5e02dde0eaa19b33ca01c5f50629e11d1566e6e8c39d1035086b7bd",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.1/image-security-evidence.zip"
+    },
+    {
+      "id": 672526179,
+      "name": "publication.json",
+      "digest": "sha256:f7fca838fcd5645c55aa1c7a2c86bac0d997810586a75b9353c630b4c600e01a",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.1/publication.json"
+    },
+    {
+      "id": 672526205,
+      "name": "SHA256SUMS",
+      "digest": "sha256:d1da07168081b05b8c7b4fcfa66fa33cfa56ffd57b8bc5ba00e72c8cbdac092e",
+      "url": "https://github.com/ruoyeyu/ICAN/releases/download/v0.1.1/SHA256SUMS"
+    }
+  ],
+  "allAssetChecksumsVerified": true
+}
