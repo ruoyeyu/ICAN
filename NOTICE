@@ -1,5 +1,8 @@
-ICAN derives from tigerowo/infinite-canvas.
-Upstream: https://github.com/tigerowo/infinite-canvas
+Original project: https://github.com/basketikun/infinite-canvas
+Direct code base (derivative): https://github.com/tigerowo/infinite-canvas
+The direct code base credits basketikun/infinite-canvas and incorporates
+image-generation enhancements from https://github.com/HuFakai/infinite-canvas.
+ICAN continues development from the tigerowo derivative.
 Reviewed and adopted source commit: e13006fbaeabe14e4a6d27cba667ff1473009ebc
 Original contributor copyrights and AGPL-3.0 obligations are retained.
 Modified for invitation-only access, custom API configuration and security hardening.
