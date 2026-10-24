@@ -34,6 +34,7 @@ COPY --chmod=0555 docker-entrypoint.sh /app/docker-entrypoint.sh
 COPY --from=web-build /app/web/public /app/web/public
 COPY --from=web-build /app/web/.next/standalone /app/web
 COPY --from=web-build /app/web/.next/static /app/web/.next/static
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-* /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg
 RUN mkdir -p /app/data /app/web/.next/cache && chown -R 10001:10001 /app/data /app/web/.next/cache
 USER 10001:10001
 EXPOSE 3000

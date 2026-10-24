@@ -1,6 +1,11 @@
 name: ICAN verification
 on:
   push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - 'LICENSES/**'
   pull_request:
   workflow_dispatch:
 permissions:
@@ -14,7 +19,14 @@ jobs:
           persist-credentials: false
       - name: Build and test final image without publishing
         run: docker build --progress=plain -t ican:verify .
-      - name: Check final image user and native dependencies
-        run: |
-          test "$(docker image inspect ican:verify --format '{{.Config.User}}')" = '10001:10001'
-          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges ican:verify node -e 'console.log(JSON.stringify({node:process.version,sharp:require("/app/web/node_modules/sharp").versions}))'
+      - name: Verify final image isolation and restart recovery
+        run: sh scripts/verify-image.sh
+      - name: Scan installed image components
+        run: python3 scripts/scan-image.py
+      - name: Preserve image scan evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: image-security-evidence
+          path: image-vulnerabilities.json
+          if-no-files-found: warn
