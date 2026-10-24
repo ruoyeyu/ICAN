@@ -75,7 +75,7 @@ ICAN 沿用原项目的画布、账号、配置同步和素材管理，在这些
 
 **当前为开发预览，建议先在独立测试环境运行。** Docker 候选的构建、容器/Compose 运行及自动化检查已经通过，未完成事项见下方「当前进度」。
 
-ICAN 当前版本为 **0.1.0**，Docker 配置和导演台均已合入 `main`，后续只维护主线。当前验证平台为 Linux / amd64，需要 Docker 和 Docker Compose。
+ICAN 当前版本为 **0.1.1**，Docker 配置和导演台均已合入 `main`，后续只维护主线。当前验证平台为 Linux / amd64，需要 Docker 和 Docker Compose。
 
 ```sh
 git clone https://github.com/ruoyeyu/ICAN.git
@@ -89,7 +89,7 @@ chmod 600 .env
 
 GitHub Actions 在完成构建、测试和安全检查后发布 GHCR 镜像。服务器只拉取并运行成功记录中的不可变 digest，不执行编译；详见 [GHCR 部署、更新和回滚说明](docs/security/ghcr-deployment.zh-CN.md)。
 
-预发布入口：[ICAN v0.1.0](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0)，包含镜像拉取命令、配置附件及检查结果。
+当前登录保护请采用[登录修复的镜像与验证记录](docs/security/login-required.md)。原 [v0.1.0 预发布](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0)早于此次修复，其不可变镜像和附件保留用于追溯。
 
 ### 更新容器，保留数据
 

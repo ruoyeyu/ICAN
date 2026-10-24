@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## ICAN v0.1.1
+
 - Require a server-validated login for every workspace, reject guest imports/uploads, and isolate canvas, asset, API configuration and media caches by account. Preserve legacy unowned browser data without automatically assigning or uploading it.
 
 - Build/test on GitHub and publish the same checked image to GHCR with source commit and digest evidence; document pull-only deployment, persistent data and rollback.

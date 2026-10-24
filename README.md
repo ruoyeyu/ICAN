@@ -75,7 +75,7 @@ Personal API settings are also used in the browser, and some requests go directl
 
 **This is a development preview. Start in a separate test environment.** The Docker candidate has passed build, container/Compose, and automated checks. Remaining work is listed below.
 
-ICAN **0.1.0** is maintained on `main`, including the Docker setup and 3D Director. The tested platform is Linux / amd64. Docker and Docker Compose are required.
+ICAN **0.1.1** is maintained on `main`, including the Docker setup and 3D Director. The tested platform is Linux / amd64. Docker and Docker Compose are required.
 
 ```sh
 git clone https://github.com/ruoyeyu/ICAN.git
@@ -89,7 +89,7 @@ Set administrator credentials, separate secrets, your public URL, the persistent
 
 GitHub Actions now builds and checks the image before publishing it to GHCR. Deploy the immutable digest from the successful run; the server only pulls and runs the image. See [GHCR deployment, updates and rollback](docs/security/ghcr-deployment.md).
 
-Prebuilt release: [ICAN v0.1.0](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0), with image pull instructions, configuration assets and check results.
+Use the [login-required build and verification record](docs/security/login-required.md) for the current login gate. The original [v0.1.0 release](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0) predates this fix; its immutable image and assets remain available for history.
 
 ### Keep your data when updating
 
