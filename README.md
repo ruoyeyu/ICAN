@@ -22,6 +22,33 @@ Models run through the external APIs you configure. The canvas itself does not n
 
 ![API configuration and video parameters, including custom values.](docs/images/ican-api-en.svg)
 
+## Interface preview
+
+Actual frontend screenshots with local demo data: the LLM text, image and video records are simulated, not live model outputs. No paid API calls were made. The application UI remains unchanged; the green workflow illustrations above are explanatory artwork.
+
+**Canvas: brief → LLM text → image → video**
+
+![Actual canvas with locally simulated text, image and video nodes.](docs/images/screenshots/canvas-demo.png)
+
+<details>
+<summary>Image workspace, video workspace, and API settings</summary>
+
+**Image workspace — simulated result and generation controls**
+
+![Image workspace with a local fixture result.](docs/images/screenshots/image-demo.png)
+
+**Video workspace — simulated clip and generation controls**
+
+![Video workspace with a local fixture clip.](docs/images/screenshots/video-demo.png)
+
+**API settings — example endpoint and placeholder credentials**
+
+![Actual API settings dialog with demo models.](docs/images/screenshots/config-demo.png)
+
+</details>
+
+Director mode is disabled in this build and is not presented as an available feature. [Screenshot scope](docs/images/screenshots/README.md).
+
 ## What changed in this fork
 
 ICAN keeps the original canvas, accounts, settings sync, and media management, with a smaller feature scope and additional security controls.
