@@ -88,7 +88,7 @@ export default function AdminSettingsPage() {
     const [knownModels, setKnownModels] = useState<string[]>([]);
     const publicModels = Form.useWatch(["public", "modelChannel", "availableModels"], form) || [];
     const publicWorkflows = Form.useWatch(["public", "modelChannel", "availableWorkflows"], form) || [];
-    const storageProviders = Form.useWatch(["private", "storage", "providers"], form) || [];
+    const storageProviders = Form.useWatch(["private", "storage", "providers"], { form, preserve: true }) || [];
     const channelProtocol = Form.useWatch("protocol", channelForm);
     const channelBaseUrl = Form.useWatch("baseUrl", channelForm);
     const modelLabel = useAutoDLWorkflowNames([...channels, { protocol: channelProtocol, baseUrl: channelBaseUrl }]);

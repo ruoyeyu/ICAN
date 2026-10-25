@@ -1,0 +1,45 @@
+{
+  "baseCommit": "fccb1eda1060cc830df9ebeae6410fc78250d21c",
+  "scope": "two minimal UI changes: reuse administrator model discovery and selector for supplier templates; preserve storage provider watch",
+  "checks": {
+    "go": "go test ./... passed, including custom/OpenAI GET-only model discovery fixture",
+    "web": "31 tests, TypeScript check and production Next build passed",
+    "deploymentPolicy": "9 tests passed",
+    "catalogBrowser": {
+      "catalog": "admin import/edit/export/delete; ordinary user selects without importing",
+      "discovery": "manual file found without restart; deleted file disappears",
+      "credentials": "user key not in catalog; existing account unchanged after deletion",
+      "instructions": "HTML shown as plain text",
+      "modelDiscovery": "existing selector; search/multiple/all/clear; candidates opt in; cancel/failure/late response preserve configuration; temporary key absent from writes and export; no generation",
+      "privateStorage": "local type remains stable across tabs and save",
+      "discoveryCalls": 7,
+      "pageErrors": []
+    },
+    "existingAPIConfigBrowser": {
+      "import": "validated",
+      "edit": "saved in existing translator",
+      "export": "no credentials",
+      "freshBrowser": "account config restored",
+      "presets": "OpenAI added without overwriting existing channel",
+      "perModelParameters": "declared choices enforced; custom resolution and literal ratio retained",
+      "mockSubmit": "one intercepted request; exact prompt/ratio/resolution/duration/model",
+      "pageErrors": []
+    },
+    "credentialPersistence": "temporary fixture key absent from template JSON/export, administrator settings, account config, localStorage, sessionStorage and IndexedDB; only sent to existing model-list endpoint",
+    "selectorRegression": "other consumers retain their original default selection behavior",
+    "dependencyListSHA256": "50065e8f1e5dca3faa8b9a5540fa9b00575d34edd666226c21177204e9d7657b"
+  },
+  "unchanged": [
+    "database and configuration formats",
+    "persistent data paths and encryption keys",
+    "backend endpoints and call engine",
+    "dependencies and image workflow",
+    "page layout and theme"
+  ],
+  "notPerformed": [
+    "paid provider calls",
+    "production deployment",
+    "local Docker execution; final image checks run in existing GitHub CI"
+  ],
+  "validationNotes": "Browser test selectors were adjusted for icon accessible names and modal animation completion; no product UI or security checks were weakened."
+}

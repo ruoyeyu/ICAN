@@ -9,6 +9,32 @@ import (
 	"github.com/tigerowo/infinite-canvas/model"
 )
 
+func TestTemplateModelDiscoveryOnlyListsCandidates(t *testing.T) {
+	calls := 0
+	server := newProtocolFixture(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		if r.Method != http.MethodGet || r.URL.Path != "/v1/models" || r.Header.Get("Authorization") != "Bearer temporary-fixture-key" {
+			t.Errorf("unexpected discovery request: %s %s", r.Method, r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"data":[{"id":"candidate-b"},{"id":"candidate-a"}]}`))
+	}))
+	defer server.Close()
+	for _, protocol := range []string{"custom", "openai"} {
+		channel := model.ModelChannel{Protocol: protocol, BaseURL: server.URL, APIKey: "temporary-fixture-key", Models: []string{"existing-model"}}
+		got, err := AdminChannelModels(nil, channel)
+		if err != nil || !reflect.DeepEqual(got, []string{"candidate-a", "candidate-b"}) {
+			t.Fatalf("discovery: %v, %v", got, err)
+		}
+		if !reflect.DeepEqual(channel.Models, []string{"existing-model"}) {
+			t.Fatal("discovery modified the channel")
+		}
+	}
+	if calls != 2 {
+		t.Fatalf("expected one list request per action, got %d", calls)
+	}
+}
+
 func TestFetchAdminChannelModelsParsesOpenAIModels(t *testing.T) {
 	server := newProtocolFixture(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/models" {

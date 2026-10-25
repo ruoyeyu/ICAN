@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Reuse administrator model discovery and the existing model selector in supplier-template editing; new candidates require explicit selection and temporary credentials are not persisted.
+- Preserve the local-storage provider type when switching or saving private settings to prevent form flicker.
+
 ## ICAN v0.1.0
 
 This release restarts the public version series using the latest main-line implementation. It includes all prior ICAN fixes and API configuration work; it is not the early image that previously used this version label. Use the source commit and immutable image digest to identify builds.

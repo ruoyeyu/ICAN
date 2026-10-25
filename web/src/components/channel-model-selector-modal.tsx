@@ -22,13 +22,14 @@ type ChannelModelSelectorModalProps = {
     parameterTranslation?: string;
     models: string[];
     sourceModels?: string[];
+    selectFetchedModels?: boolean;
     onCancel: () => void;
     onConfirm: (models: string[], modelCapabilities: ModelCapabilities, parameterTranslation: string) => void | Promise<void>;
     onFetchModels: () => Promise<string[] | undefined>;
     onModelsFetched?: (models: string[]) => void;
 };
 
-export function ChannelModelSelectorModal({ channel, parameterTranslation, models, sourceModels = [], onCancel, onConfirm, onFetchModels, onModelsFetched }: ChannelModelSelectorModalProps) {
+export function ChannelModelSelectorModal({ channel, parameterTranslation, models, sourceModels = [], selectFetchedModels = true, onCancel, onConfirm, onFetchModels, onModelsFetched }: ChannelModelSelectorModalProps) {
     const { message } = App.useApp();
     const modelLabel = useAutoDLWorkflowNames(channel ? [channel] : []);
     const [source, setSource] = useState(() => uniqueModels(sourceModels));
@@ -36,7 +37,7 @@ export function ChannelModelSelectorModal({ channel, parameterTranslation, model
     const [selected, setSelected] = useState(() => uniqueModels(models));
     const [keyword, setKeyword] = useState("");
     const [newModel, setNewModel] = useState("");
-    const [activeTab, setActiveTab] = useState<ModelSelectTabKey | "classification">("current");
+    const [activeTab, setActiveTab] = useState<ModelSelectTabKey | "classification">(sourceModels.length ? "new" : "current");
     const [fetching, setFetching] = useState(false);
     const [saving, setSaving] = useState(false);
     const [translation, setTranslation] = useState<string>();
@@ -64,7 +65,7 @@ export function ChannelModelSelectorModal({ channel, parameterTranslation, model
             const current = uniqueModels(selected);
             setExisting(current);
             setSource(uniqueModels(fetchedModels));
-            setSelected(uniqueModels([...fetchedModels, ...current]));
+            setSelected(selectFetchedModels ? uniqueModels([...fetchedModels, ...current]) : current);
             setKeyword("");
             setNewModel("");
             setActiveTab("new");
