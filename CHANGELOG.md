@@ -2,32 +2,17 @@
 
 ## Unreleased
 
-## ICAN v0.1.3
-
-- Configure custom API request fields, per-model parameters, reference encoding and asynchronous task polling through the existing channel editor. Add generic presets and versioned, credential-free configuration import/export.
-- Prepare private image, frame, video and audio references with owner-scoped links; enforce declared inputs before submission and support explicit authenticated video downloads. Reject cross-origin translation redirects and preserve pending task recovery.
-- Preserve existing channels, account data, keys and legacy translation rules; publish the tested container through the existing CI and GHCR workflow.
-
-## ICAN v0.1.2
-
-- Fix saving custom/cloud channel permissions without rewriting local media storage; preserve channel IDs, credentials and backend permission checks.
-- Extend explicit image API templates with reference encoding, genuine multipart image files, raw parameters and authenticated same-origin result downloads. Reject invalid media and unsafe redirects.
-- Add image tier/custom parameter controls; use ICAN branding and simplify the login screen. Preserve existing data, configuration and upstream attribution.
-
-## ICAN v0.1.1
-
-- Require a server-validated login for every workspace, reject guest imports/uploads, and isolate canvas, asset, API configuration and media caches by account. Preserve legacy unowned browser data without automatically assigning or uploading it.
-
-- Build/test on GitHub and publish the same checked image to GHCR with source commit and digest evidence; document pull-only deployment, persistent data and rollback.
-- Enforce the approved 1.6 CPU / 1.5 GiB Compose limits.
-
 ## ICAN v0.1.0
 
-- Keep the canvas, image/video workflows, account sync and custom API templates.
-- Add invitation-only registration, private media authorization, outbound request controls, encrypted server-side configuration and hardened Docker packaging.
-- Restore a source-built, sandboxed 3D Director with canvas persistence and bilingual documentation screenshots.
-- Remove unreachable Director components, disabled Bridge/workflow/OAuth/credit HTTP handlers and unused Agent skill templates. Preserve shared protocol helpers and existing database schemas.
-- Maintain `main` only. This development release still requires the production, migration and real-account checks listed in `docs/progress/todo.md`.
+This release restarts the public version series using the latest main-line implementation. It includes all prior ICAN fixes and API configuration work; it is not the early image that previously used this version label. Use the source commit and immutable image digest to identify builds.
+
+- Keep the canvas, text/image/video workflows, account sync, private media and source-built 3D Director.
+- Require login and invitation-only registration; isolate accounts and media, retain revocable sessions and encrypted server-side configuration, and enforce outbound request controls.
+- Configure custom APIs through generic presets, per-model field/parameter/reference mappings, versioned credential-free import/export, asynchronous task recovery and authenticated media downloads.
+- Preserve exact prompts, models, ratios, resolution and duration strings. Reuse owner-scoped reference links and reject cross-origin credential redirects and active content disguised as media.
+- Keep account data, media, stable channel IDs, API credentials, legacy translation rules and original encryption keys. Resetting the release label does not change database or configuration formats.
+- Build/test on GitHub, publish the same checked image by immutable GHCR digest, and retain 1.6 CPU / 1.5 GiB Compose limits. No server-side compilation or automatic deployment.
+- Remove unrelated promotions, default paid-provider destinations and disabled workflows. Production resource/session/restore acceptance remains tracked in `docs/progress/todo.md`.
 
 ## Upstream history
 

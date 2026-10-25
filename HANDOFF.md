@@ -1,5 +1,7 @@
 # ICAN 交接
 
+当前任务：用户已清空 Release，并明确授权把最新完整实现重新编号为 v0.1.0，清理旧版本标签，之后从新基线递增。仅重置发布编号；保留所有功能、安全修复、数据库/配置格式、数据和密钥。新版本需重新通过 CI 和 GHCR 发布，服务器不改动。下方版本号及证据为重置前历史，不是当前下载指引。
+
 本轮目标 v0.1.3：沿用原渠道/Goja 转译，增加表单与通用预设、v1 无凭据导入导出、逐模型参数和参考编码。视频明确 URL 输入复用上传及归属授权，补齐显式内容下载与跨来源重定向拒绝；私有供应商配置不进公开仓库。没有修改生产服务器。配置版本与回滚要求见 docs/security/custom-api-templates.md；本地 Go/Web/导演台/生产构建、浏览器导入编辑导出与请求捕获、v0.1.2 数据副本升级/回滚已验证，见 docs/security/evidence/api-config-ui-local.json。CI 40180373140 构建、检查与 GHCR 发布通过；源码 4cef8067138572047233b72e0fe67373bc1d3242，digest 见 docs/security/evidence/ghcr-v0.1.3-publication.json；匿名 manifest/config、版本标签已核对。Release 40180754949 发布成功；v0.1.3 tag 指向清理后的源码，六个附件已下载并核对 SHA256，见 docs/security/evidence/prerelease-v0.1.3.json。主线已移除旧记录的内部标识，历史提交未重写。
 
 v0.1.2 本轮修改：修复后台 local 存储误转 s3，保留渠道权限与配置；扩展现有图片模板的参考编码、二进制 multipart、原始参数、显式同源内容下载；统一 ICAN/画布文案，删去登录页标题和说明。未运行外部插件，专用供应商配置不入公共仓库。见 docs/security/custom-api-templates.md。Go 全套、Web 26 项、导演台 294 项、生产前端构建、真实浏览器登录/双账号/导演台及后台保存回归通过；85 组专用模板请求 fixture 通过，证据为 docs/security/evidence/custom-api-local.json。CI 40110294471 构建、测试、扫描、实际 Compose 与发布全通过；镜像源码 9b3b8db415e785c7e179e135185f257a016d697b，digest 见 docs/security/evidence/ghcr-v0.1.2-publication.json。已核对匿名 manifest、配置 digest、源码及版本标签。Release 40110729630 发布成功，tag 与六个附件 SHA256 已核对，见 docs/security/evidence/prerelease-v0.1.2.json，未操作服务器。
@@ -18,7 +20,7 @@ v0.1.0 预发布已发布，流水线 40099763230 全通过；已核对 tag 指�
 
 本轮用户授权 GitHub 构建、检查后发布 GHCR，禁止自动部署服务器。Compose 固定 1.6 CPU / 1.5 GiB；服务器仅拉 digest，更新保留原数据和密钥。流程见 `docs/security/ghcr-deployment.md`，现有生产阻断项继续生效。首次 GHCR 流水线 40098999311 全通过，源码 `4702d09c590769f5ec73ef3de6b312702bcea7e3`；实际 digest 和检查证据见 `docs/security/evidence/ghcr-publication.json`。
 
-当前版本 **0.1.2**，只维护 `main`。最新工作顺序：暂停功能扩充，先收尾资源边界、会话凭据和更新恢复，再做最终镜像与服务器部署验收；详见 `docs/progress/todo.md`。本轮精简记录见 `docs/security/repository-cleanup.md`。保留数据库模型、持久数据路径、密钥和共享协议辅助函数；没有修改线上部署。下面的旧候选分支记录仅用于追溯历史验证，不是当前检出指令。
+早期 0.1.2 阶段记录（仅追溯）：只维护 `main`。最新工作顺序：暂停功能扩充，先收尾资源边界、会话凭据和更新恢复，再做最终镜像与服务器部署验收；详见 `docs/progress/todo.md`。本轮精简记录见 `docs/security/repository-cleanup.md`。保留数据库模型、持久数据路径、密钥和共享协议辅助函数；没有修改线上部署。下面的旧候选分支记录仅用于追溯历史验证，不是当前检出指令。
 
 用户最新要求：确认不影响当前构建的扫描项不计入有效风险数；原始证据保留。runtime-candidate-ci.json 为 GO-2026-5932 增加按具体镜像绑定的排除及有效计数，旧待复核 CVE 不随之自动排除。用户还明确要求频繁更新容器时保留既有账号、媒体、个人 API 和管理员中转站配置；AGENTS.md 已改为要求版本化增量迁移。现有绑定目录和加密配置支持持久保存，但当前启动 AutoMigrate 不等于完整迁移机制，跨版本恢复/迁移仍列入阻断项。详见 docker-operations.md 数据保留章节。
 
