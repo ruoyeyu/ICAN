@@ -91,6 +91,8 @@ chmod 600 .env
 
 CPU、内存参数放在 `.env.example` 和 Compose 前部。按机器规格修改 `ICAN_CPUS=1.6`、`ICAN_MEMORY=1536m`，再按[修改步骤](docs/security/ghcr-deployment.zh-CN.md#修改-cpu内存)重建、检查并启动容器即可，**不用重新编译**；保留原数据目录与密钥。
 
+公共编译版本：[ICAN v0.1.0](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0)，包含[镜像与验证记录](docs/security/evidence/ghcr-v0.1.0-restart-publication.json)。
+
 GitHub Actions 在完成构建、测试和安全检查后发布 GHCR 镜像。服务器只拉取并运行成功记录中的不可变 digest，不执行编译；详见 [GHCR 部署、更新和回滚说明](docs/security/ghcr-deployment.zh-CN.md)。
 
 

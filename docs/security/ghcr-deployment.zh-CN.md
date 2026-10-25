@@ -4,13 +4,13 @@ ICAN 的 Go 后端、Web 前端和导演台全部由 GitHub Actions 编译。服
 
 ## 本次已发布成品
 
-[流水线 40180373140](https://github.com/ruoyeyu/ICAN/actions/runs/40180373140) 的构建、检查及发布全部通过。源码 commit：`4cef8067138572047233b72e0fe67373bc1d3242`。
+[流水线 40184337184](https://github.com/ruoyeyu/ICAN/actions/runs/40184337184) 的构建、检查及发布全部通过。源码 commit：`53f8aa31d8fd803668cc138b3d91262ea9903c89`。
 
 ```sh
-docker pull ghcr.io/ruoyeyu/ican@sha256:c76a785e13e8893690945db4132db6f5a7fee2325899cceb357b12a8808ad607
+docker pull ghcr.io/ruoyeyu/ican@sha256:79e0eec12706e735ccf8243776944abc339d677e9b27d29fa7c8152934ab3887
 ```
 
-[镜像及检查记录](evidence/ghcr-v0.1.3-publication.json) · [完整原始安全证据](evidence/ghcr-40180373140-evidence.zip)。
+[镜像及检查记录](evidence/ghcr-v0.1.0-restart-publication.json) · [完整原始安全证据](evidence/ghcr-40184337184-evidence.zip)。
 
 上述镜像 manifest 已验证可匿名获取且 digest 一致，无需登录 GitHub。
 
@@ -76,7 +76,7 @@ curl --fail "http://127.0.0.1:$ICAN_REVIEWED_HOST_PORT/api/health"
 
 ## 更新和回滚
 
-v0.1.3 不增加数据库列；旧账号、渠道 ID、配置和素材沿用。新表单规则含旧版不支持的原始参数变量，回退 v0.1.2 必须同时恢复更新前的配置或匹配备份，不能只换旧镜像。旧版程序创建测试数据后，备份副本升级、重启和恢复旧版已验证，见 [本地证据](evidence/api-config-ui-local.json)。生产数据和期间新增内容仍需单独验收与保留。
+v0.1.0 不增加数据库列；旧账号、渠道 ID、配置和素材沿用。新表单规则含旧版不支持的原始参数变量，回退 v0.1.2 必须同时恢复更新前的配置或匹配备份，不能只换旧镜像。旧版程序创建测试数据后，备份副本升级、重启和恢复旧版已验证，见 [本地证据](evidence/api-config-ui-local.json)。生产数据和期间新增内容仍需单独验收与保留。
 
 1. 先拉取新 digest，保留旧 digest 及对应 Compose、配置和密钥。不要删除正在使用或回滚需要的 GHCR 镜像版本。
 2. 先在数据副本验收新版本。维护窗口停止应用写入后，备份整个数据目录（SQLite 主库、WAL/SHM、媒体等），另外安全备份环境配置和密钥。备份放在应用不可写的位置，验证能够恢复和解密；不能只复制运行中的 `.db`。

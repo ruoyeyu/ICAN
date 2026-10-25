@@ -2,17 +2,17 @@
 
 [简体中文](ghcr-deployment.zh-CN.md)
 
-ICAN 0.1.3 is built on GitHub Actions for **linux/amd64**. The server needs Docker Engine, Compose v2 and Python 3 for the read-only policy checker; it does not compile Go, Node or Director code. No workflow connects to a deployment server.
+ICAN 0.1.0 is built on GitHub Actions for **linux/amd64**. The server needs Docker Engine, Compose v2 and Python 3 for the read-only policy checker; it does not compile Go, Node or Director code. No workflow connects to a deployment server.
 
 ## Verified publication
 
-[CI 40180373140](https://github.com/ruoyeyu/ICAN/actions/runs/40180373140) passed, including publication and registry digest verification. Source: `4cef8067138572047233b72e0fe67373bc1d3242`.
+[CI 40184337184](https://github.com/ruoyeyu/ICAN/actions/runs/40184337184) passed, including publication and registry digest verification. Source: `53f8aa31d8fd803668cc138b3d91262ea9903c89`.
 
 ```text
-ghcr.io/ruoyeyu/ican@sha256:c76a785e13e8893690945db4132db6f5a7fee2325899cceb357b12a8808ad607
+ghcr.io/ruoyeyu/ican@sha256:79e0eec12706e735ccf8243776944abc339d677e9b27d29fa7c8152934ab3887
 ```
 
-[Publication and check results](evidence/ghcr-v0.1.3-publication.json) · [Raw security evidence](evidence/ghcr-40180373140-evidence.zip). These records describe this exact image; later builds require their own records.
+[Publication and check results](evidence/ghcr-v0.1.0-restart-publication.json) · [Raw security evidence](evidence/ghcr-40184337184-evidence.zip). These records describe this exact image; later builds require their own records.
 
 The manifest above was also retrieved anonymously and its digest verified. This published image is accessible without a GitHub login.
 
@@ -111,7 +111,7 @@ A checksum proves archive integrity, not recoverability. Test restoration and de
 
 ## Rollback
 
-v0.1.3 adds no database columns. Its versioned form rules use raw-parameter variables unsupported by v0.1.2: **restore pre-update channel configuration or the matching full backup when downgrading**, not just the old image. A real old-binary fixture passed backup-copy upgrade, restart and old-version restore; see [local evidence](evidence/api-config-ui-local.json). Production data and post-update writes still require separate acceptance and preservation.
+v0.1.0 adds no database columns. Its versioned form rules use raw-parameter variables unsupported by v0.1.2: **restore pre-update channel configuration or the matching full backup when downgrading**, not just the old image. A real old-binary fixture passed backup-copy upgrade, restart and old-version restore; see [local evidence](evidence/api-config-ui-local.json). Production data and post-update writes still require separate acceptance and preservation.
 
 Stop the new app and preserve its current data separately; writes made after the backup may need reconciliation. Never let old and new containers write the same SQLite directory concurrently.
 

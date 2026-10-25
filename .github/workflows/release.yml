@@ -23,8 +23,8 @@ jobs:
         with:
           persist-credentials: false
       - name: Test release failure gates
-        run: python3 -B -m unittest discover -s .github/release -p test_publish.py -v
+        run: python3 -B -m unittest discover -s .github/release -p 'test_*.py' -v
       - name: Validate checked image and publish pre-release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 .github/release/publish.py
+        run: python3 .github/release/restart_release.py
