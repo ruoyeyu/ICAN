@@ -22,4 +22,4 @@
 
 `api-config-ui-local.json`：v0.1.3 通用接口表单、版本化导入导出、请求捕获、私有素材、任务恢复以及旧版本数据副本升级/回滚的本地验证索引；供应商 mock 与真实供应商验收分开记录。
 
-- `ghcr-v0.1.3-publication.json` 与 `ghcr-40179792350-evidence.zip`：界面接口配置版本的源码、固定镜像、完整扫描/SBOM/原生组件、隔离和 Compose 检查。原始 UNKNOWN 记录保留，受影响 openpgp 包不在该构建依赖路径中。
+- `ghcr-v0.1.3-publication.json` 与 `ghcr-40180373140-evidence.zip`：界面接口配置版本的源码、固定镜像、完整扫描/SBOM/原生组件、隔离和 Compose 检查。原始 UNKNOWN 记录保留，受影响 openpgp 包不在该构建依赖路径中。

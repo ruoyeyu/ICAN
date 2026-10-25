@@ -6,13 +6,13 @@ ICAN 0.1.3 is built on GitHub Actions for **linux/amd64**. The server needs Dock
 
 ## Verified publication
 
-[CI 40179792350](https://github.com/ruoyeyu/ICAN/actions/runs/40179792350) passed, including publication and registry digest verification. Source: `e03fc098cca2efdbac74a9e85f61b81692f9d4f9`.
+[CI 40180373140](https://github.com/ruoyeyu/ICAN/actions/runs/40180373140) passed, including publication and registry digest verification. Source: `4cef8067138572047233b72e0fe67373bc1d3242`.
 
 ```text
-ghcr.io/ruoyeyu/ican@sha256:7c67aebfd53e60b2bbcdf5eed80b68742a756c9e5ca22bd5b3f6a601305d5580
+ghcr.io/ruoyeyu/ican@sha256:c76a785e13e8893690945db4132db6f5a7fee2325899cceb357b12a8808ad607
 ```
 
-[Publication and check results](evidence/ghcr-v0.1.3-publication.json) · [Raw security evidence](evidence/ghcr-40179792350-evidence.zip). These records describe this exact image; later builds require their own records.
+[Publication and check results](evidence/ghcr-v0.1.3-publication.json) · [Raw security evidence](evidence/ghcr-40180373140-evidence.zip). These records describe this exact image; later builds require their own records.
 
 The manifest above was also retrieved anonymously and its digest verified. This published image is accessible without a GitHub login.
 

@@ -1,12 +1,12 @@
 {
-  "sourceCommit": "e03fc098cca2efdbac74a9e85f61b81692f9d4f9",
-  "image": "ghcr.io/ruoyeyu/ican@sha256:7c67aebfd53e60b2bbcdf5eed80b68742a756c9e5ca22bd5b3f6a601305d5580",
-  "tag": "ghcr.io/ruoyeyu/ican:sha-e03fc098cca2efdbac74a9e85f61b81692f9d4f9-run-40179792350-1",
-  "imageId": "sha256:97c405055b9fa16a9b0451c7a0cb6c90dbc11f629a8c04d4270c8208f2c2abea",
+  "sourceCommit": "4cef8067138572047233b72e0fe67373bc1d3242",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:c76a785e13e8893690945db4132db6f5a7fee2325899cceb357b12a8808ad607",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-4cef8067138572047233b72e0fe67373bc1d3242-run-40180373140-1",
+  "imageId": "sha256:e7eb07f3ce19f3be75481870634ac6ff1217e55f117d4e3484630a93d11d0bf8",
   "platform": "linux/amd64",
   "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
   "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
-  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40179792350",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40180373140",
   "runAttempt": "1",
   "productionApproved": false,
   "scanMatches": {
@@ -39,7 +39,8 @@
     "runtimeRegression": "passed",
     "actualComposeAtRequestedLimits": "passed",
     "localBrowserEvidence": "api-config-ui-local.json",
-    "privateSupplierContract": "4 mock cases; no paid calls"
+    "privateSupplierContract": "4 mock cases; no paid calls",
+    "sourceVersionMetadata": "passed"
   },
   "runtimeLimits": {
     "cpus": 1.6,
@@ -47,13 +48,28 @@
     "additionalSwap": false
   },
   "evidenceArchive": {
-    "path": "ghcr-40179792350-evidence.zip",
-    "sha256": "a772c0a67fd0570b6bef5cf0e69b5cd6ce760e9d6b074cb3038df7d01b3c0edd",
-    "artifactId": 12593561463
+    "path": "ghcr-40180373140-evidence.zip",
+    "sha256": "605309debfa37e2099181eb3ac63ea28c692bcc587e0745c425dcc8b8551b0bd",
+    "artifactId": 12594292482
   },
   "publicationArtifact": {
-    "id": 12594366615,
-    "sha256": "4c25f9fc93a8713a4a19550854555e30c0eeca1bcf63bdc7dde3d29aa62c44e8"
+    "id": 12594481859,
+    "sha256": "c77aa77246b6ac36e84b454abe7efc37c14b511451e5fa23ef5ca122f9f21c1e"
+  },
+  "publicContentReview": {
+    "sourceCommit": "4cef8067138572047233b72e0fe67373bc1d3242",
+    "review": {
+      "files": 612,
+      "zipEntries": 20,
+      "gzipEntries": 20
+    },
+    "knownInternalIdentifiersFound": 0,
+    "historicalCommitsRewritten": false
+  },
+  "priorReleaseAttempt": {
+    "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40180221674",
+    "conclusion": "blocked before release creation: root VERSION lacked tag prefix",
+    "resolution": "source metadata corrected; version consistency now checked before image build; no gate bypass"
   },
   "anonymousRegistryPullCheck": {
     "passed": true,

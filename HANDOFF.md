@@ -1,6 +1,6 @@
 # ICAN 交接
 
-本轮目标 v0.1.3：沿用原渠道/Goja 转译，增加表单与通用预设、v1 无凭据导入导出、逐模型参数和参考编码。视频明确 URL 输入复用上传及归属授权，补齐显式内容下载与跨来源重定向拒绝；私有供应商配置不进公开仓库。没有修改生产服务器。配置版本与回滚要求见 docs/security/custom-api-templates.md；本地 Go/Web/导演台/生产构建、浏览器导入编辑导出与请求捕获、v0.1.2 数据副本升级/回滚已验证，见 docs/security/evidence/api-config-ui-local.json。CI 40179792350 构建、检查与 GHCR 发布通过；源码 e03fc098cca2efdbac74a9e85f61b81692f9d4f9，digest 见 docs/security/evidence/ghcr-v0.1.3-publication.json；匿名 manifest/config、版本标签已核对。Release 附件发布待核验。
+本轮目标 v0.1.3：沿用原渠道/Goja 转译，增加表单与通用预设、v1 无凭据导入导出、逐模型参数和参考编码。视频明确 URL 输入复用上传及归属授权，补齐显式内容下载与跨来源重定向拒绝；私有供应商配置不进公开仓库。没有修改生产服务器。配置版本与回滚要求见 docs/security/custom-api-templates.md；本地 Go/Web/导演台/生产构建、浏览器导入编辑导出与请求捕获、v0.1.2 数据副本升级/回滚已验证，见 docs/security/evidence/api-config-ui-local.json。CI 40180373140 构建、检查与 GHCR 发布通过；源码 4cef8067138572047233b72e0fe67373bc1d3242，digest 见 docs/security/evidence/ghcr-v0.1.3-publication.json；匿名 manifest/config、版本标签已核对。Release 附件发布待核验。
 
 v0.1.2 本轮修改：修复后台 local 存储误转 s3，保留渠道权限与配置；扩展现有图片模板的参考编码、二进制 multipart、原始参数、显式同源内容下载；统一 ICAN/画布文案，删去登录页标题和说明。未运行外部插件，专用供应商配置不入公共仓库。见 docs/security/custom-api-templates.md。Go 全套、Web 26 项、导演台 294 项、生产前端构建、真实浏览器登录/双账号/导演台及后台保存回归通过；85 组专用模板请求 fixture 通过，证据为 docs/security/evidence/custom-api-local.json。CI 40110294471 构建、测试、扫描、实际 Compose 与发布全通过；镜像源码 9b3b8db415e785c7e179e135185f257a016d697b，digest 见 docs/security/evidence/ghcr-v0.1.2-publication.json。已核对匿名 manifest、配置 digest、源码及版本标签。Release 40110729630 发布成功，tag 与六个附件 SHA256 已核对，见 docs/security/evidence/prerelease-v0.1.2.json，未操作服务器。
 

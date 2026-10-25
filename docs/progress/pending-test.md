@@ -6,7 +6,7 @@
 - 视频 URL 参考素材、首尾帧、原始参数、未知状态等待、快照恢复和显式鉴权下载。
 - 待用户验收：实际供应商的未测试参考模式、真实部署域名上的授权链接可达性、逐模型选项合同。未付费调用。
 - 高级代码保留；自动导出仅覆盖可验证的表单规则。新增协议外能力仍需发版。
-- CI 40179792350 镜像检查与 GHCR 发布通过，固定 digest 与原始扫描见 `../security/evidence/ghcr-v0.1.3-publication.json`。浏览器和版本副本恢复见 `../security/evidence/api-config-ui-local.json`；原生产资源/会话/完整数据恢复阻断项不自动关闭。
+- CI 40180373140 镜像检查与 GHCR 发布通过，固定 digest 与原始扫描见 `../security/evidence/ghcr-v0.1.3-publication.json`。浏览器和版本副本恢复见 `../security/evidence/api-config-ui-local.json`；原生产资源/会话/完整数据恢复阻断项不自动关闭。
 
 - v0.1.2：修复两个渠道权限开关保存时本地存储类型被改写；新增可选图片参考编码、真实 multipart、原始参数和显式同源图片内容下载。平台品牌改为 ICAN/画布，登录标题与说明移除。配置、存储 ID 和密钥保留；说明及验证见 `../security/custom-api-templates.md`。CI 40110294471 构建、检查及 GHCR 发布全通过，记录见 `../security/evidence/ghcr-v0.1.2-publication.json`；Release 40110729630 发布成功，tag 与六个附件 SHA256 已核对，见 docs/security/evidence/prerelease-v0.1.2.json。没有操作服务器，真实供应商与生产验收待完成。
 
