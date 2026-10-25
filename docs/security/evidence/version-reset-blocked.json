@@ -1,0 +1,15 @@
+{
+  "checkedSource": "53f8aa31d8fd803668cc138b3d91262ea9903c89",
+  "checkedImage": "ghcr.io/ruoyeyu/ican@sha256:79e0eec12706e735ccf8243776944abc339d677e9b27d29fa7c8152934ab3887",
+  "successfulImageCI": "https://github.com/ruoyeyu/ICAN/actions/runs/40184337184",
+  "blockedReleaseRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40184699886",
+  "reason": "GitHub rejected the atomic tag update because the Actions token lacks workflows permission for updating a ref across workflow changes. The connected API exposes branch updates but no tag-management mutation.",
+  "atomicResult": "No refs changed; no release was created. Existing tags verified after rejection.",
+  "tags": {
+    "v0.1.0": "4702d09c590769f5ec73ef3de6b312702bcea7e3",
+    "v0.1.3": "4cef8067138572047233b72e0fe67373bc1d3242"
+  },
+  "releaseCount": 0,
+  "cleanup": "Remove temporary tag-reset code; keep regular publication gates. Owner must reset exact refs before running Publish checked pre-release.",
+  "serverChanged": false
+}

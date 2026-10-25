@@ -91,7 +91,6 @@ Supplier templates: [site administration, personal imports and account sync](doc
 
 CPU and memory are the first settings in `.env.example` and Compose. Change `ICAN_CPUS=1.6` and `ICAN_MEMORY=1536m` to suit your server, then recreate/check/start the container using the [update steps](docs/security/ghcr-deployment.md#change-cpu-and-memory). No compilation is needed; keep the original data directory and keys.
 
-Prebuilt public version: [ICAN v0.1.0](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0), with the [image and verification record](docs/security/evidence/ghcr-v0.1.0-restart-publication.json).
 
 GitHub Actions now builds and checks the image before publishing it to GHCR. Deploy the immutable digest from the successful run; the server only pulls and runs the image. See [GHCR deployment, updates and rollback](docs/security/ghcr-deployment.md).
 
@@ -139,3 +138,5 @@ The original project is [basketikun/infinite-canvas](https://github.com/basketik
 ICAN retains the [AGPL-3.0](LICENSE) license of the adopted code base, along with original attribution and copyright notices; see [NOTICE](NOTICE).
 
 This fork modifies the upstream UI and default integrations, adds invitation-only registration and session revocation, encrypts saved sensitive settings, enforces media ownership and controlled provider links, checks server outbound requests, updates dependencies, and adds container isolation and verification. See the [hardening review](docs/security/hardening-review.md) and [supply-chain review](docs/security/supply-chain-review.md) for implementation details and test results.
+
+The checked current image is available in [GHCR](docs/security/ghcr-deployment.md). Restoring the v0.1.0 Release is waiting on the repository owner’s [tag reset](docs/security/version-reset.md).

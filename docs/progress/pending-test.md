@@ -1,6 +1,7 @@
 # 本版本待验收
 
-最新源码 `53f8aa31d8fd803668cc138b3d91262ea9903c89` 的 CI 40184337184 已通过：Go/Web 31/导演台 294、隔离与账号/模板重启恢复、两组 Compose 限额、运行时回归和扫描均通过。固定 digest 与匿名核验见 `docs/security/evidence/ghcr-v0.1.0-restart-publication.json`（pending-test 相对路径为 `../security/evidence/ghcr-v0.1.0-restart-publication.json`）。当前发布流程复核证据后重置标签并发布 v0.1.0；没有操作服务器。
+发布状态：应用源码和镜像已通过 CI 40184337184，GHCR digest 可用；v0.1.0 Release 尚未创建。标签重置被 GitHub 的 workflows 权限检查拒绝，原子操作未改任何标签，证据见 `../security/evidence/version-reset-blocked.json`。已移除一次性重置脚本，保留正常发布门槛。仓库所有者完成 `../security/version-reset.md` 的精确标签操作后，可手动运行 Publish checked pre-release。未操作服务器。
+最新源码 `53f8aa31d8fd803668cc138b3d91262ea9903c89` 的 CI 40184337184 已通过：Go/Web 31/导演台 294、隔离与账号/模板重启恢复、两组 Compose 限额、运行时回归和扫描均通过。固定 digest 与匿名核验见 `../security/evidence/ghcr-v0.1.0-restart-publication.json`。发布复核通过，但标签重置权限阻断尚未解除；没有操作服务器。
 - 本轮新增站点供应商模板 CRUD、目录即时发现、个人模板随账号同步，复用原转译和账号存储；不预置私人模板，已有渠道不受模板更新/删除影响。Go/Web 与生产浏览器回归通过，证据为 `../security/evidence/supplier-template-local.json`；最终镜像检查待记录。使用见 `../security/supplier-templates.zh-CN.md`。
 ## 当前 v0.1.0 重新编号
 

@@ -91,7 +91,6 @@ chmod 600 .env
 
 CPU、内存参数放在 `.env.example` 和 Compose 前部。按机器规格修改 `ICAN_CPUS=1.6`、`ICAN_MEMORY=1536m`，再按[修改步骤](docs/security/ghcr-deployment.zh-CN.md#修改-cpu内存)重建、检查并启动容器即可，**不用重新编译**；保留原数据目录与密钥。
 
-公共编译版本：[ICAN v0.1.0](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.0)，包含[镜像与验证记录](docs/security/evidence/ghcr-v0.1.0-restart-publication.json)。
 
 GitHub Actions 在完成构建、测试和安全检查后发布 GHCR 镜像。服务器只拉取并运行成功记录中的不可变 digest，不执行编译；详见 [GHCR 部署、更新和回滚说明](docs/security/ghcr-deployment.zh-CN.md)。
 
@@ -137,3 +136,5 @@ bun run build
 ICAN 沿用所采用代码版本的 [AGPL-3.0](LICENSE) 协议，保留原作者署名和版权说明，详见 [NOTICE](NOTICE)。
 
 本分支修改了上游界面和默认接入，新增邀请码注册与会话撤销、敏感配置加密、素材归属检查和受控供应商链接、服务端出站请求防护，并更新依赖、补充容器隔离与验证。具体实现与验证结果见[安全加固记录](docs/security/hardening-review.md)与[供应链复核](docs/security/supply-chain-review.md)。
+
+当前已验证镜像可从 [GHCR 拉取](docs/security/ghcr-deployment.zh-CN.md)。v0.1.0 Release 的恢复等待仓库所有者完成[标签重置](docs/security/version-reset.md)。
