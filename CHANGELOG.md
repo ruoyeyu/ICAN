@@ -8,10 +8,11 @@ This release restarts the public version series using the latest main-line imple
 
 - Keep the canvas, text/image/video workflows, account sync, private media and source-built 3D Director.
 - Require login and invitation-only registration; isolate accounts and media, retain revocable sessions and encrypted server-side configuration, and enforce outbound request controls.
+- Added installation-local supplier template management and personal-template account sync; no private supplier presets are bundled.
 - Configure custom APIs through generic presets, per-model field/parameter/reference mappings, versioned credential-free import/export, asynchronous task recovery and authenticated media downloads.
 - Preserve exact prompts, models, ratios, resolution and duration strings. Reuse owner-scoped reference links and reject cross-origin credential redirects and active content disguised as media.
-- Keep account data, media, stable channel IDs, API credentials, legacy translation rules and original encryption keys. Resetting the release label does not change database or configuration formats.
-- Build/test on GitHub, publish the same checked image by immutable GHCR digest, and retain 1.6 CPU / 1.5 GiB Compose limits. No server-side compilation or automatic deployment.
+- Keep account data, media, stable channel IDs, API credentials, legacy translation rules and original encryption keys. The release-label reset does not downgrade data; personal templates add an optional account field.
+- Build/test on GitHub, publish the same checked image by immutable GHCR digest, and let each installation choose CPU/memory limits through prominent environment settings. No server-side compilation or automatic deployment.
 - Remove unrelated promotions, default paid-provider destinations and disabled workflows. Production resource/session/restore acceptance remains tracked in `docs/progress/todo.md`.
 
 ## Upstream history

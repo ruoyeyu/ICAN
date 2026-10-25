@@ -41,7 +41,7 @@ export type TemplateField = z.infer<typeof field>;
 const authoringSchema = z.object({ version: z.literal(1), models: z.array(templateModelSchema) }).strict().refine(v => new Set(v.models.map(m => m.name)).size === v.models.length, "模型名称不能重复");
 export type TemplateAuthoring = z.infer<typeof authoringSchema>;
 const baseURL = z.string().url().refine(s => { const u = new URL(s); return ["https:", "http:"].includes(u.protocol) && !u.username && !u.password && !u.search && !u.hash; }, "基础地址不能含凭据、查询参数或片段");
-const exportSchema = z.object({ format: z.literal("ican-channel"), version: z.literal(1), name: z.string().min(1), baseUrl: baseURL, protocol: z.enum(["custom", "openai"]), models: z.array(z.string().min(1)).min(1), modelCapabilities: z.record(z.string(), z.enum(["image", "video", "audio", "text"])), authoring: authoringSchema }).strict().refine(v => new Set(v.models).size === v.models.length && v.authoring.models.every(m => v.models.includes(m.name)), "模型列表重复或遗漏了转译模型");
+const exportSchema = z.object({ format: z.literal("ican-channel"), version: z.literal(1), name: z.string().min(1), instructions: z.string().optional(), baseUrl: baseURL, protocol: z.enum(["custom", "openai"]), models: z.array(z.string().min(1)).min(1), modelCapabilities: z.record(z.string(), z.enum(["image", "video", "audio", "text"])), authoring: authoringSchema }).strict().refine(v => new Set(v.models).size === v.models.length && v.authoring.models.every(m => v.models.includes(m.name)) && Object.keys(v.modelCapabilities).every(m => v.models.includes(m)), "模型列表重复或遗漏了转译模型");
 export type ChannelTemplate = z.infer<typeof exportSchema>;
 
 function assertNoCredentials(value: unknown): void {

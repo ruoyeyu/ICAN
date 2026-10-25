@@ -64,3 +64,14 @@ test("declared model behavior is scoped to channel/model and keyless auth is exp
   assert.equal(usesCustomVideoInterface({...config,activeChannelId:"missing",videoChannelId:"missing"},"fixture-video"),false);
  } finally {useUserStore.setState(oldUser);useChannelTranslationStore.setState({accounts:oldAccounts});}
 });
+
+
+test("supplier instructions remain data and personal presets remain credential free", () => {
+ const template=importChannelTemplate(exportChannelTemplate(channel,compileTemplate(authoring)));
+ template.instructions='<img src=x onerror=alert(1)> is displayed as plain text';
+ assert.equal(importChannelTemplate(JSON.stringify(template)).instructions,template.instructions);
+ assert.throws(()=>importChannelTemplate(JSON.stringify({...template,source:'https://remote.invalid/auto-update.js'})));
+ const copy=structuredClone(template);copy.name="Other supplier";copy.baseUrl="https://other.example.invalid";
+ assert.notEqual(copy.baseUrl,template.baseUrl);
+ assert.equal(compileTemplate(copy.authoring),compileTemplate(template.authoring));
+});

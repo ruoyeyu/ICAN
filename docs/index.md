@@ -12,3 +12,5 @@
 - [待验收](progress/pending-test.md)
 
 其他上游文档仅作为源码设计参考；其中部署和集成功能以本分支安全文档为准。
+
+- `security/supplier-templates.md` / `security/supplier-templates.zh-CN.md`：站点供应商模板目录、个人模板同步、使用与回滚。

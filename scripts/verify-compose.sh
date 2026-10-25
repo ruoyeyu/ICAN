@@ -25,7 +25,7 @@ values = {'ICAN_IMAGE': sys.argv[2], 'ICAN_DATA_DIR': str(root / 'data'), 'ICAN_
           'ADMIN_PASSWORD': secrets.token_urlsafe(32), 'JWT_SECRET': secrets.token_urlsafe(48),
           'DATA_ENCRYPTION_KEY': base64.b64encode(secrets.token_bytes(32)).decode(),
           'AUTH_ATTEMPTS_PER_MINUTE': '1000', 'MEDIA_LINK_TTL_SECONDS': '60',
-          'ICAN_PIDS_LIMIT': '256',
+          'ICAN_PIDS_LIMIT': '256', 'ICAN_CPUS': '1.6', 'ICAN_MEMORY': '1536m',
           'ICAN_TMP_BYTES': '67108864', 'ICAN_CACHE_BYTES': '33554432'}
 with (root / 'fixture.env').open('w') as out:
     out.write('\n'.join(k + '=' + v for k, v in values.items()) + '\n')
@@ -37,7 +37,21 @@ docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --secu
 compose config --quiet
 compose create --no-build app
 ICAN_COMPOSE_CONTAINER=$(compose ps -aq app)
-python3 scripts/check-container.py "$ICAN_COMPOSE_CONTAINER" --image-id "$ICAN_REVIEWED_ID" --data-dir "$ICAN_COMPOSE_TMP/data" --host-port "$(cat "$ICAN_COMPOSE_TMP/port")" > compose-policy.json
+python3 scripts/check-container.py "$ICAN_COMPOSE_CONTAINER" --image-id "$ICAN_REVIEWED_ID" --data-dir "$ICAN_COMPOSE_TMP/data" --host-port "$(cat "$ICAN_COMPOSE_TMP/port")" --cpus 1.6 --memory 1536m > compose-policy.json
+# Inspect another operator-selected size, then restore the requested smoke-test size.
+env ICAN_CPUS=2 ICAN_MEMORY=2g docker compose -p "$ICAN_COMPOSE_PROJECT" --env-file "$ICAN_COMPOSE_TMP/fixture.env" -f docker-compose.yml create --no-build app
+ICAN_ALTERNATE_CONTAINER=$(compose ps -aq app)
+python3 scripts/check-container.py "$ICAN_ALTERNATE_CONTAINER" --image-id "$ICAN_REVIEWED_ID" --data-dir "$ICAN_COMPOSE_TMP/data" --host-port "$(cat "$ICAN_COMPOSE_TMP/port")" --cpus 2 --memory 2g > "$ICAN_COMPOSE_TMP/alternate-policy.json"
+python3 - "$ICAN_COMPOSE_TMP/alternate-policy.json" <<'PYALTERNATE'
+import json, pathlib, sys
+path = pathlib.Path('compose-policy.json')
+record = json.loads(path.read_text())
+record['alternateConfiguration'] = json.loads(pathlib.Path(sys.argv[1]).read_text())
+path.write_text(json.dumps(record, indent=2) + '\n')
+PYALTERNATE
+compose create --no-build app
+ICAN_COMPOSE_CONTAINER=$(compose ps -aq app)
+python3 scripts/check-container.py "$ICAN_COMPOSE_CONTAINER" --image-id "$ICAN_REVIEWED_ID" --data-dir "$ICAN_COMPOSE_TMP/data" --host-port "$(cat "$ICAN_COMPOSE_TMP/port")" --cpus 1.6 --memory 1536m >/dev/null
 compose start app
 docker exec -i "$ICAN_COMPOSE_CONTAINER" node < scripts/image-smoke.mjs
 # The host-published endpoint must respond; no public supplier calls are made.

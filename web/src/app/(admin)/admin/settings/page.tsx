@@ -18,6 +18,8 @@ import { clearStorageConfigCache as clearImageStorageConfigCache } from "@/servi
 import { useUserStore } from "@/stores/use-user-store";
 import type { ModelCapabilities } from "@/stores/use-config-store";
 
+import { ChannelTemplateManager } from "./components/channel-template-manager";
+
 const CodeMirror = dynamic(() => import("@uiw/react-codemirror"), { ssr: false });
 const WorkflowChannelPane = dynamic(() => import("@/components/workflow/workflow-channel-pane").then((module) => module.WorkflowChannelPane), { ssr: false });
 const jsonEditorTheme = EditorView.theme({
@@ -383,6 +385,7 @@ export default function AdminSettingsPage() {
     return (
         <main className="p-3 md:p-6">
             <Flex vertical gap={16}>
+                <ChannelTemplateManager />
                 <Card variant="borderless">
                     <Flex justify="space-between" align="center" gap={16} wrap>
                         <Tabs

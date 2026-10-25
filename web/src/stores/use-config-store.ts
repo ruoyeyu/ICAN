@@ -99,6 +99,7 @@ export type AiConfig = {
         workflowAgent: string;
     };
     localChannels: LocalModelChannel[];
+    channelTemplates: Array<{id: string; template: import("@/lib/channel-template").ChannelTemplate}>;
     publicChannels: Array<{ id?: string; protocol?: LocalModelChannel["protocol"]; name?: string; baseUrl?: string; models?: string[]; modelCapabilities?: ModelCapabilities; parameterTranslationModels?: string[]; parameterTranslationInputs?: Record<string, import("@/lib/translation-inputs").TranslationInputs>; parameterTranslationReferences?: Record<string, import("@/lib/channel-parameter-translation").TranslationReferences>; workflows?: WorkflowSummary[]; weight?: number; timeout?: number; enabled?: boolean; remark?: string }>;
     syncStorageConfig: boolean;
     syncWebDAVStorageConfig: boolean;
@@ -174,6 +175,7 @@ export const defaultConfig: AiConfig = {
         workflowAgent: "",
     },
     localChannels: [],
+    channelTemplates: [],
     publicChannels: [],
     syncStorageConfig: false,
     syncWebDAVStorageConfig: false,

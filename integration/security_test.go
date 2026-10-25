@@ -30,7 +30,7 @@ func (f transport) RoundTrip(r *http.Request) (*http.Response, error) { return f
 
 func TestSecurityBoundaries(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	config.Cfg = config.Config{PublicOrigin: "https://ican.invalid", DataEncryptionKey: base64.StdEncoding.EncodeToString(bytes.Repeat([]byte{7}, 32)), JWTSecret: strings.Repeat("test-only-secret", 4), JWTExpireHours: 1, StorageDriver: "sqlite", DatabaseDSN: ":memory:", MediaDir: t.TempDir(), AILogDir: t.TempDir(), MediaLinkTTLSeconds: 60, AuthAttemptsPerMinute: 1000}
+	config.Cfg = config.Config{PublicOrigin: "https://ican.invalid", DataEncryptionKey: base64.StdEncoding.EncodeToString(bytes.Repeat([]byte{7}, 32)), JWTSecret: strings.Repeat("test-only-secret", 4), JWTExpireHours: 1, StorageDriver: "sqlite", DatabaseDSN: ":memory:", APITemplateDir: t.TempDir(), MediaDir: t.TempDir(), AILogDir: t.TempDir(), MediaLinkTTLSeconds: 60, AuthAttemptsPerMinute: 1000}
 	db, err := repository.DB()
 	if err != nil {
 		t.Fatal(err)
@@ -100,6 +100,69 @@ func TestSecurityBoundaries(t *testing.T) {
 		t.Fatal(err)
 	}
 	aliceCtx := service.WithUser(context.Background(), alice.User)
+	t.Run("supplier-template-permissions-and-personal-sync", func(t *testing.T) {
+		raw, err := os.ReadFile("../web/scripts/fixtures/channel-template-v1.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		body := `{"template":` + string(raw) + `}`
+		for _, token := range []string{"", alice.Token, bob.Token} {
+			if successful(request("POST", "/api/admin/channel-templates", token, body)) {
+				t.Fatal("non-admin template write")
+			}
+		}
+		if request("GET", "/api/v1/channel-templates", "", "").Code != 401 {
+			t.Fatal("anonymous catalog")
+		}
+		w := request("POST", "/api/admin/channel-templates", adminSession.Token, body)
+		if !successful(w) {
+			t.Fatal(w.Body.String())
+		}
+		var saved struct {
+			Data service.ChannelTemplateEntry `json:"data"`
+		}
+		json.Unmarshal(w.Body.Bytes(), &saved)
+		for _, token := range []string{alice.Token, bob.Token} {
+			if !successful(request("GET", "/api/v1/channel-templates/"+saved.Data.ID, token, "")) {
+				t.Fatal("site template not shared")
+			}
+			if successful(request("POST", "/api/admin/channel-templates/"+saved.Data.ID, token, body)) {
+				t.Fatal("non-admin edit")
+			}
+			if successful(request("DELETE", "/api/admin/channel-templates/"+saved.Data.ID, token, "")) {
+				t.Fatal("non-admin delete")
+			}
+		}
+		personal := `{"config":{"channelTemplates":[{"id":"personal-one","template":` + string(raw) + `}]}}`
+		if !successful(request("POST", "/api/v1/user-config/model", alice.Token, personal)) {
+			t.Fatal("personal template save")
+		}
+		if !strings.Contains(request("GET", "/api/v1/user-config", alice.Token, "").Body.String(), "personal-one") {
+			t.Fatal("personal template restore")
+		}
+		if strings.Contains(request("GET", "/api/v1/user-config", bob.Token, "").Body.String(), "personal-one") {
+			t.Fatal("cross-account template leak")
+		}
+		if !successful(request("POST", "/api/v1/user-config/model", alice.Token, `{"config":{"localChannels":[]}}`)) {
+			t.Fatal("old client save")
+		}
+		if !strings.Contains(request("GET", "/api/v1/user-config", alice.Token, "").Body.String(), "personal-one") {
+			t.Fatal("old client erased templates")
+		}
+		if err := service.DeleteChannelTemplate(saved.Data.ID, saved.Data.Revision); err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(request("GET", "/api/v1/user-config", alice.Token, "").Body.String(), "personal-one") {
+			t.Fatal("catalog deletion changed account")
+		}
+		if !successful(request("POST", "/api/v1/user-config/model", alice.Token, `{"config":{"channelTemplates":[]}}`)) {
+			t.Fatal("personal template deletion")
+		}
+		if strings.Contains(request("GET", "/api/v1/user-config", alice.Token, "").Body.String(), "personal-one") {
+			t.Fatal("personal deletion ignored")
+		}
+	})
+
 	t.Run("invite-single-use-and-hashed", func(t *testing.T) {
 		if _, err := service.Register("third", "password", code); err == nil {
 			t.Fatal("reused invitation")

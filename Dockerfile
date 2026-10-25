@@ -28,6 +28,7 @@ COPY repository ./repository
 COPY router ./router
 COPY service ./service
 COPY integration ./integration
+COPY web/scripts/fixtures /app/web/scripts/fixtures
 COPY internal ./internal
 COPY main.go ./
 RUN CGO_ENABLED=0 go test ./... && CGO_ENABLED=0 go build -trimpath -o /server .

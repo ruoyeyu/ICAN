@@ -8,7 +8,7 @@ const repo=process.cwd(), origin='http://127.0.0.1:3417';
 assert.ok(process.env.ICAN_TEST_API_BINARY, 'Set ICAN_TEST_API_BINARY to the locally built API binary');
 assert.ok(process.env.ICAN_TEST_CHROMIUM, 'Set ICAN_TEST_CHROMIUM to an installed test Chromium');
 const data=fs.mkdtempSync(os.tmpdir()+'/ican-login-');
-const api=spawn(process.env.ICAN_TEST_API_BINARY,[],{cwd:repo,env:{...process.env,PUBLIC_ORIGIN:origin,PORT:'3418',ADMIN_USERNAME:'fixture-admin',ADMIN_PASSWORD:'fixture-admin-password-only',JWT_SECRET:crypto.randomBytes(48).toString('hex'),DATA_ENCRYPTION_KEY:crypto.randomBytes(32).toString('base64'),DATABASE_DSN:data+'/ican.db',MEDIA_DIR:data+'/media',AI_LOG_DIR:data+'/logs',AUTH_ATTEMPTS_PER_MINUTE:'1000',MEDIA_LINK_TTL_SECONDS:'60'},stdio:'ignore'});
+const api=spawn(process.env.ICAN_TEST_API_BINARY,[],{cwd:repo,env:{...process.env,PUBLIC_ORIGIN:origin,PORT:'3418',ADMIN_USERNAME:'fixture-admin',ADMIN_PASSWORD:'fixture-admin-password-only',JWT_SECRET:crypto.randomBytes(48).toString('hex'),DATA_ENCRYPTION_KEY:crypto.randomBytes(32).toString('base64'),API_TEMPLATE_DIR:data+'/api-templates',DATABASE_DSN:data+'/ican.db',MEDIA_DIR:data+'/media',AI_LOG_DIR:data+'/logs',AUTH_ATTEMPTS_PER_MINUTE:'1000',MEDIA_LINK_TTL_SECONDS:'60'},stdio:'ignore'});
 const next=spawn(process.execPath,['server.js'],{cwd:repo+'/web/.next/standalone',env:{...process.env,PORT:'3417',HOSTNAME:'127.0.0.1',NODE_ENV:'production',NEXT_TELEMETRY_DISABLED:'1',API_BASE_URL:'http://127.0.0.1:3418'},stdio:'ignore'});
 let browser;
 async function call(path,body,token){const r=await fetch(origin+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body)});const j=await r.json();assert.equal(j.code,0,path);return j.data;}
@@ -42,12 +42,12 @@ const download=await downloadEvent;const stream=await download.createReadStream(
 assert.equal(exported.authoring.models[0].path,'/edited-jobs');assert.ok(!JSON.stringify(exported).includes('fixture-private-key'));
 const saving=page.waitForResponse(r=>r.url().endsWith('/api/v1/user-config/model')&&r.request().method()==='POST');
 await page.getByRole('button',{name:/^完\s*成$/}).click();assert.equal((await(await saving).json()).code,0);
-const saved=await call('/api/v1/user-config',undefined,alice.token);const channel=saved.modelConfig.localChannels.find(c=>c.name==='Async video fixture');
+const saved=await call('/api/v1/user-config',undefined,alice.token);assert.equal(saved.modelConfig.channelTemplates.length,1);assert.ok(!JSON.stringify(saved.modelConfig.channelTemplates).includes('fixture-private-key'));const channel=saved.modelConfig.localChannels.find(c=>c.name==='Async video fixture');
 assert.ok(channel);assert.equal(channel.apiKey,'fixture-private-key');assert.ok(saved.modelConfig.channelTranslations.find(t=>t.channelId===channel.id).parameterTranslation.includes('/edited-jobs'));
 await ctx.close();ctx=await browser.newContext({viewport:{width:1500,height:1000}});page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await login();
 await page.getByRole('button',{name:'配置',exact:true}).click();await page.locator('input[value="Async video fixture"]').waitFor();
 await page.getByRole('button',{name:'新增自定义 API',exact:true}).click();
-await page.getByLabel('初始化预设',{exact:true}).click();await page.getByText('OpenAI 兼容',{exact:true}).click();
+await page.getByLabel('初始化预设',{exact:true}).click();await page.locator('.ant-select-dropdown:visible .ant-select-item-option').filter({hasText:/^Async video fixture$/}).waitFor();await page.getByText('OpenAI 兼容',{exact:true}).click();
 await page.getByLabel('渠道名称',{exact:true}).fill('Native compatible');await page.getByLabel('基础地址',{exact:true}).fill('https://native.example.invalid');await page.getByLabel('个人 API Key',{exact:true}).fill('second-private-key');
 await page.getByLabel('模型名称',{exact:true}).fill('my-chat-model');await page.getByLabel('模型名称',{exact:true}).press('Enter');
 await page.getByRole('button',{name:'添加渠道',exact:true}).click();

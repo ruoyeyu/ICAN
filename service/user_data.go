@@ -39,7 +39,8 @@ type UserStorageProviders struct {
 }
 
 type userModelConfigInput struct {
-	LocalChannels       []userLocalModelChannelInput `json:"localChannels"`
+	ChannelTemplates    []model.PersonalChannelTemplate `json:"channelTemplates"`
+	LocalChannels       []userLocalModelChannelInput    `json:"localChannels"`
 	ChannelTranslations []struct {
 		ChannelID            string `json:"channelId"`
 		ParameterTranslation string `json:"parameterTranslation"`
@@ -247,13 +248,27 @@ func SaveCurrentUserModelConfig(ctx context.Context, raw json.RawMessage) (UserC
 				return UserConfigPayload{}, err
 			}
 		}
+		seenTemplates := map[string]bool{}
+		for _, entry := range input.ChannelTemplates {
+			if entry.ID == "" || seenTemplates[entry.ID] {
+				return UserConfigPayload{}, errTemplate
+			}
+			if _, err := ParseChannelTemplate(entry.Template); err != nil {
+				return UserConfigPayload{}, err
+			}
+			seenTemplates[entry.ID] = true
+		}
 		for _, translation := range input.ChannelTranslations {
 			if _, err := ParameterTranslationModels(translation.ParameterTranslation); err != nil {
 				return UserConfigPayload{}, err
 			}
 		}
-		if _, supplied := incoming["channelTranslations"]; !supplied && json.Unmarshal([]byte(config.ModelConfig), &saved) == nil && saved["channelTranslations"] != nil {
-			incoming["channelTranslations"] = saved["channelTranslations"]
+		if json.Unmarshal([]byte(config.ModelConfig), &saved) == nil {
+			for _, field := range []string{"channelTranslations", "channelTemplates"} {
+				if _, supplied := incoming[field]; !supplied && saved[field] != nil {
+					incoming[field] = saved[field]
+				}
+			}
 			raw, _ = json.Marshal(incoming)
 		}
 	}

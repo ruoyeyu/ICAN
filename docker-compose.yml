@@ -1,6 +1,11 @@
 # Deployment values must be reviewed and explicitly chosen before use.
 services:
   app:
+    # Resource settings: edit ICAN_CPUS / ICAN_MEMORY at the top of your .env.
+    # Recreate the container to apply changes; no image rebuild is needed.
+    cpus: ${ICAN_CPUS:?set CPU limit, for example 1.6}
+    mem_limit: ${ICAN_MEMORY:?set memory limit, for example 1536m}
+    memswap_limit: ${ICAN_MEMORY:?set memory limit, no additional swap}
     image: ${ICAN_IMAGE:?set the verified immutable image reference}
     pull_policy: never
     platform: linux/amd64
@@ -13,6 +18,7 @@ services:
       JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-168}
       STORAGE_DRIVER: sqlite
       DATABASE_DSN: /app/data/ican.db
+      API_TEMPLATE_DIR: /app/data/api-templates
       MEDIA_DIR: /app/data/media
       AI_LOG_DIR: /app/data/logs
       AUTH_ATTEMPTS_PER_MINUTE: ${AUTH_ATTEMPTS_PER_MINUTE:?confirm authentication request limit}
@@ -23,9 +29,6 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     pids_limit: ${ICAN_PIDS_LIMIT:?confirm process limit}
-    mem_limit: 1536m
-    memswap_limit: 1536m
-    cpus: 1.6
     volumes:
       - type: bind
         source: ${ICAN_DATA_DIR:?set backed-up isolated data directory}

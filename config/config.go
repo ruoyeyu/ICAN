@@ -12,6 +12,7 @@ import (
 )
 
 type Config struct {
+	APITemplateDir        string `env:"API_TEMPLATE_DIR" envDefault:"data/api-templates"`
 	PublicOrigin          string `env:"PUBLIC_ORIGIN"`
 	DataEncryptionKey     string `env:"DATA_ENCRYPTION_KEY"`
 	MediaDir              string `env:"MEDIA_DIR" envDefault:"data/media"`

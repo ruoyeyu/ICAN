@@ -4,13 +4,32 @@ This checks container configuration, not firewall effectiveness or host patch st
 Run on the Docker host as the operator; never mount its socket inside the app.
 """
 import argparse
+from decimal import Decimal
 import json
 import pathlib
 import re
 import subprocess
 
 
-def violations(container, image, data_dir, host_port):
+def resource_quantity(value, units, label):
+    match = re.fullmatch(r"([0-9]+(?:\.[0-9]+)?)([bkmg]?)", value.lower())
+    if not match or match[2] not in units:
+        raise argparse.ArgumentTypeError(label + " has an invalid format")
+    amount = Decimal(match[1]) * units[match[2]]
+    if amount <= 0 or amount != amount.to_integral_value():
+        raise argparse.ArgumentTypeError(label + " must be positive with an exact supported precision")
+    return int(amount)
+
+
+def cpu_quantity(value):
+    return resource_quantity(value, {"": 1_000_000_000}, "CPU limit")
+
+
+def memory_quantity(value):
+    return resource_quantity(value, {"": 1, "b": 1, "k": 1024, "m": 1024 ** 2, "g": 1024 ** 3}, "Memory limit")
+
+
+def violations(container, image, data_dir, host_port, cpu_nanos, memory_bytes):
     errors = []
 
     def require(ok, label):
@@ -44,9 +63,9 @@ def violations(container, image, data_dir, host_port):
     require(not host.get("OomKillDisable"), "OOM protection disabled")
     for key in ("PidsLimit", "Memory", "NanoCpus"):
         require(isinstance(host.get(key), (int, float)) and host[key] > 0, "resource limit missing: " + key)
-    require(host.get("Memory") == 1610612736, "memory must be 1.5 GiB")
-    require(host.get("MemorySwap") == 1610612736, "additional swap is not permitted")
-    require(host.get("NanoCpus") == 1600000000, "CPU limit must be 1.6")
+    require(host.get("Memory") == memory_bytes, "memory differs from the operator-selected limit")
+    require(host.get("MemorySwap") == memory_bytes, "additional swap is not permitted")
+    require(host.get("NanoCpus") == cpu_nanos, "CPU differs from the operator-selected limit")
     require(host.get("NetworkMode") not in ("host", "bridge", "none", "default", ""), "dedicated network missing")
     networks = (container.get("NetworkSettings") or {}).get("Networks") or {}
     require(len(networks) == 1, "unexpected number of attached networks")
@@ -90,6 +109,8 @@ def main():
     parser.add_argument("--image-id", required=True)
     parser.add_argument("--data-dir", required=True)
     parser.add_argument("--host-port", required=True, type=int)
+    parser.add_argument("--cpus", required=True, type=cpu_quantity, help="operator-selected CPU count, e.g. 1.6")
+    parser.add_argument("--memory", required=True, type=memory_quantity, help="operator-selected memory, e.g. 1536m or 2g")
     args = parser.parse_args()
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", args.image_id):
         parser.error("--image-id must be the independently reviewed image ID")
@@ -100,11 +121,11 @@ def main():
         parser.error("invalid host port")
     try:
         errors = violations(inspect("container", args.container), inspect("image", args.image_id),
-                            str(data_dir), args.host_port)
+                            str(data_dir), args.host_port, args.cpus, args.memory)
     except (subprocess.SubprocessError, OSError, ValueError, IndexError):
         raise SystemExit("Unable to inspect container/image; no deployment approval issued")
     print(json.dumps({"configurationChecks": "failed" if errors else "passed", "violations": errors,
-                      "productionApproved": False,
+                      "productionApproved": False, "selectedLimits": {"nanoCpus": args.cpus, "memoryBytes": args.memory},
                       "remaining": ["effective seccomp/AppArmor", "host patches and network ACL", "product and data acceptance"]}, indent=2))
     return bool(errors)
 

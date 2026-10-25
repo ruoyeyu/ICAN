@@ -1,6 +1,8 @@
 # ICAN 交接
 
-当前任务：用户已清空 Release，并明确授权把最新完整实现重新编号为 v0.1.0，清理旧版本标签，之后从新基线递增。仅重置发布编号；保留所有功能、安全修复、数据库/配置格式、数据和密钥。新版本需重新通过 CI 和 GHCR 发布，服务器不改动。下方版本号及证据为重置前历史，不是当前下载指引。
+本轮追加：站点供应商模板目录与管理员增删改、现有选择器动态读取；个人导入保留模板并沿用账号同步。公共仓库不预置私人供应商。模板保存为独立 JSON，个人渠道保留快照，删除不改已有渠道/任务。使用及兼容说明见 docs/security/supplier-templates.zh-CN.md。后端/Web 与生产浏览器验证已通过，见 docs/security/evidence/supplier-template-local.json；新镜像发布验收进行中，未操作服务器。
+
+当前任务：用户已清空 Release，并明确授权把最新完整实现重新编号为 v0.1.0，清理旧版本标签，之后从新基线递增。版本重置同时将 Docker CPU/内存改为部署者可配置，`.env.example` 与 Compose 顶部提供入口，检查器按显式期望值校验。保留所有应用功能、安全修复、数据库/配置格式、数据和密钥。新版本需重新通过 CI 和 GHCR 发布，服务器不改动。下方版本号及证据为重置前历史，不是当前下载指引。
 
 本轮目标 v0.1.3：沿用原渠道/Goja 转译，增加表单与通用预设、v1 无凭据导入导出、逐模型参数和参考编码。视频明确 URL 输入复用上传及归属授权，补齐显式内容下载与跨来源重定向拒绝；私有供应商配置不进公开仓库。没有修改生产服务器。配置版本与回滚要求见 docs/security/custom-api-templates.md；本地 Go/Web/导演台/生产构建、浏览器导入编辑导出与请求捕获、v0.1.2 数据副本升级/回滚已验证，见 docs/security/evidence/api-config-ui-local.json。CI 40180373140 构建、检查与 GHCR 发布通过；源码 4cef8067138572047233b72e0fe67373bc1d3242，digest 见 docs/security/evidence/ghcr-v0.1.3-publication.json；匿名 manifest/config、版本标签已核对。Release 40180754949 发布成功；v0.1.3 tag 指向清理后的源码，六个附件已下载并核对 SHA256，见 docs/security/evidence/prerelease-v0.1.3.json。主线已移除旧记录的内部标识，历史提交未重写。
 

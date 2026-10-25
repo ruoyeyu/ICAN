@@ -30,7 +30,7 @@ If GHCR rejects the first push, the workflow fails. An owner must check that Act
 
 ## First staging start
 
-Resource limits are fixed in Compose: **1.6 CPUs, 1536 MiB (1.5 GiB), no extra swap**. Memory exhaustion can terminate the app; these limits do not replace the outstanding upload/concurrency/disk-quota work. PID/tmpfs limits, authentication rate and supplier-link lifetime still require explicit operator values; no new production defaults are invented here.
+Set CPU and memory with `ICAN_CPUS` and `ICAN_MEMORY` at the top of your environment file. Compose no longer fixes a universal machine size; additional swap remains disabled. Memory exhaustion can terminate the app; these limits do not replace the outstanding upload/concurrency/disk-quota work. PID/tmpfs limits, authentication rate and supplier-link lifetime still require explicit operator values; no new production defaults are invented here.
 
 Obtain `docker-compose.yml`, `.env.example` and `scripts/check-container.py` from the exact source commit recorded in the manifest. Use a separate deployment folder and a pre-created, isolated data directory writable by container UID/GID 10001 (verify host UID mapping for Rootless Docker). Never recursively change ownership of an existing shared directory.
 
@@ -43,6 +43,17 @@ Create an operator-owned environment file outside the checkout with mode 0600. F
 
 Use unique initial secrets from your operator's secret-management process. On upgrades **reuse the original secrets and data directory**. Do not run bootstrap secret generation again. Never commit the environment file, print `docker compose config` without `--quiet`, or share full `docker inspect` environment output.
 
+### Change CPU and memory
+
+Edit the two lines at the top of your operator environment file:
+
+```env
+ICAN_CPUS=1.6
+ICAN_MEMORY=1536m
+```
+
+`1536m` means 1.5 GiB. For another server, choose suitable values such as `ICAN_CPUS=4` and `ICAN_MEMORY=8g`. Recreate/check/start the container using the steps below; **no image rebuild is needed**. A plain restart does not apply changed limits. Pass the same values to the checker's `--cpus` and `--memory`. Keep the existing data directory and keys. Upgrading an existing installation requires adding these two lines to its protected environment file, not replacing that file.
+
 Set shell variables to your reviewed deployment values (these are paths and a public image digest, not secrets):
 
 ```sh
@@ -50,6 +61,8 @@ ICAN_OPERATOR_ENV=/secure/operator/ican.env
 ICAN_VERIFIED_IMAGE='ghcr.io/ruoyeyu/ican@sha256:<digest-from-publication.json>'
 ICAN_REVIEWED_DATA_DIR=/srv/ican/data
 ICAN_REVIEWED_HOST_PORT=3001
+ICAN_REVIEWED_CPUS=1.6
+ICAN_REVIEWED_MEMORY=1536m
 
 docker pull "$ICAN_VERIFIED_IMAGE"
 ICAN_REVIEWED_IMAGE_ID=$(docker image inspect "$ICAN_VERIFIED_IMAGE" --format '{{.Id}}')
@@ -61,7 +74,8 @@ docker compose -p ican --env-file "$ICAN_OPERATOR_ENV" -f docker-compose.yml cre
 ICAN_CONTAINER_ID=$(docker compose -p ican --env-file "$ICAN_OPERATOR_ENV" -f docker-compose.yml ps -aq app)
 python3 scripts/check-container.py "$ICAN_CONTAINER_ID" \
   --image-id "$ICAN_REVIEWED_IMAGE_ID" \
-  --data-dir "$ICAN_REVIEWED_DATA_DIR" --host-port "$ICAN_REVIEWED_HOST_PORT"
+  --data-dir "$ICAN_REVIEWED_DATA_DIR" --host-port "$ICAN_REVIEWED_HOST_PORT" \
+  --cpus "$ICAN_REVIEWED_CPUS" --memory "$ICAN_REVIEWED_MEMORY"
 # Only start after the checker succeeds and the host's isolation has been reviewed.
 docker compose -p ican --env-file "$ICAN_OPERATOR_ENV" -f docker-compose.yml start app
 curl --fail "http://127.0.0.1:$ICAN_REVIEWED_HOST_PORT/api/health"

@@ -1,4 +1,4 @@
-> Current pull-only GHCR procedure: [ghcr-deployment.md](ghcr-deployment.md). CPU is fixed at 1.6 and memory at 1.5 GiB. Historical CI evidence below remains unchanged.
+> Current pull-only GHCR procedure: [ghcr-deployment.md](ghcr-deployment.md). CPU and memory are operator-selected environment settings. Historical CI evidence below remains unchanged.
 
 # Docker 运行与维护
 
@@ -12,7 +12,7 @@
 - 仅向宿主机 127.0.0.1 发布前端 3000，8080 不对宿主机发布。专用 bridge 网络本身不阻止出站，必须另验宿主机出站 ACL。
 - 丢弃全部 capabilities、禁止提权，保留默认 seccomp，不允许 privileged、host namespace、额外设备或 Docker socket。优先评估 Rootless Docker；本次 CI 是标准 Linux Docker，不能据此宣称 Rootless 已验收。
 - Compose 显式传入应用必需的环境变量，数据库、媒体和日志固定在 /app/data 下。不再把整份 .env（例如意外的 NODE_OPTIONS、代理或动态库变量）注入应用。
-- CPU 1.6 核、内存 1.5 GiB 已由用户指定并固定在 Compose；其余资源、认证速率、素材链接期限保持必填。历史 CI fixture 的 1 GiB、2 CPU、256 PID 等不作为生产建议；数据和日志磁盘配额、上传/并发等应用边界仍待确认。
+- CPU、内存使用 `.env` 顶部的 `ICAN_CPUS`、`ICAN_MEMORY`，示例 1.6 核 / 1536m 可按机器调整；其余资源、认证速率、素材链接期限保持必填。历史 CI fixture 的 1 GiB、2 CPU、256 PID 等不作为生产建议；数据和日志磁盘配额、上传/并发等应用边界仍待确认。
 
 ## 候选运行库与漏洞账目
 
@@ -77,7 +77,8 @@ ICAN_CONTAINER_ID=$(docker compose -p ican-staging --env-file "$ICAN_OPERATOR_EN
 python3 scripts/check-container.py "$ICAN_CONTAINER_ID" \
   --image-id "$ICAN_REVIEWED_IMAGE_ID" \
   --data-dir "$ICAN_REVIEWED_DATA_DIR" \
-  --host-port "$ICAN_REVIEWED_HOST_PORT"
+  --host-port "$ICAN_REVIEWED_HOST_PORT" \
+  --cpus "$ICAN_REVIEWED_CPUS" --memory "$ICAN_REVIEWED_MEMORY"
 ```
 
 5. 检查成功且主机网络规则已通过验收后，才执行同组 Compose 参数的 `start app`。使用本地 health 接口和测试账号验收，再核对实际进程 Seccomp=2、NoNewPrivs=1、CapEff=0，以及重启后账号/素材恢复。

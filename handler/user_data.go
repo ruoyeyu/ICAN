@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/tigerowo/infinite-canvas/model"
 	"github.com/tigerowo/infinite-canvas/service"
 )
 
@@ -20,7 +21,7 @@ func SaveUserModelConfig(w http.ResponseWriter, r *http.Request) {
 	var request struct {
 		Config json.RawMessage `json:"config"`
 	}
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 129<<20)).Decode(&request); err != nil || len(request.Config) == 0 {
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, model.ConfigJSONLimit)).Decode(&request); err != nil || len(request.Config) == 0 {
 		Fail(w, "配置内容不能为空")
 		return
 	}

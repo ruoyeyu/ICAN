@@ -43,11 +43,11 @@ export async function apiPost<T>(url: string, body?: unknown, token?: string) {
     });
 }
 
-export async function apiDelete<T>(url: string, token?: string) {
+export async function apiDelete<T>(url: string, token?: string, headers?: Record<string, string>) {
     return apiRequest<T>({
         url,
         method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: { ...headers, ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     });
 }
 

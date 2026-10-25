@@ -87,9 +87,12 @@ chmod 600 .env
 
 先填写管理员凭据、独立密钥、访问域名、持久数据目录和各项运行限制。没有默认管理员密码，也不提供可直接用于生产的通用限额。
 
+供应商模板：[后台管理、个人导入与账号同步](docs/security/supplier-templates.zh-CN.md)。公共版本不预装私有供应商模板。
+
+CPU、内存参数放在 `.env.example` 和 Compose 前部。按机器规格修改 `ICAN_CPUS=1.6`、`ICAN_MEMORY=1536m`，再按[修改步骤](docs/security/ghcr-deployment.zh-CN.md#修改-cpu内存)重建、检查并启动容器即可，**不用重新编译**；保留原数据目录与密钥。
+
 GitHub Actions 在完成构建、测试和安全检查后发布 GHCR 镜像。服务器只拉取并运行成功记录中的不可变 digest，不执行编译；详见 [GHCR 部署、更新和回滚说明](docs/security/ghcr-deployment.zh-CN.md)。
 
-公共编译版本：[ICAN v0.1.3](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.3)，包含[镜像与验证记录](docs/security/evidence/ghcr-v0.1.3-publication.json)。
 
 ### 更新容器，保留数据
 

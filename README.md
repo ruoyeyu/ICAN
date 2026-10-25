@@ -87,9 +87,12 @@ chmod 600 .env
 
 Set administrator credentials, separate secrets, your public URL, the persistent data directory, and runtime limits. There is no default administrator password or universal set of production limits.
 
+Supplier templates: [site administration, personal imports and account sync](docs/security/supplier-templates.md). No private supplier templates are bundled.
+
+CPU and memory are the first settings in `.env.example` and Compose. Change `ICAN_CPUS=1.6` and `ICAN_MEMORY=1536m` to suit your server, then recreate/check/start the container using the [update steps](docs/security/ghcr-deployment.md#change-cpu-and-memory). No compilation is needed; keep the original data directory and keys.
+
 GitHub Actions now builds and checks the image before publishing it to GHCR. Deploy the immutable digest from the successful run; the server only pulls and runs the image. See [GHCR deployment, updates and rollback](docs/security/ghcr-deployment.md).
 
-Prebuilt public version: [ICAN v0.1.3](https://github.com/ruoyeyu/ICAN/releases/tag/v0.1.3), with the [image and verification record](docs/security/evidence/ghcr-v0.1.3-publication.json).
 
 ### Keep your data when updating
 

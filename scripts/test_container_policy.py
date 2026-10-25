@@ -1,4 +1,5 @@
 import copy
+import argparse
 import importlib.util
 import pathlib
 import unittest
@@ -27,10 +28,25 @@ class ContainerPolicyTests(unittest.TestCase):
             "NetworkSettings": {"Networks": {"fixture_ican": {}}}}
 
     def check(self, container):
-        return policy.violations(container, self.image, "/fixture/data", 3001)
+        return policy.violations(container, self.image, "/fixture/data", 3001, 1600000000, 1610612736)
 
     def test_expected_configuration(self):
         self.assertEqual(self.check(self.container), [])
+
+    def test_operator_selected_limits_allow_other_servers(self):
+        self.container["HostConfig"].update({"NanoCpus": 4000000000, "Memory": 8589934592, "MemorySwap": 8589934592})
+        self.assertEqual(policy.violations(self.container, self.image, "/fixture/data", 3001,
+                                           policy.cpu_quantity("4"), policy.memory_quantity("8g")), [])
+        self.assertTrue(self.check(self.container))
+
+    def test_resource_units_and_invalid_values(self):
+        self.assertEqual(policy.memory_quantity("1.5g"), policy.memory_quantity("1536m"))
+        self.assertEqual(policy.cpu_quantity("1.6"), 1600000000)
+        for parse, values in ((policy.cpu_quantity, ("0", "-1", "NaN", "Infinity", "1g", "0.0000000001")),
+                              (policy.memory_quantity, ("0", "-1", "NaN", "Infinity", "2tb", "0.1b"))):
+            for value in values:
+                with self.subTest(value=value), self.assertRaises(argparse.ArgumentTypeError):
+                    parse(value)
 
     def test_independent_host_exposures(self):
         cases = {"Privileged": True, "ReadonlyRootfs": False, "CapAdd": ["SYS_ADMIN"],

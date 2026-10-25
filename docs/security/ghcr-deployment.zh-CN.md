@@ -30,9 +30,20 @@ GHCR 首次创建的包可能是私有的。私有包需要服务器使用只读
 
 从发布记录对应的 commit 取得 `docker-compose.yml`、`.env.example` 和 `scripts/check-container.py`。保管好原有配置；首次测试才新建独立数据目录和初始密钥。
 
-Compose 固定 **CPU 1.6 核、内存 1536 MiB（1.5 GiB），不额外使用 swap**。这些是运行限制，不限制 GitHub 编译。其余 PID、临时目录大小、登录速率和供应商链接有效期仍须由运维明确填写。内存超限可能使容器被终止，容器限额不能代替尚待完成的应用资源边界。
+CPU、内存由 `.env` 顶部的 `ICAN_CPUS`、`ICAN_MEMORY` 设置，公共 Compose 不再固定机器规格；不额外使用 swap。这些是运行限制，不限制 GitHub 编译。其余 PID、临时目录大小、登录速率和供应商链接有效期仍须由运维明确填写。内存超限可能使容器被终止，容器限额不能代替尚待完成的应用资源边界。
 
 将配置保存在仓库外的受保护环境文件（权限 0600），填写镜像 digest、站点来源、回环端口、已有数据绝对路径和应用配置。不要直接打印含密钥的完整 Compose 配置或 Docker inspect 输出。数据目录必须提前存在，权限应与容器身份匹配；Rootless Docker 还需核对 UID 映射。
+
+### 修改 CPU、内存
+
+编辑自己的运维环境文件顶部两行即可，例如：
+
+```env
+ICAN_CPUS=1.6
+ICAN_MEMORY=1536m
+```
+
+`1536m` 是 1.5 GiB；也可按机器规格填写 `ICAN_CPUS=4`、`ICAN_MEMORY=8g`。这是每个安装实例选择的上限，不是后台设置。保存后按下面的“创建 → 检查 → 启动”流程重建容器，**不用重新编译**；仅 `restart` 不会应用修改。检查命令的 `--cpus`、`--memory` 填相同值。保持原数据目录与密钥；从旧版本更新时，在原环境文件补上这两行，不要覆盖整个文件。
 
 以下操作由服务器运维执行；本任务不会自动执行它们。路径和端口是示例，须替换为已核对的实际值：
 
@@ -41,6 +52,8 @@ ICAN_OPERATOR_ENV=/secure/operator/ican.env
 ICAN_VERIFIED_IMAGE='ghcr.io/ruoyeyu/ican@sha256:<发布记录中的完整digest>'
 ICAN_REVIEWED_DATA_DIR=/srv/ican/data
 ICAN_REVIEWED_HOST_PORT=3001
+ICAN_REVIEWED_CPUS=1.6
+ICAN_REVIEWED_MEMORY=1536m
 
 docker pull "$ICAN_VERIFIED_IMAGE"
 ICAN_REVIEWED_IMAGE_ID=$(docker image inspect "$ICAN_VERIFIED_IMAGE" --format '{{.Id}}')
@@ -52,7 +65,8 @@ docker compose -p ican --env-file "$ICAN_OPERATOR_ENV" -f docker-compose.yml cre
 ICAN_CONTAINER_ID=$(docker compose -p ican --env-file "$ICAN_OPERATOR_ENV" -f docker-compose.yml ps -aq app)
 python3 scripts/check-container.py "$ICAN_CONTAINER_ID" \
   --image-id "$ICAN_REVIEWED_IMAGE_ID" \
-  --data-dir "$ICAN_REVIEWED_DATA_DIR" --host-port "$ICAN_REVIEWED_HOST_PORT"
+  --data-dir "$ICAN_REVIEWED_DATA_DIR" --host-port "$ICAN_REVIEWED_HOST_PORT" \
+  --cpus "$ICAN_REVIEWED_CPUS" --memory "$ICAN_REVIEWED_MEMORY"
 # 检查成功、宿主机隔离条件满足后启动。
 docker compose -p ican --env-file "$ICAN_OPERATOR_ENV" -f docker-compose.yml start app
 curl --fail "http://127.0.0.1:$ICAN_REVIEWED_HOST_PORT/api/health"

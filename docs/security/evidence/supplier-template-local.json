@@ -1,0 +1,37 @@
+{
+  "baseCommit": "6e34267211d1864e1da86fb340cc2dd4ffef241d",
+  "scope": "supplier catalog and deployment resource settings; working tree changes validated before source publication",
+  "checks": {
+    "go": "go test ./... passed, including catalog file safety and two-account/admin authorization",
+    "web": "31 tests passed; TypeScript and production Next build passed",
+    "deploymentPolicy": "9 Python checks passed; final actual Compose configurations remain CI checks",
+    "catalogBrowser": {
+      "admin": [
+        "import",
+        "edit",
+        "export",
+        "delete"
+      ],
+      "user": "select site template, fill own key, save channel",
+      "filesystem": "manual JSON discovered and deleted file removed without restart",
+      "deletion": "existing personal channel and key unchanged",
+      "instructions": "HTML displayed as plain text",
+      "pageErrors": []
+    },
+    "existingAPIConfigBrowser": {
+      "personalTemplate": "import retained and restored in fresh browser; no key in template",
+      "channel": "import/edit/export and key restored through account sync",
+      "mock": "single intercepted generation with exact model/prompt/ratio/resolution/duration",
+      "pageErrors": []
+    },
+    "privacy": "no internal supplier identifiers found in tracked/untracked publishable files"
+  },
+  "fixedDuringValidation": [
+    "Reject symbolic links explicitly and compare opened-file identity; directory confinement alone permits links within the directory."
+  ],
+  "notPerformed": [
+    "paid provider calls",
+    "production server deployment",
+    "local Docker execution; final image/Compose/restart/scan verified by required CI"
+  ]
+}

@@ -28,6 +28,12 @@ assert.equal((await fetch(origin+'/api/anonymous/files',{method:'POST',body:'fix
 const admin=await api('/api/auth/login',{username:process.env.ADMIN_USERNAME,password:process.env.ADMIN_PASSWORD});
 const code=(await api('/api/admin/invitations',{},admin.token)).code;
 const user=await api('/api/auth/register',{username:'image-fixture-user',password:'fixture-password-only',invitationCode:code});
+assert.equal((await fetch(origin+'/api/v1/channel-templates')).status,401,'anonymous template catalog');
+const template={format:'ican-channel',version:1,name:'Runtime fixture',baseUrl:'https://api.example.invalid',protocol:'openai',models:['fixture-model'],modelCapabilities:{},authoring:{version:1,models:[]}};
+const catalog=await api('/api/admin/channel-templates',{template},admin.token);
+assert.equal((await api('/api/v1/channel-templates/'+catalog.id,undefined,user.token)).template.name,template.name);
+await api('/api/v1/user-config/model',{config:{channelTemplates:[{id:'personal-fixture',template}]}},user.token);
+writeFileSync('/app/data/template-restart-fixture.json',JSON.stringify({id:catalog.id,revision:catalog.revision}));
 const page=await fetch(origin+'/canvas',{headers:{Cookie:`ican_session=${user.token}`},redirect:'manual'});assert.equal(page.status,200,'authenticated canvas');
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jGZkAAAAASUVORK5CYII=','base64');
 const form=new FormData();form.append('file',new Blob([png],{type:'image/png'}),'fixture.png');
