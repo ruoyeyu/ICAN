@@ -18,8 +18,9 @@ type ChannelTemplate struct {
 }
 
 type TemplateAuthoring struct {
-	Version int             `json:"version"`
-	Models  []TemplateModel `json:"models"`
+	Version  int             `json:"version"`
+	Models   []TemplateModel `json:"models"`
+	Defaults []TemplateModel `json:"defaults,omitempty"`
 }
 
 type TemplateModel struct {

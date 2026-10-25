@@ -75,3 +75,46 @@ test("supplier instructions remain data and personal presets remain credential f
  assert.notEqual(copy.baseUrl,template.baseUrl);
  assert.equal(compileTemplate(copy.authoring),compileTemplate(template.authoring));
 });
+
+test("typed supplier defaults survive export and resolve new models without copying rules", async () => {
+ const {translationProgram}=await import('./channel-parameter-translation');
+ const fixture=importChannelTemplate(readFileSync(new URL('../../scripts/fixtures/channel-template-v2.json',import.meta.url),'utf8'));
+ const source=compileTemplate(fixture.authoring);
+ assert.equal(source,readFileSync(new URL('../../../service/testdata/channel-template-v2.js',import.meta.url),'utf8'));
+ assert.deepEqual(readTemplate(source),fixture.authoring);
+ assert.deepEqual(importChannelTemplate(exportChannelTemplate({...fixture,apiKey:'secret-fixture-key'},source)).authoring,fixture.authoring);
+ for(const [kind,path] of [['text','/text'],['image','/pictures'],['video','/jobs']] as const){
+  const code=await translationProgram(source,'brand-new-model',kind);assert.ok(code);
+  const rule=new Function('model','rawPrompt','rawSize','rawSeconds','resolution','images','messages',`return ${code}`)('brand-new-model','raw prompt','9:16','3','custom-resolution',[],[{role:'user',content:'hello'}]).rule;
+  assert.equal(rule.POST.url,path);assert.equal(rule.POST.body.model,'brand-new-model');
+ }
+ assert.equal(await translationProgram(source,'brand-new-model','audio'),undefined);
+ assert.equal((await translationModelInputs(source,'fixture-special','video'))?.parameters.seconds?.allowCustom,false);
+ assert.equal((await translationModelInputs(source,'brand-new-model','video'))?.parameters.seconds?.allowCustom,true);
+ const own=await translationProgram(source,'fixture-special','video');assert.ok(own?.includes('/special-jobs'));
+ const other=await translationProgram(source,'fixture-special','image');assert.ok(other?.includes('/pictures'));assert.ok(!other?.includes('/special-jobs'));
+ const duplicate=structuredClone(fixture);duplicate.authoring.defaults!.push(duplicate.authoring.defaults![0]);assert.throws(()=>importChannelTemplate(JSON.stringify(duplicate)));
+});
+
+test("missing custom rules fail before requests while native and legacy channels retain behavior", async () => {
+ const {findParameterTranslation}=await import('@/services/api/channel-parameter-translation');
+ const {defaultConfig}=await import('@/stores/use-config-store');
+ const {useUserStore}=await import('@/stores/use-user-store');
+ const {useChannelTranslationStore}=await import('@/stores/use-channel-translation-store');
+ const oldUser=useUserStore.getState(),oldTranslations=useChannelTranslationStore.getState();
+ const fixture=importChannelTemplate(readFileSync(new URL('../../scripts/fixtures/channel-template-v2.json',import.meta.url),'utf8'));
+ const source=compileTemplate(fixture.authoring);
+ try{
+  useUserStore.setState({token:'test-token',user:{id:'shared-fixture-user'} as never});
+  useChannelTranslationStore.setState({load:async()=>({one:source})});
+  const config={...defaultConfig,channelMode:'local' as const,activeChannelId:'one',model:'new-model',localChannels:[{id:'one',name:'Fixture',baseUrl:'https://api.example.invalid',apiKey:'fixture-key',protocol:'custom' as const,models:['new-model']}]};
+  assert.ok(await findParameterTranslation(config,'video'));
+  await assert.rejects(findParameterTranslation(config,'audio'),/调用规则/);
+  useChannelTranslationStore.setState({load:async()=>({})});
+  await assert.rejects(findParameterTranslation(config,'video'),/调用规则/);
+  assert.equal(await findParameterTranslation({...config,localChannels:[{...config.localChannels[0],protocol:'openai'}]},'video'),null);
+  const remote={...config,channelMode:'remote' as const,publicChannels:[{id:'one',protocol:'custom' as const,models:['new-model'],parameterTranslationRules:{video:{'new-model':{}}}}]};
+  assert.ok(await findParameterTranslation(remote,'video'));
+  await assert.rejects(findParameterTranslation(remote,'image'),/调用规则/);
+ }finally{useUserStore.setState(oldUser);useChannelTranslationStore.setState(oldTranslations);}
+});

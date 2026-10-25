@@ -1,8 +1,8 @@
 import { readFileAsDataUrl } from "@/lib/image-utils";
 import { audioMimeType } from "@/lib/audio-generation";
 import { modelChannelAttributionHeaders } from "@/lib/model-channel";
-import { translationPrograms, translationModelInputs, translationReferenceInput, translationVariableNames, type TranslationReferences, type TranslationVariables } from "@/lib/channel-parameter-translation";
-import { channelIdForActiveModel, localChannelForActiveModel, type AiConfig } from "@/stores/use-config-store";
+import { translationProgram, publicTranslationRule, type TranslationKind, translationModelInputs, translationReferenceInput, translationVariableNames, type TranslationReferences, type TranslationVariables } from "@/lib/channel-parameter-translation";
+import { channelIdForActiveModel, localChannelForActiveModel, channelProtocolForConfig, type AiConfig } from "@/stores/use-config-store";
 import { useChannelTranslationStore } from "@/stores/use-channel-translation-store";
 import { useUserStore } from "@/stores/use-user-store";
 import { uploadMediaFile } from "@/services/file-storage";
@@ -35,17 +35,25 @@ export function normalizeTranslationAspectRatio(value: string) {
     )[0];
 }
 
-export async function findParameterTranslation(config: AiConfig): Promise<MatchedTranslation | null> {
+export async function findParameterTranslation(config: AiConfig, kind: TranslationKind): Promise<MatchedTranslation | null> {
     const { user, token } = useUserStore.getState();
     const channelId = config.channelMode === "remote" ? channelIdForActiveModel(config) : localChannelForActiveModel(config)?.id || "";
-    if (!channelId) return null;
+    if (!channelId) {
+        if (channelProtocolForConfig(config) === "custom") throw new Error("当前自定义渠道缺少渠道 ID，请检查接口配置");
+        return null;
+    }
     if (config.channelMode === "remote") {
         const channel = config.publicChannels.find((item) => item.id === channelId);
-        return channel?.parameterTranslationModels?.includes(config.model) ? { channelId, source: "", timeout: channel.timeout || 600, accountProxy: true, references: channel.parameterTranslationInputs?.[config.model]?.media.images || channel.parameterTranslationReferences?.[config.model], inputs: channel.parameterTranslationInputs?.[config.model] } : null;
+        const rule = publicTranslationRule(channel, config.model, kind);
+        if (!rule && channel?.protocol === "custom") throw new Error(`当前自定义渠道没有 ${config.model} 的 ${kind} 调用规则`);
+        return rule ? {channelId,source:"",timeout:channel?.timeout || 600,accountProxy:true,inputs:rule.inputs,references:rule.inputs?.media.images || rule.references} : null;
     }
     const source = (await useChannelTranslationStore.getState().load(user?.id || "guest"))[channelId];
-    if (!source?.trim() || !(await translationPrograms(source))[config.model]) return null;
-    return { channelId, source, timeout: Number(config.timeout) || 600, accountProxy: Boolean(token), references: (await translationModelInputs(source, config.model))?.media.images || await translationReferenceInput(source, config.model), inputs: await translationModelInputs(source, config.model) };
+    if (!source?.trim() || !(await translationProgram(source,config.model,kind))) {
+        if (channelProtocolForConfig(config) === "custom") throw new Error(`当前自定义渠道没有 ${config.model} 的 ${kind} 调用规则`);
+        return null;
+    }
+    return { channelId, source, timeout: Number(config.timeout) || 600, accountProxy: Boolean(token), references: (await translationModelInputs(source, config.model, kind))?.media.images || await translationReferenceInput(source, config.model, kind), inputs: await translationModelInputs(source, config.model, kind) };
 }
 
 export function translationHeaders(config: AiConfig, match: MatchedTranslation): Record<string, string> {
@@ -88,7 +96,7 @@ export class BrowserParameterTranslation {
     static async create(config: AiConfig, match: MatchedTranslation, input: TranslationInput) {
         const translation = new BrowserParameterTranslation(config, match, input);
         try {
-            const code = (await translationPrograms(match.source))[config.model];
+            const code = await translationProgram(match.source, config.model, input.kind);
             if (!code) throw new Error("该模型没有自定义配置");
             const polling = await translation.evaluate<boolean>({ action: "init", code, names: translationVariableNames, variables: { images: [], videos: [], audios: [], firstFrame: "", lastFrame: "", ...input.variables, model: config.model } });
             // 查询和提交的配置都在付费提交前完成编码校验。
@@ -301,4 +309,9 @@ export async function translationMediaAddress(url: string): Promise<string> {
     if (!response.ok) throw new Error(`读取参考素材失败（${response.status}）`);
     const blob = await response.blob();
     return readFileAsDataUrl(new File([blob], "reference", { type: blob.type }));
+}
+
+export function textTranslationBody(config: AiConfig, request: Record<string, unknown>) {
+    if (!useUserStore.getState().token) throw new Error("请先登录后再使用自定义文本接口");
+    return {model:config.model,_parameterTranslation:{kind:"text",variables:{messages:request.messages,request}}};
 }

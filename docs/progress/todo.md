@@ -1,5 +1,8 @@
 # 待办（阻断生产上线）
 
+本轮本地 Go 全套、Web 35、生产构建、Python 9 与两组隔离浏览器回归均通过，见 docs/security/evidence/shared-rules-local.json；最终镜像与发布结果由原 CI 另行核验。
+本轮公共调用规则、模型覆盖和多余文案清理已实现，验收记录移入 pending-test。仍需完成本轮最终镜像 CI/GHCR 核验；原生产资源、会话、备份恢复门槛不变。
+
 本轮供应商模板模型选择及私有存储闪烁已修复并移入 pending-test；本地回归及 CI 40186851015/GHCR 发布验证通过，见 ../security/evidence/template-editor-publication.json。未新增部署、数据迁移或资源限制，以下生产门槛不变。
 
 此前版本记录：应用源码和镜像已通过 CI 40184337184，GHCR digest 可用；v0.1.0 Release 尚未创建。标签重置被 GitHub 的 workflows 权限检查拒绝，原子操作未改任何标签，证据见 `docs/security/evidence/version-reset-blocked.json`。已移除一次性重置脚本，保留正常发布门槛。仓库所有者完成 `docs/security/version-reset.md` 的精确标签操作后，可手动运行 Publish checked pre-release。未操作服务器。

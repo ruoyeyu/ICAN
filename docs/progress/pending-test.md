@@ -1,5 +1,8 @@
 # 本版本待验收
 
+本轮本地 Go 全套、Web 35、生产构建、Python 9 与两组隔离浏览器回归均通过，见 docs/security/evidence/shared-rules-local.json；最终镜像与发布结果由原 CI 另行核验。
+本轮公共调用规则与界面文案清理：原编辑器支持按任务类型配置公共规则、复制已有规则及模型专属覆盖；自定义渠道未匹配时报错。v1 模板兼容保留，v2 仅显式保存时采用；账号、Key、素材与渠道 ID 不重写。免费 fixture 覆盖继承、覆盖、类型隔离、旧渠道和任务快照恢复；本地浏览器及最终 CI 证据完成后补记。真实供应商和生产环境未调用、未部署。
+
 本轮两处修改已通过本地回归：供应商模板拉取模型复用原接口与选择器，临时 Key 不保存/导出，新候选仅手动勾选，取消/失败/晚到响应保留原配置；私有存储 providers 使用 preserve 监听，切换及保存后 local 类型稳定。Go、Web 31、TypeScript、生产构建、Python 9 和两组隔离浏览器通过，证据见 ../security/evidence/template-editor-local.json。原 CI 40186851015 全通过，GHCR 发布及匿名 manifest/config 验证完成，固定 digest 见 ../security/evidence/template-editor-publication.json。账号、模板、Key、素材和配置格式不变，未操作服务器。
 
 此前版本记录：应用源码和镜像已通过 CI 40184337184，GHCR digest 可用；v0.1.0 Release 尚未创建。标签重置被 GitHub 的 workflows 权限检查拒绝，原子操作未改任何标签，证据见 `../security/evidence/version-reset-blocked.json`。已移除一次性重置脚本，保留正常发布门槛。仓库所有者完成 `../security/version-reset.md` 的精确标签操作后，可手动运行 Publish checked pre-release。未操作服务器。

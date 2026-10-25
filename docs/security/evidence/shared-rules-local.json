@@ -1,0 +1,82 @@
+{
+  "baseCommit": "2a82236fb28137792ab746d5f1ba2154f4c931ed",
+  "scope": "Task-specific supplier defaults in the existing translator; model overrides; explicit missing-rule failures; unnecessary UI copy removal",
+  "local": {
+    "go": "go test ./... passed",
+    "web": {
+      "passed": 35,
+      "failed": 0
+    },
+    "productionBuild": "passed; exact committed source also gated by CI",
+    "python": {
+      "passed": 9,
+      "failed": 0
+    },
+    "browserCatalog": {
+      "catalog": "admin import/edit/export/delete; ordinary user selects without importing",
+      "discovery": "manual file found without restart; deleted file disappears",
+      "credentials": "user key not in catalog; existing account unchanged after deletion",
+      "instructions": "HTML shown as plain text",
+      "modelDiscovery": "existing selector; search/multiple/all/clear; candidates opt in; cancel/failure/late response preserve configuration; temporary key absent from writes and export; no generation",
+      "privateStorage": "local type remains stable across tabs and save",
+      "discoveryCalls": 7,
+      "pageErrors": []
+    },
+    "browserAPI": {
+      "import": "validated",
+      "edit": "saved in existing translator",
+      "export": "no credentials",
+      "freshBrowser": "account config restored",
+      "presets": "OpenAI added without overwriting existing channel",
+      "perModelParameters": "declared choices enforced; custom resolution and literal ratio retained",
+      "mockSubmit": "two intercepted requests: legacy and inherited shared rule; exact prompt/ratio/resolution/duration/model",
+      "pageErrors": []
+    }
+  },
+  "cases": [
+    "New models inherit task-specific rules; model variable is the selected name",
+    "Full same-type model override preserves parameter options",
+    "Text/image/video rules do not cross types; legacy media rules do not intercept native text",
+    "Legacy v1 byte-for-byte compile/import/export compatibility",
+    "Custom missing rules stop before submission; native-compatible fallback retained",
+    "Unknown status waits; persisted task uses original shared-rule snapshot; authenticated download",
+    "Upstream fixture 401 returned after one request, no alternate method or retry",
+    "Temporary/user keys absent from template export; existing channels unchanged",
+    "Catalog shared rule copy/edit/export/account sync; unchanged private storage type"
+  ],
+  "paidCalls": 0,
+  "productionDeployment": false,
+  "dependenciesChanged": false,
+  "databaseSchemaChanged": false,
+  "configMigration": "Additive authoring v2 only on explicit save; v1 untouched",
+  "logs": {
+    "go": {
+      "sha256": "209dfccb5dd3273c9120a7dbf9c54a48c7ee42d5cfbb7a8d828e6144b2a22702"
+    },
+    "web": {
+      "sha256": "f3d5417af8574b27e48af9991cfe073bf2083209e9ff08f1b44e5ccf36421395"
+    },
+    "build": {
+      "sha256": "0cbfd253a32d8aa7b3be47b5c8a309ff7d98dcff8fffb9aff40efd4a8178a976"
+    },
+    "python": {
+      "sha256": "0bf1faf7345c7f1681de0f7a0750a02b14ba705d74f94f43f0e6e78112bcb962"
+    },
+    "browser-api": {
+      "sha256": "235666f31de1d064d7416e7124b020c052e68d0925baba98230baf315521da02"
+    },
+    "browser-catalog": {
+      "sha256": "524e0636c132f10bdfcd7373b44f6658023febb66c3c2b59178e2ab467515d83"
+    }
+  },
+  "logArchiveSHA256": "77a4dda71b75036c59f8a54776bdd3748133145f098ad4381fe750e169659d7c",
+  "diagnostics": [
+    "Initial local incremental build cache was invalid; isolated cache moved aside and clean production build passed.",
+    "Expanded handler fixture initially used the media-result assertion for text; corrected to exact text JSON and reran the full Go suite.",
+    "Browser fixture initially left the previous mock task running; completed the mock task before the second submit and reran successfully."
+  ],
+  "pending": [
+    "Final committed image CI and immutable publication evidence",
+    "Real provider behavior and production installation acceptance; no paid/live API tests"
+  ]
+}

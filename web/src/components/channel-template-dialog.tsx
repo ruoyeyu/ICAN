@@ -58,7 +58,7 @@ export function ChannelTemplateDialog({ onCancel, onSave }: { onCancel: () => vo
             if (!choice || loading || useUserStore.getState().token !== token) throw new Error("请先选择有效模板");
             const url = new URL(baseUrl);
             if (!name.trim() || !models.length || !["http:", "https:"].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new Error("请填写名称、无凭据的基础地址和真实模型名称");
-            const source = imported ? compileTemplate(imported.authoring) : preset === "video" ? compileTemplate({ version: 1, models: models.map(model => newTemplateModel(model, "video")) }) : "";
+            const source = imported ? compileTemplate(imported.authoring) : preset === "video" ? compileTemplate({ version: 2, models: [], defaults: [newTemplateModel("video", "video")] }) : "";
             await onSave({ id: `local-${crypto.randomUUID()}`, name: name.trim(), baseUrl, apiKey, models, protocol: imported?.protocol || (preset === "openai" ? "openai" : "custom"), modelCapabilities: imported ? { ...imported.modelCapabilities, ...Object.fromEntries(imported.authoring.models.map(m => [m.name, m.kind])) } : preset === "video" ? Object.fromEntries(models.map(m => [m, "video"])) : {} }, source);
             if (choice === "import" && imported && useUserStore.getState().token === token) {
                 const state = useConfigStore.getState();
@@ -79,14 +79,13 @@ export function ChannelTemplateDialog({ onCancel, onSave }: { onCancel: () => vo
             {imported?.instructions && <p className="mb-4 whitespace-pre-wrap">{imported.instructions}</p>}
             <Form.Item label="名称"><Input aria-label="渠道名称" value={name} onChange={e => setName(e.target.value)} /></Form.Item>
             <Form.Item label="基础地址"><Input aria-label="基础地址" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.example.com" /></Form.Item>
-            <Form.Item label="个人 API Key"><Input.Password aria-label="个人 API Key" autoComplete="new-password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="由当前用户填写，不随模板导入导出" /></Form.Item>
+            <Form.Item label="个人 API Key"><Input.Password aria-label="个人 API Key" autoComplete="new-password" value={apiKey} onChange={e => setApiKey(e.target.value)} /></Form.Item>
             <Form.Item label="模型（输入名称后回车）"><Select aria-label="模型名称" disabled={!!imported} mode="tags" value={models} onChange={setModels} /></Form.Item>
-            <Space wrap><Button onClick={() => file.current?.click()}>导入配置文件</Button>{choice.startsWith("personal:") && <Button danger onClick={() => modal.confirm({title:"删除此个人模板？",content:"已保存渠道不受影响；点击设置页完成后同步删除。",onOk: () => { const state = useConfigStore.getState(); state.updateConfig("channelTemplates", (state.config.channelTemplates || []).filter(item => item.id !== choice.slice(9))); void choose("blank"); }})}>删除个人模板</Button>}{imported && <span>已校验，添加为独立渠道</span>}</Space>
+            <Space wrap><Button onClick={() => file.current?.click()}>导入配置文件</Button>{choice.startsWith("personal:") && <Button danger onClick={() => modal.confirm({title:"删除此个人模板？",content:"已保存渠道不受影响；点击设置页完成后同步删除。",onOk: () => { const state = useConfigStore.getState(); state.updateConfig("channelTemplates", (state.config.channelTemplates || []).filter(item => item.id !== choice.slice(9))); void choose("blank"); }})}>删除个人模板</Button>}</Space>
             <input ref={file} type="file" accept="application/json,.json" hidden onChange={async e => {
                 const chosen = e.target.files?.[0]; e.target.value = ""; if (!chosen) return;
                 try { const value = importChannelTemplate(await chosen.text()); if (!alive.current || useUserStore.getState().token !== token) return; ++selection.current; setLoading(false); setChoice("import"); apply(value); } catch(error) { message.error(error instanceof Error ? error.message : "导入失败"); }
             }} />
-            <p className="mt-4 text-[var(--ant-color-text-secondary)]">添加后在“接口配置”中编辑各模型的字段、参数、素材和任务查询。导入文件同时保留为个人模板。点击设置页“完成”将渠道、Key 和个人模板同步到账号。</p>
         </Form>
     </Modal>;
 }

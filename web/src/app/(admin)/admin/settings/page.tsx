@@ -597,7 +597,7 @@ export default function AdminSettingsPage() {
                                                 </Button>
                                                 {fields.map((field) => {
                                                     const provider = storageProviders[field.name] || emptyS3StorageProvider;
-                                                    if (provider.type === "local") return <Card key={field.key} size="small" title="服务器本地媒体存储"><Typography.Text>素材按账号授权，保存在服务器配置的媒体目录中。</Typography.Text></Card>;
+                                                    if (provider.type === "local") return <Card key={field.key} size="small" title="服务器本地媒体存储"></Card>;
                                                     const isWebDAV = provider.type === "webdav";
                                                     const weightField = (
                                                         <Col xs={24} md={3}>

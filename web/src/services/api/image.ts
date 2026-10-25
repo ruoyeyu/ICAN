@@ -1,7 +1,7 @@
 import axios from "axios";
 import { prepareTranslationImages } from "./translation-images";
 import type { TranslationReferences } from "@/lib/channel-parameter-translation";
-import { executeParameterTranslation, findParameterTranslation, normalizeTranslationAspectRatio, translationBody, translationHeaders, type TranslationInput } from "./channel-parameter-translation";
+import { executeParameterTranslation, findParameterTranslation, textTranslationBody, normalizeTranslationAspectRatio, translationBody, translationHeaders, type TranslationInput } from "./channel-parameter-translation";
 
 import { isMiniMaxChannel, miniMaxModels } from "@/lib/minimax-video";
 import { dataUrlToFile } from "@/lib/image-utils";
@@ -957,7 +957,7 @@ async function requestAndParseImages(config: AiConfig, endpoint: string, request
 }
 
 async function requestImages(config: AiConfig & { seedIndex?: number; seedCount?: number }, prompt: string, references: ReferenceImage[], signal?: AbortSignal): Promise<GeneratedImage[]> {
-	const translation = await findParameterTranslation(config);
+	const translation = await findParameterTranslation(config, "image");
 	if (translation) {
 		const input = await imageTranslationInput(config,prompt,references,createImageRequestParams(config),translation.references);
 		const result = await executeParameterTranslation(config,translation,input,signal);
@@ -1039,7 +1039,7 @@ export async function requestEdit(config: AiConfig & { seedIndex?: number; seedC
 }
 
 export async function createCanvasImageTask(config: AiConfig & { seedIndex?: number; seedCount?: number }, prompt: string, references: ReferenceImage[], options: CanvasImageTaskOptions = {}): Promise<CanvasImageTask> {
-	const translation = await findParameterTranslation(config);
+	const translation = await findParameterTranslation(config, "image");
     if (!usesAccountProxy(config)) {
         const images = await requestImages({ ...config, count: "1" }, prompt, references, options.signal);
         options.signal?.throwIfAborted();
@@ -1207,7 +1207,9 @@ async function createCanvasImageTaskRequest(config: AiConfig & { seedIndex?: num
 }
 
 export async function requestImageQuestion(config: AiConfig, messages: ChatCompletionMessage[], onDelta: (text: string) => void, signal?: AbortSignal) {
-    if (isGeminiConfig(config)) return requestGeminiText(config, messages, onDelta, signal);
+    const translation = await findParameterTranslation(config, "text");
+    if (!translation && isGeminiConfig(config)) return requestGeminiText(config, messages, onDelta, signal);
+    const request = { model: config.model, messages: withSystemMessage(config, messages), stream: true };
     let answer = "";
 
     try {
@@ -1215,7 +1217,7 @@ export async function requestImageQuestion(config: AiConfig, messages: ChatCompl
             const response = await fetch(aiApiUrl(config, "/chat/completions"), {
                 method: "POST",
                 headers: { ...aiHeaders(config, "application/json"), ...(signal && usesAccountProxy(config) ? { "X-Canvas-Node-Request": "true" } : {}) },
-                body: JSON.stringify({ model: config.model, messages: withSystemMessage(config, messages), stream: true }),
+                body: JSON.stringify(translation ? textTranslationBody(config, request) : request),
                 signal: requestSignal,
             });
             if (!response.ok) {

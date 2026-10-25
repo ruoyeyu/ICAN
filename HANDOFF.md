@@ -1,5 +1,8 @@
 # ICAN 交接
 
+本轮本地 Go 全套、Web 35、生产构建、Python 9 与两组隔离浏览器回归均通过，见 docs/security/evidence/shared-rules-local.json；最终镜像与发布结果由原 CI 另行核验。
+本轮复用原模板表单和转译引擎增加按 text/image/video/audio 区分的 defaults，模型专属规则优先；自定义渠道缺少规则不再走通用请求。v1 保持原样，显式公共规则采用 authoring v2，使用与回滚见 docs/security/supplier-templates.zh-CN.md。同步清理新增的多余界面文案。免费 fixture 与相关回归进行中；不调用真实供应商、不操作服务器，不把请求格式错配推断为鉴权错误的已证实原因。
+
 本轮追加：供应商模板编辑复用现有管理员模型拉取接口和模型选择器；临时 Key 与模板分离，候选默认不选，确认后才更新草稿。私有存储监听增加 preserve，避免 local/S3 表单闪烁。Go/Web 31/类型检查/生产构建/Python 9 及两组生产浏览器回归通过，见 docs/security/evidence/template-editor-local.json。CI 40186851015 构建、测试、隔离/恢复和扫描全部通过，GHCR 已发布，匿名 manifest/config 与源码标签验证通过。固定 digest 见 docs/security/evidence/template-editor-publication.json。不操作服务器，不改变数据格式或密钥。原 v0.1.0 Release 标签权限阻断单独保留。
 
 此前交付记录：供应商模板和可配置 Docker 资源已提交；源码 53f8aa31d8fd803668cc138b3d91262ea9903c89 / CI 40184337184 全通过，GHCR 固定 digest 可用。v0.1.0 Release 尚未创建：GitHub 拒绝 Actions 令牌的标签移动，原子操作未改标签。一次性重置脚本已移除，正常发布门槛保留。最后需要仓库所有者按 docs/security/version-reset.md 重置两个精确标签，再手动运行 Publish checked pre-release。未改服务器。

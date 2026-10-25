@@ -14,6 +14,18 @@ Signed-in users open **Configuration → Local direct → Add custom API**, sele
 
 The catalog provides configuration, not shared administrator credentials. Existing cloud channels remain separate. Custom-channel permissions, request routing and outbound security checks still apply; selecting a template does not force every protocol to run in the browser.
 
+## Shared rules and model overrides
+
+In the existing editor, choose **Supplier shared rules** (`供应商公共规则`) under **Rule scope** (`规则范围`) and configure each task type separately: text, image, video or audio. Newly added models inherit the rule for the requested task type. Map the model field to `model`, which always contains the selected model name.
+
+Use **Copy as shared rule** (`复制为公共规则`) to copy an existing model rule while retaining the original. A same-type model-specific rule takes precedence, including its parameter options and media encoding. Rules are complete replacements, not field-by-field merges. Types never fall through to another type. A missing rule in a custom channel stops before submission; unconfigured native-compatible calls retain their normal protocol.
+
+Catalog edits still initialize future channels only. Existing saved channels must explicitly add/import shared rules through their own interface editor. No keys or existing channel values are replaced automatically.
+
+The outer portable format remains `ican-channel` v1. Shared rules use `authoring.version: 2`, with `defaults` and the existing `models` array. Compilation produces the existing engine's `defaults: {text, image, video, audio}` and `models` objects. Unedited v1 channels and advanced rules remain readable without a database migration or new service.
+
+Custom text rules currently accept synchronous JSON/text responses. Map `messages` or the original text `request`; extract a string or a message object containing `content`/`tool_calls`. Custom streaming and asynchronous text are not supported; explicit requests for these are rejected before submission without rewriting `stream`. Native-compatible text streaming is unchanged.
+
 ## Files and persistence
 
 Compose sets `API_TEMPLATE_DIR=/app/data/api-templates`, corresponding to `$ICAN_DATA_DIR/api-templates` on the host. Native runs default to `data/api-templates`; `API_TEMPLATE_DIR` may override it. No new database table or service is required.
@@ -35,3 +47,5 @@ Channels retain their own copied configuration. Editing/deleting a catalog entry
 Back up the existing data directory, including `api-templates`, with the deployment configuration and original encryption key. Keep the same bind mount and keys. The account-format addition is optional `channelTemplates`; existing IDs/values are preserved. An older client omitting that field does not erase it on this server; explicit `[]` removes personal templates. Old portable files without `instructions` remain valid.
 
 Before reverting to an older image, retain the current database and template directory backup. Older versions cannot display the catalog and may not preserve the optional account field when saving. Restore a matching backup if needed; do not regenerate keys or initialize another database. See [image updates and rollback](ghcr-deployment.md).
+
+Before enabling shared rules, back up the database, media, `api-templates` and original encryption key. Only explicitly saved configurations adopt v2. To roll back to an image without v2 support, restore the matching database/template backup; do not resave v2 channels with the older application. Existing video tasks retain their saved rule snapshots and are never recreated because a template changes.

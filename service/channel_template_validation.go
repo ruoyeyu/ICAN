@@ -32,7 +32,7 @@ func ParseChannelTemplate(raw []byte) (model.ChannelTemplate, error) {
 	if json.Unmarshal(raw, &value) != nil || !templateRequired(value, reflect.TypeOf(out)) || !templateNoCredentials(value) {
 		return out, errTemplate
 	}
-	if out.Format != "ican-channel" || out.Version != 1 || strings.TrimSpace(out.Name) == "" || !templateBaseURL(out.BaseURL) || !slices.Contains([]string{"custom", "openai"}, out.Protocol) || len(out.Models) == 0 || !templateUnique(out.Models) || out.Authoring.Version != 1 {
+	if out.Format != "ican-channel" || out.Version != 1 || strings.TrimSpace(out.Name) == "" || !templateBaseURL(out.BaseURL) || !slices.Contains([]string{"custom", "openai"}, out.Protocol) || len(out.Models) == 0 || !templateUnique(out.Models) || (out.Authoring.Version != 1 && out.Authoring.Version != 2) {
 		return out, errTemplate
 	}
 	for name, kind := range out.ModelCapabilities {
@@ -42,10 +42,20 @@ func ParseChannelTemplate(raw []byte) (model.ChannelTemplate, error) {
 	}
 	seen := map[string]bool{}
 	for i, m := range out.Authoring.Models {
-		if seen[m.Name] || !slices.Contains(out.Models, m.Name) || !validTemplateModel(m) {
+		if seen[m.Name] || !slices.Contains(out.Models, m.Name) || !validTemplateModel(m) || (out.Authoring.Version == 1 && m.Kind == "text") {
 			return out, fmt.Errorf("模型配置 #%d 无效：检查字段、鉴权、任务查询与参数声明", i+1)
 		}
 		seen[m.Name] = true
+	}
+	if out.Authoring.Version == 1 && out.Authoring.Defaults != nil {
+		return out, errTemplate
+	}
+	kinds := map[string]bool{}
+	for _, rule := range out.Authoring.Defaults {
+		if kinds[rule.Kind] || !validTemplateModel(rule) {
+			return out, errors.New("公共规则无效或任务类型重复")
+		}
+		kinds[rule.Kind] = true
 	}
 	return out, nil
 }
@@ -152,13 +162,16 @@ func templateUnique(values []string) bool {
 	return true
 }
 func validTemplateModel(m model.TemplateModel) bool {
-	if !slices.Contains([]string{"image", "video", "audio"}, m.Kind) || !slices.Contains([]string{"POST", "PUT", "PATCH", "GET"}, m.Method) || !templateEndpoint(m.Path) || !slices.Contains([]string{"json", "urlencoded", "formData"}, m.Format) {
+	if !slices.Contains([]string{"image", "video", "audio", "text"}, m.Kind) || !slices.Contains([]string{"POST", "PUT", "PATCH", "GET"}, m.Method) || !templateEndpoint(m.Path) || !slices.Contains([]string{"json", "urlencoded", "formData"}, m.Format) {
 		return false
 	}
 	if !slices.Contains([]string{"bearer", "header", "none"}, m.Auth.Type) || !templateHeader.MatchString(m.Auth.Header) || strings.ContainsAny(m.Auth.Prefix, "\r\n") {
 		return false
 	}
 	if !slices.Contains([]string{"GET", "POST"}, m.Poll.Method) {
+		return false
+	}
+	if m.Kind == "text" && (m.Poll.Enabled || m.Content != "") {
 		return false
 	}
 	if m.Poll.Enabled {
@@ -189,7 +202,7 @@ func validTemplateModel(m model.TemplateModel) bool {
 	}
 	for i, f := range m.Fields {
 		keys := strings.Split(f.Target, ".")
-		if !templatePath(f.Target) || templateCredential.MatchString(keys[len(keys)-1]) || !slices.Contains([]string{"model", "rawPrompt", "rawSize", "rawSeconds", "resolution", "quality", "count", "mode", "negativePrompt", "generateAudio", "watermark", "images", "firstImage", "firstFrame", "lastFrame", "videos", "audios", "voice", "audioFormat", "speed", "instructions", "literal"}, f.Source) {
+		if !templatePath(f.Target) || templateCredential.MatchString(keys[len(keys)-1]) || !slices.Contains([]string{"model", "rawPrompt", "rawSize", "rawSeconds", "resolution", "quality", "count", "mode", "negativePrompt", "generateAudio", "watermark", "images", "firstImage", "firstFrame", "lastFrame", "videos", "audios", "voice", "audioFormat", "speed", "instructions", "messages", "request", "literal"}, f.Source) {
 			return false
 		}
 		if !slices.Contains([]string{"always", "singleImage", "multipleImages", "frames", "noFrames"}, f.When) || !slices.Contains([]string{"body", "query"}, f.Location) || (f.Location == "query" && len(keys) > 1) || (m.Method == "GET" && f.Location == "body") {

@@ -1,4 +1,6 @@
 import { translationInputsSchema, type TranslationInputs } from "./translation-inputs";
+export type TranslationKind = "text" | "image" | "video" | "audio";
+export type PublicTranslationRules = Partial<Record<TranslationKind, Record<string, {inputs?: TranslationInputs; references?: TranslationReferences}>>>;
 export type TranslationReferences = { format: "auto" | "url" | "dataUrl"; max?: number };
 export type ChannelTranslation = { channelId: string; parameterTranslation: string };
 export type TranslationVariable = readonly [label: string, name: string, type: string, description: string];
@@ -7,6 +9,10 @@ export const translationVariableGroups = {
     common: [
         ["当前模型", "model", "string", "本次选中的模型"],
         ["提示词", "prompt", "string", "本次已经准备好的提示词"],
+    ],
+    text: [
+        ["消息", "messages", "object[]", "当前文本消息"],
+        ["原始请求", "request", "object", "当前文本请求字段"],
     ],
     image: [
         ["尺寸", "size", "string", "当前图片尺寸"],
@@ -49,7 +55,7 @@ export const translationVariableNames = [
             .map((item) => item[1]),
     ),
 ];
-export type TranslationVariables = Partial<Record<(typeof translationVariableNames)[number], string | number | boolean | string[]>>;
+export type TranslationVariables = Partial<Record<Exclude<(typeof translationVariableNames)[number], "messages" | "request">, string | number | boolean | string[]>> & {messages?: unknown[]; request?: Record<string, unknown>};
 export const translationMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"] as const;
 export const translationConfigItems: readonly (readonly [label: string, code: string, description: string])[] = [
     ["添加模型配置", 'models: { "模型名称": {} },', "填写当前渠道真实模型名称"],
@@ -85,12 +91,12 @@ export const translationTemplate = (model = "模型名称") =>
     `{\n  models: {\n    ${JSON.stringify(model || "模型名称")}: {\n      POST: {\n        url: "/generate",\n        headers: { Authorization: "Bearer {channelKey}" },\n        body: { model, prompt },\n        format: "json",\n        responseType: "json"\n      },\n      result: "data.images"\n    }\n  }\n}`;
 
 export function translationAuthoringPrompt(models: string[] = [], baseUrl = "") {
-    const groupNames: Record<string, string> = { common: "通用", image: "图片", video: "视频", audio: "音频" };
+    const groupNames: Record<string, string> = { common: "通用", text: "文本", image: "图片", video: "视频", audio: "音频" };
     const variables = Object.entries(translationVariableGroups).flatMap(([group, items]) =>
         items.map(([label, name, type, description]) => [label, name, type, `${groupNames[group]}：${description}`] as const),
     );
     return [
-        `请为 ICAN 编写一份渠道自定传参转译配置，统一支持图片、视频、音频，按 models 区分真实模型名称。当前渠道已选模型：${models.length ? models.join("、") : "按渠道模型列表填写"}。`,
+        `请为 ICAN 编写一份渠道自定传参转译配置，按 defaults 区分 text/image/video/audio 公共规则，按 models 配置模型专属规则。当前渠道已选模型：${models.length ? models.join("、") : "按渠道模型列表填写"}。`,
         `当前渠道 Base URL：${baseUrl || "未填写，请先确认渠道地址"}。`,
         translationRuleHint,
         "只输出完整 JavaScript 对象表达式，不用 Markdown 代码围栏、import、async function、request、return 或手写轮询循环。",
@@ -110,8 +116,8 @@ export function translationAuthoringPrompt(models: string[] = [], baseUrl = "") 
         ...translationConfigItems.map(([label, code, description]) => `- ${label}：${code} ${description}`),
         "",
         "配置规则",
-        "- 顶层仅支持 models、可选的共用 headers 和可选的共用 poll。models 的键必须与真实模型名称精确匹配；多个模型并列填写。",
-        "- 每个模型配置包含且仅包含一种生成请求方法块，及可选的 result、error、poll、references、content。空配置、空模型块和未配置的模型使用系统默认调用。",
+        "- 顶层支持 models、defaults、headers、poll。defaults 按 text/image/video/audio 配置；models 使用真实模型名，并用 kind 声明任务类型。model 变量始终为当前选中模型。",
+        "- 每条规则只配置一种请求方法。先匹配同类型模型专属规则，再匹配同类型公共规则。自定义渠道未匹配时报错；原生兼容渠道保留默认调用。",
         "- 每个请求块必须有 url，可选 headers、params、body、parts、format、responseType。相对 url 追加到上述 Base URL 的已有路径后；系统不会自动补齐或去重 /v1 等路径前缀，请按接口文档填写剩余路径。完整地址直接使用。",
         "- format 支持 json、formData、urlencoded、raw；responseType 支持 json、text、blob、arraybuffer；默认均为 json。",
         "- 鉴权使用外面已填写的渠道密钥，模板只使用 {channelKey}，不另填 apiKey。FormData 的 Content-Type 边界由系统生成。",
@@ -123,7 +129,7 @@ export function translationAuthoringPrompt(models: string[] = [], baseUrl = "") 
         "- 图片精确参数使用 rawPrompt 和 rawSize；quality 保留面板原值。分辨率档位与接口 quality 是独立概念，模板按接口合同显式映射，拒绝不支持的值，不能套用默认预设。",
         "- 异步图片可显式配置 content: {url: \"/jobs/{taskId}/content\"}；仅成功状态且没有图片结果时使用，沿用查询鉴权且要求同源，拒绝所有重定向和非图片。错误的 result 路径仍报错，不自动猜图片下载路径。",
         "- 同名模型按现有素材输入组织 body。接口要求首尾帧与普通参考互斥时，有 firstFrame 或 lastFrame 就只发送首尾帧字段；否则发送普通参考字段；没有素材时按文生请求填写。不新增生成方式或面板变量。",
-        "- result 提取媒体 URL、Data URL 或图片结果数组；直接返回二进制时可省略 result。error 可省略，沿用系统错误处理。",
+        "- result 提取媒体 URL、Data URL 或结果数组。文本规则用 messages/request 映射输入，result 提取文本或包含 content/tool_calls 的消息对象；目前仅支持同步 JSON/文本响应，不支持自定义流式或异步文本。原生兼容文本流不变。",
         "- 视频的同站 /videos/{id}/content 结果地址沿用请求头，并补入结果地址缺少的原请求查询参数；结果地址已有查询字段保持原值。标准 GET /videos/{taskId} 查询完成且未配置 result、没有媒体地址时，系统在原查询路径后追加 /content；明确填错 result 仍报错。",
         "",
         "完整结构示例（地址、请求字段和结果路径必须按目标接口文档修改）",
@@ -133,18 +139,27 @@ export function translationAuthoringPrompt(models: string[] = [], baseUrl = "") 
 
 // 只读取静态模型名称；保存校验不运行用户的请求表达式或响应函数。
 const translationProgramsCache = new Map<string, Record<string, string>>();
-const modelInputsCache = new Map<string, Record<string, TranslationInputs>>();
-export function cachedTranslationModel(source: string, model: string) { return {configured:!!translationProgramsCache.get(source)?.[model],inputs:modelInputsCache.get(source)?.[model]}; }
-export async function translationModelInputs(source: string, model: string) {
+type Rule = {code: string; kind?: TranslationKind; inputs?: TranslationInputs; references?: TranslationReferences};
+const ruleCache = new Map<string, {models:Record<string,Rule>; defaults:Partial<Record<TranslationKind,Rule>>}>();
+function cachedRule(source: string, model: string, kind?: TranslationKind) {
+    const rules = ruleCache.get(source), own = rules && Object.hasOwn(rules.models, model) ? rules.models[model] : undefined;
+    return own && (!kind || (!own.kind && kind !== "text") || own.kind === kind) ? own : kind ? rules?.defaults[kind] : undefined;
+}
+export function cachedTranslationModel(source: string, model: string, kind?: TranslationKind) { const rule = cachedRule(source,model,kind); return {configured:!!rule,inputs:rule?.inputs}; }
+export async function translationProgram(source: string, model: string, kind?: TranslationKind) { await translationPrograms(source); return cachedRule(source,model,kind)?.code; }
+export function publicTranslationRule(channel: {parameterTranslationRules?:PublicTranslationRules;parameterTranslationModels?:string[];parameterTranslationInputs?:Record<string,TranslationInputs>;parameterTranslationReferences?:Record<string,TranslationReferences>} | undefined, model: string, kind: TranslationKind) {
+    if (channel?.parameterTranslationRules) { const rules = channel.parameterTranslationRules[kind]; return rules && Object.hasOwn(rules,model) ? rules[model] : undefined; }
+    return channel?.parameterTranslationModels?.includes(model) ? {inputs:channel.parameterTranslationInputs?.[model],references:channel.parameterTranslationReferences?.[model]} : undefined;
+}
+export async function translationModelInputs(source: string, model: string, kind?: TranslationKind) {
     await translationPrograms(source);
-    return modelInputsCache.get(source)?.[model];
+    return cachedRule(source,model,kind)?.inputs;
 }
 
-const referenceInputsCache = new Map<string, Record<string, TranslationReferences>>();
 
-export async function translationReferenceInput(source: string, model: string) {
+export async function translationReferenceInput(source: string, model: string, kind?: TranslationKind) {
     await translationPrograms(source);
-    return referenceInputsCache.get(source)?.[model];
+    return cachedRule(source,model,kind)?.references;
 }
 
 export async function translationPrograms(source: string): Promise<Record<string, string>> {
@@ -172,7 +187,7 @@ export async function translationPrograms(source: string): Promise<Record<string
         return name.name === "String" ? String(new Function(`return (${value});`)()) : value;
     };
     const fields = root.getChildren("Property");
-    if (root.getChildren("Spread").length || fields.some((field) => !["models", "headers", "poll"].includes(key(field)))) throw new Error("渠道顶层只支持 models、headers、poll");
+    if (root.getChildren("Spread").length || fields.some((field) => !["models", "headers", "poll", "defaults"].includes(key(field)))) throw new Error("渠道顶层只支持 models、defaults、headers、poll");
     if (new Set(fields.map(key)).size !== fields.length) throw new Error("渠道顶层字段不能重复");
     const validatePoll = (field?: typeof tree.topNode) => {
         if (!field) return;
@@ -188,12 +203,16 @@ export async function translationPrograms(source: string): Promise<Record<string
     validatePoll(fields.find((field) => key(field) === "poll"));
     const models = fields.find((field) => key(field) === "models")?.getChild("ObjectExpression");
     if (!models || models.getChildren("Spread").length) throw new Error("请在 models 中逐个填写真实模型名称和配置");
-    const entries = models.getChildren("Property").map((field) => {
+    const defaultsField = fields.find(field => key(field) === "defaults");
+    const defaults = defaultsField?.getChild("ObjectExpression");
+    if (defaultsField && (!defaults || defaults.getChildren("Spread").length)) throw new Error("defaults 必须是按任务类型配置的对象");
+    const entries = [{node:models,shared:false}, {node:defaults,shared:true}].flatMap(({node,shared}) => (node?.getChildren("Property") || []).map((field) => {
         const name = key(field);
+        if (shared && !["text","image","video","audio"].includes(name)) throw new Error("公共规则任务类型无效");
         const rule = field.getChild("ObjectExpression");
         if (!name.trim() || !rule) throw new Error("每个模型必须有明确名称和配置对象");
         const requests = rule.getChildren("Property").filter((item) => translationMethods.includes(key(item) as (typeof translationMethods)[number]));
-        if (rule.getChildren("Property").length && requests.length !== 1) throw new Error(`模型 ${name} 必须填写且仅填写一种请求方法`);
+        if ((shared || rule.getChildren("Property").length) && requests.length !== 1) throw new Error(`模型 ${name} 必须填写且仅填写一种请求方法`);
         if (rule.getChildren("Spread").length) throw new Error(`模型 ${name} 的请求方法必须明确填写`);
         if (requests.some((request) => !request.getChild("ObjectExpression"))) throw new Error(`模型 ${name} 的请求必须是配置对象`);
         if (new Set(rule.getChildren("Property").map(key)).size !== rule.getChildren("Property").length) throw new Error(`模型 ${name} 的配置字段不能重复`);
@@ -214,21 +233,28 @@ export async function translationPrograms(source: string): Promise<Record<string
         }
         const inputField = rule.getChildren("Property").find((item) => key(item) === "inputs")?.lastChild;
         const inputs = inputField ? translationInputsSchema.parse(JSON.parse(text.slice(inputField.from, inputField.to))) : undefined;
-        return { inputs, name, configured: requests.length === 1, rule: text.slice(rule.from, rule.to), references };
-    });
-    if (new Set(entries.map((item) => item.name)).size !== entries.length) throw new Error("模型名称不能重复");
+        const kindField = rule.getChildren("Property").find(item => key(item) === "kind")?.lastChild;
+        if (kindField && kindField.name !== "String") throw new Error("规则任务类型必须是静态字符串");
+        const declaredKind = kindField ? new Function(`return (${text.slice(kindField.from,kindField.to)});`)() : undefined;
+        if (declaredKind !== undefined && !["text","image","video","audio"].includes(declaredKind)) throw new Error("规则任务类型无效");
+        if (!shared && defaults?.getChildren("Property").length && requests.length && !declaredKind) throw new Error("混合公共规则时，模型专属规则需要明确任务类型");
+        if (shared && declaredKind && declaredKind !== name) throw new Error("公共规则与任务类型不一致");
+        const kind = (shared ? name : declaredKind) as TranslationKind | undefined;
+        return { shared, kind, inputs, name, configured: requests.length === 1, rule: text.slice(rule.from, rule.to), references };
+    }));
+    if (new Set(entries.map((item) => `${item.shared}:${item.name}`)).size !== entries.length) throw new Error("模型名称不能重复");
     const fragment = (name: string, fallback: string) => {
         const field = fields.find((item) => key(item) === name);
         const value = field?.lastChild;
         return value ? text.slice(value.from, value.to) : fallback;
     };
-    const programs = Object.fromEntries(entries.filter((item) => item.configured).map((item) => [item.name, `({headers:(${fragment("headers", "{}")}),poll:(${fragment("poll", "false")}),rule:(${item.rule})})`]));
+    const compiled = entries.filter(item => item.configured).map(item => ({...item,code:`({headers:(${fragment("headers", "{}")}),poll:(${fragment("poll", "false")}),rule:(${item.rule})})`}));
+    const programs = Object.fromEntries(compiled.filter(item => !item.shared).map(item => [item.name,item.code]));
+    ruleCache.set(source,{models:Object.fromEntries(compiled.filter(item => !item.shared).map(item => [item.name,item])),defaults:Object.fromEntries(compiled.filter(item => item.shared).map(item => [item.name,item]))});
     if (translationProgramsCache.size >= 32) {
         const oldest = translationProgramsCache.keys().next().value!;
-        translationProgramsCache.delete(oldest); referenceInputsCache.delete(oldest); modelInputsCache.delete(oldest);
+        ruleCache.delete(oldest); translationProgramsCache.delete(oldest);
     }
-    modelInputsCache.set(source, Object.fromEntries(entries.filter(item => item.inputs).map(item => [item.name, item.inputs!])));
-    referenceInputsCache.set(source, Object.fromEntries(entries.filter((item) => item.references).map((item) => [item.name, item.references!])));
     translationProgramsCache.set(source, programs);
     return programs;
 }

@@ -1,0 +1,349 @@
+{
+  "format": "ican-channel",
+  "version": 1,
+  "name": "Shared rules fixture",
+  "baseUrl": "https://api.example.invalid",
+  "protocol": "custom",
+  "models": [
+    "fixture-new",
+    "fixture-special",
+    "fixture-picture",
+    "fixture-text"
+  ],
+  "modelCapabilities": {
+    "fixture-new": "video",
+    "fixture-special": "video",
+    "fixture-picture": "image",
+    "fixture-text": "text"
+  },
+  "authoring": {
+    "version": 2,
+    "models": [
+      {
+        "name": "fixture-special",
+        "kind": "video",
+        "method": "POST",
+        "path": "/special-jobs",
+        "format": "json",
+        "auth": {
+          "type": "bearer",
+          "header": "Authorization",
+          "prefix": "Bearer "
+        },
+        "fields": [
+          {
+            "target": "model",
+            "source": "model",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "prompt",
+            "source": "rawPrompt",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "aspect_ratio",
+            "source": "rawSize",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "resolution",
+            "source": "resolution",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "seconds",
+            "source": "rawSeconds",
+            "value": "null",
+            "string": true,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "image_url",
+            "source": "firstImage",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body"
+          }
+        ],
+        "poll": {
+          "enabled": true,
+          "method": "GET",
+          "path": "/jobs/{taskId}",
+          "taskId": "id",
+          "status": "status",
+          "progress": "",
+          "success": [
+            "completed"
+          ],
+          "failure": [
+            "failed"
+          ]
+        },
+        "result": "",
+        "content": "/jobs/{taskId}/content",
+        "inputs": {
+          "version": 1,
+          "parameters": {
+            "seconds": {
+              "options": [
+                "7"
+              ],
+              "allowCustom": false
+            },
+            "resolution": {
+              "options": [
+                "720p"
+              ],
+              "allowCustom": true
+            },
+            "aspectRatio": {
+              "options": [
+                "16:9"
+              ],
+              "allowCustom": true
+            }
+          },
+          "media": {
+            "images": {
+              "format": "url"
+            }
+          }
+        }
+      }
+    ],
+    "defaults": [
+      {
+        "name": "text",
+        "kind": "text",
+        "method": "POST",
+        "path": "/text",
+        "format": "json",
+        "auth": {
+          "type": "bearer",
+          "header": "Authorization",
+          "prefix": "Bearer "
+        },
+        "fields": [
+          {
+            "target": "model",
+            "source": "model",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "messages",
+            "source": "messages",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          }
+        ],
+        "poll": {
+          "enabled": false,
+          "method": "GET",
+          "path": "",
+          "taskId": "",
+          "status": "",
+          "progress": "",
+          "success": [],
+          "failure": []
+        },
+        "result": "reply",
+        "content": "",
+        "inputs": {
+          "version": 1,
+          "parameters": {},
+          "media": {}
+        }
+      },
+      {
+        "name": "image",
+        "kind": "image",
+        "method": "POST",
+        "path": "/pictures",
+        "format": "json",
+        "auth": {
+          "type": "bearer",
+          "header": "Authorization",
+          "prefix": "Bearer "
+        },
+        "fields": [
+          {
+            "target": "model",
+            "source": "model",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "prompt",
+            "source": "rawPrompt",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          }
+        ],
+        "poll": {
+          "enabled": false,
+          "method": "GET",
+          "path": "",
+          "taskId": "",
+          "status": "",
+          "progress": "",
+          "success": [],
+          "failure": []
+        },
+        "result": "data",
+        "content": "",
+        "inputs": {
+          "version": 1,
+          "parameters": {},
+          "media": {}
+        }
+      },
+      {
+        "name": "video",
+        "kind": "video",
+        "method": "POST",
+        "path": "/jobs",
+        "format": "json",
+        "auth": {
+          "type": "bearer",
+          "header": "Authorization",
+          "prefix": "Bearer "
+        },
+        "fields": [
+          {
+            "target": "model",
+            "source": "model",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "prompt",
+            "source": "rawPrompt",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "aspect_ratio",
+            "source": "rawSize",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "resolution",
+            "source": "resolution",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "seconds",
+            "source": "rawSeconds",
+            "value": "null",
+            "string": true,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "image_url",
+            "source": "firstImage",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body"
+          }
+        ],
+        "poll": {
+          "enabled": true,
+          "method": "GET",
+          "path": "/jobs/{taskId}",
+          "taskId": "id",
+          "status": "status",
+          "progress": "",
+          "success": [
+            "completed"
+          ],
+          "failure": [
+            "failed"
+          ]
+        },
+        "result": "",
+        "content": "/jobs/{taskId}/content",
+        "inputs": {
+          "version": 1,
+          "parameters": {
+            "seconds": {
+              "options": [
+                "3",
+                "7"
+              ],
+              "allowCustom": true
+            },
+            "resolution": {
+              "options": [
+                "720p"
+              ],
+              "allowCustom": true
+            },
+            "aspectRatio": {
+              "options": [
+                "16:9"
+              ],
+              "allowCustom": true
+            }
+          },
+          "media": {
+            "images": {
+              "format": "url"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

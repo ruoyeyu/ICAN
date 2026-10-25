@@ -1547,7 +1547,7 @@ function WorkbenchPanel({
 }) {
     const panelTheme = canvasThemes[useThemeStore(state => state.theme)];
     const customInterface = usesCustomVideoInterface(config, model);
-    const declared = declaredTranslationForModel(config, model).inputs;
+    const declared = declaredTranslationForModel(config, model, "video").inputs;
     const frameReferencesEnabled = Boolean(config.videoWorkflowRef) || (customInterface ? Boolean(declared?.media.firstFrame || declared?.media.lastFrame) : supportsVideoFrameReferences(model, channelProtocolForConfig({ ...config, model })));
     const referenceLimits = !config.videoWorkflowRef && channelProtocolForConfig({ ...config, model, videoModel: model }) === "ark" && (modelKey(model).includes("seedance-2-5") || modelKey(model).includes("seedance2-5")) ? ARK_SEEDANCE_REFERENCE_LIMITS : SEEDANCE_REFERENCE_LIMITS;
     const autodl = !config.videoWorkflowRef && isAutoDLConfig(config, model);

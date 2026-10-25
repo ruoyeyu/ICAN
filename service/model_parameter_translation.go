@@ -29,20 +29,38 @@ import (
 var parameterTranslationVariables = []string{
 	"model", "prompt", "rawPrompt", "size", "rawSize", "aspectRatio", "quality", "count", "images",
 	"resolution", "seconds", "rawSeconds", "mode", "negativePrompt", "generateAudio", "watermark",
-	"videos", "audios", "firstFrame", "lastFrame", "voice", "audioFormat", "speed", "instructions",
+	"videos", "audios", "firstFrame", "lastFrame", "voice", "audioFormat", "speed", "instructions", "messages", "request",
 }
 var parameterTranslationMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
 
 type parameterTranslationProgram struct {
+	kind       string
 	code       *goja.Program
 	references *model.ParameterTranslationReferences
 	inputs     *model.ParameterTranslationInputs
 }
 
+var translationKinds = []string{"text", "image", "video", "audio"}
+
+type parameterTranslationSet struct {
+	models   map[string]*parameterTranslationProgram
+	defaults map[string]*parameterTranslationProgram
+}
+
+func (s *parameterTranslationSet) resolve(name, kind string) *parameterTranslationProgram {
+	if s == nil {
+		return nil
+	}
+	if p := s.models[name]; p != nil && (kind == "" || (p.kind == "" && kind != "text") || p.kind == kind) {
+		return p
+	}
+	return s.defaults[kind]
+}
+
 var parameterTranslationCache = struct {
 	sync.Mutex
-	items map[string]map[string]*parameterTranslationProgram
-}{items: map[string]map[string]*parameterTranslationProgram{}}
+	items map[string]*parameterTranslationSet
+}{items: map[string]*parameterTranslationSet{}}
 
 // 解析配置仅用于校验和匹配，不执行用户表达式。空模型块保持系统默认调用。
 func ParameterTranslationModels(source string) ([]string, error) {
@@ -50,15 +68,18 @@ func ParameterTranslationModels(source string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	models := make([]string, 0, len(programs))
-	for name := range programs {
+	if programs == nil {
+		return nil, nil
+	}
+	models := make([]string, 0, len(programs.models))
+	for name := range programs.models {
 		models = append(models, name)
 	}
 	sort.Strings(models)
 	return models, nil
 }
 
-func parameterTranslationPrograms(source string) (map[string]*parameterTranslationProgram, error) {
+func parameterTranslationPrograms(source string) (*parameterTranslationSet, error) {
 	if strings.TrimSpace(source) == "" {
 		return nil, nil
 	}
@@ -105,7 +126,7 @@ func parameterTranslationPrograms(source string) (map[string]*parameterTranslati
 		return nil, err
 	}
 	for name := range fields {
-		if name != "models" && name != "headers" && name != "poll" {
+		if name != "models" && name != "headers" && name != "poll" && name != "defaults" {
 			return nil, fmt.Errorf("不支持的渠道配置字段：%s", name)
 		}
 	}
@@ -123,49 +144,91 @@ func parameterTranslationPrograms(source string) (map[string]*parameterTranslati
 		}
 		return text[int(expression.Idx0())-1 : int(expression.Idx1())-1]
 	}
-	programs := map[string]*parameterTranslationProgram{}
-	for name, expression := range rules {
-		rule, ok := expression.(*ast.ObjectLiteral)
-		if !ok || strings.TrimSpace(name) == "" {
-			return nil, errors.New("每个模型必须有明确名称和配置对象")
+	defaults := map[string]ast.Expression{}
+	if expression, exists := fields["defaults"]; exists {
+		object, ok := expression.(*ast.ObjectLiteral)
+		if !ok {
+			return nil, errors.New("defaults 必须是按任务类型配置的对象")
 		}
-		if len(rule.Value) == 0 {
-			continue
-		}
-		items, err := parameterTranslationProperties(rule)
+		defaults, err = parameterTranslationProperties(object)
 		if err != nil {
 			return nil, err
 		}
-		if err := validatePoll(items["poll"]); err != nil {
-			return nil, err
-		}
-		requests := 0
-		for _, method := range parameterTranslationMethods {
-			if request, present := items[method]; present {
-				requests++
-				if _, ok := request.(*ast.ObjectLiteral); !ok {
-					return nil, fmt.Errorf("模型 %s 的请求必须是配置对象", name)
-				}
+		for kind := range defaults {
+			if !slices.Contains(translationKinds, kind) {
+				return nil, errors.New("公共规则任务类型无效")
 			}
 		}
-		if requests != 1 {
-			return nil, fmt.Errorf("模型 %s 必须填写且仅填写一种请求方法", name)
+	}
+	programs := &parameterTranslationSet{models: map[string]*parameterTranslationProgram{}, defaults: map[string]*parameterTranslationProgram{}}
+	for _, group := range []struct {
+		rules  map[string]ast.Expression
+		target map[string]*parameterTranslationProgram
+		shared bool
+	}{{rules, programs.models, false}, {defaults, programs.defaults, true}} {
+		for name, expression := range group.rules {
+			rule, ok := expression.(*ast.ObjectLiteral)
+			if !ok || strings.TrimSpace(name) == "" {
+				return nil, errors.New("每个模型必须有明确名称和配置对象")
+			}
+			if len(rule.Value) == 0 {
+				if group.shared {
+					return nil, errors.New("公共规则不能为空")
+				}
+				continue
+			}
+			items, err := parameterTranslationProperties(rule)
+			if err != nil {
+				return nil, err
+			}
+			if err := validatePoll(items["poll"]); err != nil {
+				return nil, err
+			}
+			requests := 0
+			for _, method := range parameterTranslationMethods {
+				if request, present := items[method]; present {
+					requests++
+					if _, ok := request.(*ast.ObjectLiteral); !ok {
+						return nil, fmt.Errorf("模型 %s 的请求必须是配置对象", name)
+					}
+				}
+			}
+			if requests != 1 {
+				return nil, fmt.Errorf("模型 %s 必须填写且仅填写一种请求方法", name)
+			}
+			// 只求值当前模型，其他媒体模型的表达式不会因本次缺少其参数而执行。
+			code := fmt.Sprintf("({headers:(%s),poll:(%s),rule:(%s)})", fragment(fields["headers"], "{}"), fragment(fields["poll"], "false"), fragment(expression, "{}"))
+			program, err := goja.Compile("自定传参转译", code, true)
+			if err != nil {
+				return nil, err
+			}
+			references, err := parseTranslationReferences(items["references"])
+			if err != nil {
+				return nil, fmt.Errorf("模型 %s：%w", name, err)
+			}
+			inputs, err := parseTranslationInputs(fragment(items["inputs"], ""))
+			if err != nil {
+				return nil, fmt.Errorf("模型 %s：%w", name, err)
+			}
+			kind := ""
+			if expression, exists := items["kind"]; exists {
+				literal, ok := expression.(*ast.StringLiteral)
+				if !ok || !slices.Contains(translationKinds, literal.Value.String()) {
+					return nil, errors.New("规则任务类型必须是静态 text/image/video/audio")
+				}
+				kind = literal.Value.String()
+			}
+			if !group.shared && len(defaults) > 0 && kind == "" {
+				return nil, errors.New("混合公共规则时，模型专属规则需要明确任务类型")
+			}
+			if group.shared {
+				if kind != "" && kind != name {
+					return nil, errors.New("公共规则与任务类型不一致")
+				}
+				kind = name
+			}
+			group.target[name] = &parameterTranslationProgram{kind: kind, code: program, references: references, inputs: inputs}
 		}
-		// 只求值当前模型，其他媒体模型的表达式不会因本次缺少其参数而执行。
-		code := fmt.Sprintf("({headers:(%s),poll:(%s),rule:(%s)})", fragment(fields["headers"], "{}"), fragment(fields["poll"], "false"), fragment(expression, "{}"))
-		program, err := goja.Compile("自定传参转译", code, true)
-		if err != nil {
-			return nil, err
-		}
-		references, err := parseTranslationReferences(items["references"])
-		if err != nil {
-			return nil, fmt.Errorf("模型 %s：%w", name, err)
-		}
-		inputs, err := parseTranslationInputs(fragment(items["inputs"], ""))
-		if err != nil {
-			return nil, fmt.Errorf("模型 %s：%w", name, err)
-		}
-		programs[name] = &parameterTranslationProgram{code: program, references: references, inputs: inputs}
 	}
 	if len(parameterTranslationCache.items) >= 32 {
 		for key := range parameterTranslationCache.items {
@@ -202,6 +265,7 @@ func parameterTranslationProperties(object *ast.ObjectLiteral) (map[string]ast.E
 }
 
 type ParameterTranslation struct {
+	kind       string
 	runtime    *goja.Runtime
 	root       *goja.Object
 	rule       *goja.Object
@@ -223,15 +287,23 @@ func parameterTranslationValue(object *goja.Object, name string) goja.Value {
 	return goja.Undefined()
 }
 
-func NewParameterTranslation(channel model.ModelChannel, modelName string, variables map[string]any) (*ParameterTranslation, error) {
+func NewParameterTranslation(channel model.ModelChannel, modelName string, variables map[string]any, kinds ...string) (*ParameterTranslation, error) {
 	programs, err := parameterTranslationPrograms(channel.ParameterTranslation)
-	if err != nil || programs[modelName] == nil {
+	kind := ""
+	if len(kinds) > 0 {
+		kind = kinds[0]
+	}
+	program := programs.resolve(modelName, kind)
+	if err != nil || program == nil {
 		return nil, err
 	}
-	if err := validateTranslationReferences(programs[modelName].references, variables["images"]); err != nil {
+	if kind != "" && program.inputs != nil && program.inputs.Authentication == "key" && channel.APIKey == "" {
+		return nil, errors.New("当前渠道未填写 API Key")
+	}
+	if err := validateTranslationReferences(program.references, variables["images"]); err != nil {
 		return nil, err
 	}
-	if err := validateTranslationInputs(programs[modelName].inputs, variables); err != nil {
+	if err := validateTranslationInputs(program.inputs, variables); err != nil {
 		return nil, err
 	}
 	runtime := goja.New()
@@ -260,8 +332,8 @@ func NewParameterTranslation(channel model.ModelChannel, modelName string, varia
 		}
 		return nil
 	}
-	translation := &ParameterTranslation{runtime: runtime, channel: channel, Client: &client}
-	value, err := translation.run(func() (goja.Value, error) { return runtime.RunProgram(programs[modelName].code) })
+	translation := &ParameterTranslation{kind: kind, runtime: runtime, channel: channel, Client: &client}
+	value, err := translation.run(func() (goja.Value, error) { return runtime.RunProgram(program.code) })
 	if err != nil {
 		return nil, fmt.Errorf("自定配置求值失败：%w", err)
 	}
@@ -277,6 +349,9 @@ func NewParameterTranslation(channel model.ModelChannel, modelName string, varia
 		} else {
 			return nil, errors.New("poll 必须是查询配置对象或 false")
 		}
+	}
+	if kind == "text" && translation.poll != nil {
+		return nil, errors.New("自定义文本规则暂不支持异步查询")
 	}
 	if translation.poll != nil {
 		value, err := translation.jsonValue(parameterTranslationValue(translation.poll, "success"))
@@ -330,7 +405,7 @@ func ReadParameterTranslationInput(body []byte) (*ParameterTranslationInput, err
 	if err := json.Unmarshal(body, &request); err != nil || request.Input == nil {
 		return nil, errors.New("自定义调用参数格式错误")
 	}
-	if !slices.Contains([]string{"image", "video", "audio"}, request.Input.Kind) {
+	if !slices.Contains(translationKinds, request.Input.Kind) {
 		return nil, errors.New("自定义调用缺少媒体类型")
 	}
 	for key, value := range request.Input.Variables {
@@ -346,6 +421,14 @@ func ReadParameterTranslationInput(body []byte) (*ParameterTranslationInput, err
 				if _, ok := item.(string); !ok {
 					return nil, fmt.Errorf("%s 必须是素材地址数组", key)
 				}
+			}
+		} else if key == "messages" {
+			if _, ok := value.([]any); !ok || request.Input.Kind != "text" {
+				return nil, errors.New("messages 必须是文本消息数组")
+			}
+		} else if key == "request" {
+			if _, ok := value.(map[string]any); !ok || request.Input.Kind != "text" {
+				return nil, errors.New("request 必须是文本请求对象")
 			}
 		} else {
 			switch value.(type) {
@@ -383,7 +466,7 @@ func videoTaskParameterTranslation(task model.VideoTask, channel model.ModelChan
 		return nil, snapshot, errors.New("视频任务自定义查询快照无效")
 	}
 	channel.ParameterTranslation, channel.BaseURL, channel.Protocol, channel.Timeout = snapshot.Source, snapshot.BaseURL, snapshot.Protocol, snapshot.Timeout
-	translation, err := NewParameterTranslation(channel, task.Model, snapshot.Variables)
+	translation, err := NewParameterTranslation(channel, task.Model, snapshot.Variables, "video")
 	if err != nil {
 		return nil, snapshot, err
 	}
@@ -590,6 +673,16 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 	var plan parameterTranslationRequest
 	if err := json.Unmarshal([]byte(encoded.String()), &plan); err != nil {
 		return nil, "", errors.New("请求配置必须是可序列化的对象")
+	}
+	if translation.kind == "text" {
+		if plan.ResponseType != "" && plan.ResponseType != "json" && plan.ResponseType != "text" {
+			return nil, "", errors.New("文本规则需要 JSON 或文本响应")
+		}
+		var body map[string]any
+		_ = json.Unmarshal(plan.Body, &body)
+		if body["stream"] == true {
+			return nil, "", errors.New("自定义文本映射暂不支持流式响应；请按接口要求配置 stream 字段")
+		}
 	}
 	if strings.TrimSpace(plan.URL) == "" {
 		return nil, "", errors.New("自定配置缺少接口地址 url")
@@ -809,6 +902,7 @@ type ParameterTranslationResult struct {
 	TaskIDs      []string
 	Status       string
 	Progress     int
+	TextResult   any
 	URLs         []string
 	ContentURL   string `json:",omitempty"`
 	Body         []byte
@@ -965,6 +1059,20 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 	value, err := translation.selectValue(selector, data)
 	if err != nil {
 		return result, err
+	}
+	if kind == "text" {
+		switch v := value.(type) {
+		case string:
+			result.TextResult = map[string]any{"role": "assistant", "content": v}
+		case map[string]any:
+			if _, content := v["content"]; !content && v["tool_calls"] == nil {
+				return result, errors.New("文本结果需要 content 或 tool_calls")
+			}
+			result.TextResult = v
+		default:
+			return result, errors.New("文本结果提取路径未返回文本或消息对象")
+		}
+		return result, nil
 	}
 	mimeType := result.ContentType
 	if !strings.HasPrefix(mimeType, kind+"/") {

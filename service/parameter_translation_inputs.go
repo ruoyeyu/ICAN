@@ -66,7 +66,7 @@ func ParameterTranslationModelInputs(source string, names []string) map[string]m
 	}
 	result := map[string]model.ParameterTranslationInputs{}
 	for _, name := range names {
-		if p := programs[name]; p != nil && p.inputs != nil {
+		if p := programs.resolve(name, ""); p != nil && p.inputs != nil {
 			result[name] = *p.inputs
 		}
 	}
@@ -131,8 +131,36 @@ func validateTranslationInputs(input *model.ParameterTranslationInputs, variable
 	return nil
 }
 
-// Only an explicit declaration on this exact model permits an empty provider key.
+// Empty keys require an explicit matching authentication declaration; execution
+// checks the selected task type again before preparing a request.
 func ParameterTranslationWithoutKey(source, name string) bool {
 	programs, err := parameterTranslationPrograms(source)
-	return err == nil && programs[name] != nil && programs[name].inputs != nil && programs[name].inputs.Authentication == "none"
+	if err != nil || programs == nil {
+		return false
+	}
+	for _, kind := range append([]string{""}, translationKinds...) {
+		if p := programs.resolve(name, kind); p != nil && p.inputs != nil && p.inputs.Authentication == "none" {
+			return true
+		}
+	}
+	return false
+}
+
+// Resolve each exposed model per task type without evaluating expressions or exposing credentials.
+func ParameterTranslationPublicRules(source string, names []string) map[string]map[string]model.PublicTranslationRule {
+	programs, err := parameterTranslationPrograms(source)
+	if err != nil || programs == nil {
+		return nil
+	}
+	result := map[string]map[string]model.PublicTranslationRule{}
+	for _, kind := range translationKinds {
+		rules := map[string]model.PublicTranslationRule{}
+		for _, name := range names {
+			if p := programs.resolve(name, kind); p != nil {
+				rules[name] = model.PublicTranslationRule{Inputs: p.inputs, References: p.references}
+			}
+		}
+		result[kind] = rules
+	}
+	return result
 }

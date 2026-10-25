@@ -130,20 +130,25 @@ type ParameterTranslationInputs struct {
 	Parameters     map[string]ParameterTranslationOption     `json:"parameters"`
 	Media          map[string]ParameterTranslationReferences `json:"media"`
 }
+type PublicTranslationRule struct {
+	Inputs     *ParameterTranslationInputs     `json:"inputs,omitempty"`
+	References *ParameterTranslationReferences `json:"references,omitempty"`
+}
 type PublicModelChannelInfo struct {
-	ParameterTranslationInputs     map[string]ParameterTranslationInputs     `json:"parameterTranslationInputs,omitempty"`
-	ParameterTranslationReferences map[string]ParameterTranslationReferences `json:"parameterTranslationReferences,omitempty"`
-	ParameterTranslationModels     []string                                  `json:"parameterTranslationModels,omitempty"`
-	ID                             string                                    `json:"id"`
-	Protocol                       string                                    `json:"protocol"`
-	Name                           string                                    `json:"name"`
-	BaseURL                        string                                    `json:"baseUrl"`
-	Models                         []string                                  `json:"models"`
-	Weight                         int                                       `json:"weight"`
-	Timeout                        int                                       `json:"timeout"`
-	Enabled                        bool                                      `json:"enabled"`
-	Remark                         string                                    `json:"remark"`
-	Workflows                      []WorkflowSummary                         `json:"workflows,omitempty"`
+	ParameterTranslationRules      map[string]map[string]PublicTranslationRule `json:"parameterTranslationRules,omitempty"`
+	ParameterTranslationInputs     map[string]ParameterTranslationInputs       `json:"parameterTranslationInputs,omitempty"`
+	ParameterTranslationReferences map[string]ParameterTranslationReferences   `json:"parameterTranslationReferences,omitempty"`
+	ParameterTranslationModels     []string                                    `json:"parameterTranslationModels,omitempty"`
+	ID                             string                                      `json:"id"`
+	Protocol                       string                                      `json:"protocol"`
+	Name                           string                                      `json:"name"`
+	BaseURL                        string                                      `json:"baseUrl"`
+	Models                         []string                                    `json:"models"`
+	Weight                         int                                         `json:"weight"`
+	Timeout                        int                                         `json:"timeout"`
+	Enabled                        bool                                        `json:"enabled"`
+	Remark                         string                                      `json:"remark"`
+	Workflows                      []WorkflowSummary                           `json:"workflows,omitempty"`
 
 	ModelCapabilities map[string]string `json:"modelCapabilities,omitempty"`
 }

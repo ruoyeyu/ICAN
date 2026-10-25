@@ -65,7 +65,7 @@ assert.equal(await page.getByRole('combobox',{name:'分辨率（resolution）',e
 assert.equal(await page.getByRole('combobox',{name:'比例（aspect_ratio）',exact:true}).inputValue(),'9:16');
 let calls=0,captured;let ready;const submitted=new Promise(resolve=>{ready=resolve;});
 await page.route('**/api/v1/videos',async route=>{if(route.request().method()!=='POST'){await route.continue();return;}calls++;captured=route.request().postDataJSON();await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:'mock-browser-task',status:'queued',progress:0,parameter_translation:true})});ready();});
-await page.route('**/api/v1/videos/mock-browser-task',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:'mock-browser-task',status:'in_progress',progress:1,parameter_translation:true})}));
+await page.route('**/api/v1/videos/mock-browser-task*',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:'mock-browser-task',status:'in_progress',progress:1,parameter_translation:true})}));
 const prompt='  unchanged prompt {channelKey}\n';
 await page.getByPlaceholder('描述镜头运动、主体动作、场景氛围和画面风格',{exact:true}).filter({visible:true}).first().fill(prompt);
 await page.getByRole('button',{name:/^开始(创作|生成)$/}).first().click();
@@ -73,5 +73,25 @@ await Promise.race([submitted,new Promise((_,reject)=>setTimeout(async()=>reject
 assert.equal(calls,1);const variables=captured._parameterTranslation.variables;
 assert.equal(variables.rawPrompt,prompt);assert.equal(variables.rawSize,'9:16');assert.equal(variables.resolution,'custom-res');assert.equal(variables.rawSeconds,'2');assert.equal(variables.model,'fixture-video');
 assert.ok(!JSON.stringify(captured).includes('fixture-private-key'));
-assert.deepEqual(errors,[]);console.log(JSON.stringify({import:'validated',edit:'saved in existing translator',export:'no credentials',freshBrowser:'account config restored',presets:'OpenAI added without overwriting existing channel',perModelParameters:'declared choices enforced; custom resolution and literal ratio retained',mockSubmit:'one intercepted request; exact prompt/ratio/resolution/duration/model',pageErrors:errors}));
+await page.unroute('**/api/v1/videos/mock-browser-task*');
+await page.route('**/mock-fixture-video.mp4',route=>route.fulfill({contentType:'video/mp4',body:Buffer.from('fixture-video')}));
+await page.route('**/api/v1/videos/mock-browser-task*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({id:'mock-browser-task',status:'completed',progress:100,video_url:origin+'/mock-fixture-video.mp4',storageKey:'fixture-stored-video',parameter_translation:true})}));
+await page.getByRole('button',{name:/^开始(创作|生成)$/}).first().waitFor();
+
+await page.goto(origin+'/canvas');await page.getByRole('button',{name:'配置',exact:true}).click();
+await page.getByRole('button',{name:'新增自定义 API',exact:true}).click();
+await page.getByRole('dialog',{name:'新增自定义 API'}).locator('input[type=file]').setInputFiles(repo+'/web/scripts/fixtures/channel-template-v2.json');
+await page.getByLabel('个人 API Key',{exact:true}).fill('shared-fixture-private-key');await page.getByRole('button',{name:'添加渠道',exact:true}).click();
+const sharedSaved=page.waitForResponse(r=>r.url().endsWith('/api/v1/user-config/model')&&r.request().method()==='POST');await page.getByRole('button',{name:/^完\s*成$/}).click();assert.equal((await(await sharedSaved).json()).code,0);
+const withShared=await call('/api/v1/user-config',undefined,alice.token);assert.deepEqual(withShared.modelConfig.localChannels.find(c=>c.id===channel.id),channel);
+await page.goto(origin+'/video');await page.getByRole('combobox').filter({hasText:'选择模型'}).first().click();await page.getByRole('option',{name:/fixture-new/}).click();
+await page.getByRole('combobox',{name:'时长（seconds）',exact:true}).fill('3');
+await page.getByRole('combobox',{name:'分辨率（resolution）',exact:true}).fill('shared-custom-resolution');
+await page.getByRole('combobox',{name:'比例（aspect_ratio）',exact:true}).fill('16:9');
+const submittedShared=new Promise(resolve=>{ready=resolve;});
+await page.getByPlaceholder('描述镜头运动、主体动作、场景氛围和画面风格',{exact:true}).filter({visible:true}).first().fill('shared unchanged prompt');
+await page.getByRole('button',{name:/^开始(创作|生成)$/}).first().click();
+await Promise.race([submittedShared,new Promise((_,reject)=>setTimeout(()=>reject(new Error('No shared-rule submission')),15000))]);
+assert.equal(calls,2);assert.equal(captured.model,'fixture-new');assert.equal(captured._parameterTranslation.kind,'video');assert.equal(captured._parameterTranslation.variables.rawSeconds,'3');assert.equal(captured._parameterTranslation.variables.resolution,'shared-custom-resolution');assert.equal(captured._parameterTranslation.variables.rawSize,'16:9');
+assert.deepEqual(errors,[]);console.log(JSON.stringify({import:'validated',edit:'saved in existing translator',export:'no credentials',freshBrowser:'account config restored',presets:'OpenAI added without overwriting existing channel',perModelParameters:'declared choices enforced; custom resolution and literal ratio retained',mockSubmit:'two intercepted requests: legacy and inherited shared rule; exact prompt/ratio/resolution/duration/model',pageErrors:errors}));
 }finally{if(browser)await browser.close();next.kill();api.kill();fs.rmSync(data,{recursive:true,force:true});}

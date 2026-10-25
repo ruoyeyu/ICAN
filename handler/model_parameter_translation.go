@@ -43,9 +43,13 @@ func parameterTranslationLog(context aiLogContext, translation *service.Paramete
 func serveParameterTranslation(w http.ResponseWriter, r *http.Request, body []byte, path string, channel model.ModelChannel, user model.AuthUser, credits float64, startedAt time.Time) bool {
 	input, err := service.ReadParameterTranslationInput(body)
 	if input == nil && err == nil {
+		if channel.Protocol == "custom" {
+			Fail(w, "当前自定义渠道缺少匹配的调用规则，请检查接口配置")
+			return true
+		}
 		return false
 	}
-	if err == nil && ((input.Kind == "image" && path != "/images/generations" && path != "/images/edits") || (input.Kind == "audio" && path != "/audio/speech") || input.Kind == "video") {
+	if err == nil && ((input.Kind == "image" && path != "/images/generations" && path != "/images/edits") || (input.Kind == "audio" && path != "/audio/speech") || (input.Kind == "text" && path != "/chat/completions") || input.Kind == "video") {
 		Fail(w, "自定义调用类型与接口不一致")
 		return true
 	}
@@ -55,7 +59,7 @@ func serveParameterTranslation(w http.ResponseWriter, r *http.Request, body []by
 	_ = json.Unmarshal(body, &request)
 	var translation *service.ParameterTranslation
 	if err == nil {
-		translation, err = service.NewParameterTranslation(channel, request.Model, input.Variables)
+		translation, err = service.NewParameterTranslation(channel, request.Model, input.Variables, input.Kind)
 	}
 	if err != nil {
 		Fail(w, err.Error())
@@ -93,6 +97,10 @@ func serveParameterTranslation(w http.ResponseWriter, r *http.Request, body []by
 		return true
 	}
 	w.Header().Set("Content-Type", "application/json")
+	if input.Kind == "text" {
+		_ = json.NewEncoder(w).Encode(map[string]any{"choices": []any{map[string]any{"message": result.TextResult}}})
+		return true
+	}
 	if input.Kind == "audio" {
 		_ = json.NewEncoder(w).Encode(map[string]any{"provider": "parameter-translation", "audio_url": result.URLs[0]})
 		return true
@@ -108,6 +116,10 @@ func serveParameterTranslation(w http.ResponseWriter, r *http.Request, body []by
 func serveParameterTranslationVideo(w http.ResponseWriter, r *http.Request, body []byte, channel model.ModelChannel, user model.AuthUser, credits float64, startedAt time.Time) bool {
 	input, err := service.ReadParameterTranslationInput(body)
 	if input == nil && err == nil {
+		if channel.Protocol == "custom" {
+			Fail(w, "当前自定义渠道缺少匹配的调用规则，请检查接口配置")
+			return true
+		}
 		return false
 	}
 	if err == nil && input.Kind != "video" {
@@ -120,7 +132,7 @@ func serveParameterTranslationVideo(w http.ResponseWriter, r *http.Request, body
 	_ = json.Unmarshal(body, &request)
 	var translation *service.ParameterTranslation
 	if err == nil {
-		translation, err = service.NewParameterTranslation(channel, request.Model, input.Variables)
+		translation, err = service.NewParameterTranslation(channel, request.Model, input.Variables, input.Kind)
 	}
 	if err != nil {
 		Fail(w, err.Error())

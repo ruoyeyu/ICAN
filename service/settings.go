@@ -90,15 +90,16 @@ func AdminTestChannelModel(index *int, channel model.ModelChannel, modelName str
 	if err != nil {
 		return "", err
 	}
-	translation, err := NewParameterTranslation(resolved, modelName, map[string]any{"prompt": "test", "count": 1})
+	kind := resolved.ModelCapabilities[modelName]
+	if kind == "" {
+		kind = "image"
+	}
+	translation, err := NewParameterTranslation(resolved, modelName, map[string]any{"prompt": "test", "count": 1}, kind)
 	if err != nil {
 		return "", err
 	}
 	if translation != nil {
-		kind := resolved.ModelCapabilities[modelName]
-		if kind == "" {
-			kind = "image"
-		}
+
 		result, err := translation.Send(context.Background(), kind, false, "")
 		if err != nil {
 			return "", err
@@ -107,6 +108,9 @@ func AdminTestChannelModel(index *int, channel model.ModelChannel, modelName str
 			return "自定义请求已提交，接口返回任务 ID", nil
 		}
 		return "自定义请求调用成功", nil
+	}
+	if resolved.Protocol == "custom" {
+		return "", errors.New("当前自定义渠道缺少匹配的调用规则")
 	}
 	if adapter, ok := matchModelProtocol(modelConfigTestRules, resolved, modelName); ok {
 		return adapter.testModel(resolved, modelName)
@@ -1180,6 +1184,7 @@ func publicChannelInfos(channels []model.ModelChannel, availableModels, availabl
 		translated = filterEnabledModels(translated, models)
 		result = append(result, model.PublicModelChannelInfo{
 			ParameterTranslationModels:     translated,
+			ParameterTranslationRules:      ParameterTranslationPublicRules(channel.ParameterTranslation, models),
 			ParameterTranslationReferences: ParameterTranslationReferenceInputs(channel.ParameterTranslation, translated),
 			ParameterTranslationInputs:     ParameterTranslationModelInputs(channel.ParameterTranslation, translated),
 			ID:                             channel.ID,

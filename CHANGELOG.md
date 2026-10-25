@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add task-specific supplier shared rules with per-model overrides; reject unmatched custom calls and preserve native-compatible routing, credentials and legacy templates.
+- Remove added explanatory UI copy and badges from custom API and video settings.
+
 - Reuse administrator model discovery and the existing model selector in supplier-template editing; new candidates require explicit selection and temporary credentials are not persisted.
 - Preserve the local-storage provider type when switching or saving private settings to prevent form flicker.
 

@@ -1,3 +1,4 @@
+import { findParameterTranslation, textTranslationBody } from "./channel-parameter-translation";
 import { mimoTextModels } from "@/lib/mimo-tts";
 import { dataUrlToGeminiInlineData, geminiActionUrl, geminiDirectHeaders, geminiErrorMessage, isGeminiConfig } from "@/lib/gemini";
 import { aiApiUrl, aiHeaders, ImageRequestError, isEventStreamResponse, readJsonServerSentEvents, refreshRemoteUser } from "@/services/api/image";
@@ -174,8 +175,9 @@ export async function requestCanvasAgentCheckpoint(input: {
 }
 
 async function requestCompletion(config: CanvasAgentAiConfig, systemPrompt: string, messages: CanvasAgentProtocolMessage[], tools: CanvasAgentToolDefinition[], jsonSchema?: Record<string, unknown>, signal?: AbortSignal) {
-    if (config.apiMode === "responses") return requestResponsesCompletion(config, systemPrompt, messages, tools, jsonSchema, signal);
-    if (isGeminiConfig(config)) return requestGeminiCompletion(config, systemPrompt, messages, tools, jsonSchema, signal);
+    const translation = await findParameterTranslation(config, "text");
+    if (!translation && config.apiMode === "responses") return requestResponsesCompletion(config, systemPrompt, messages, tools, jsonSchema, signal);
+    if (!translation && isGeminiConfig(config)) return requestGeminiCompletion(config, systemPrompt, messages, tools, jsonSchema, signal);
     const body: Record<string, unknown> = {
         model: config.model,
         messages: [{ role: "system", content: systemPrompt }, ...messages.map(toRequestMessage)],
@@ -192,7 +194,7 @@ async function requestCompletion(config: CanvasAgentAiConfig, systemPrompt: stri
     const response = await fetch(aiApiUrl(config, "/chat/completions"), {
         method: "POST",
         headers: aiHeaders(config, "application/json"),
-        body: JSON.stringify(body),
+        body: JSON.stringify(translation ? textTranslationBody(config, body) : body),
         signal,
     });
     let payload: ChatCompletionPayload;

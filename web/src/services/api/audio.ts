@@ -92,7 +92,7 @@ export function fetchGrokTtsVoices(config: AiConfig, model: string) {
 
 export async function requestAudioGeneration(config: AiConfig, prompt: string, referenceAudio?: ReferenceAudio, signal?: AbortSignal): Promise<Blob> {
     const model = (config.model || config.audioModel).trim();
-	const translation = await findParameterTranslation({...config,model});
+	const translation = await findParameterTranslation({...config,model}, "audio");
 	if (translation) {
 		const result = await executeParameterTranslation({...config,model},translation,await audioTranslationInput(config,model,prompt,referenceAudio),signal);
 		refreshRemoteUser(config);
@@ -141,7 +141,7 @@ export async function storeGeneratedAudio(blob: Blob, format = "mp3"): Promise<U
 
 export async function createCanvasAudioTask(config: AiConfig, prompt: string, options: CanvasAudioTaskOptions = {}, referenceAudio?: ReferenceAudio): Promise<CanvasAudioTask> {
     const model = (config.model || config.audioModel).trim();
-	const translation = await findParameterTranslation({...config,model});
+	const translation = await findParameterTranslation({...config,model}, "audio");
 	if (!translation || !translation.accountProxy) {
     if (!translation) assertAudioConfig(config, model);
 

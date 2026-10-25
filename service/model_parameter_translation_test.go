@@ -22,6 +22,9 @@ func TestParameterTranslationStaticMatch(t *testing.T) {
 		t.Fatalf("names=%v err=%v", names, err)
 	}
 	channel := model.ModelChannel{BaseURL: "https://example.test/v1", ParameterTranslation: source}
+	if tr, err := NewParameterTranslation(channel, "image", nil, "text"); err != nil || tr != nil {
+		t.Fatal("legacy media rule intercepted native text")
+	}
 	for _, name := range []string{"native", "unmatched"} {
 		translation, err := NewParameterTranslation(channel, name, nil)
 		if err != nil || translation != nil {

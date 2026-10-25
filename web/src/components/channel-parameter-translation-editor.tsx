@@ -45,7 +45,7 @@ export function ChannelParameterTranslationEditor({ name, baseUrl, apiKey, proto
     const [saving, setSaving] = useState(false);
     const view = useRef<EditorView | null>(null);
     const file = useRef<HTMLInputElement>(null);
-    const currentSource = () => mode === "form" && form ? (form.models.length ? compileTemplate(form) : "") : draft;
+    const currentSource = () => mode === "form" && form ? ((form.models.length || form.defaults?.length) ? compileTemplate(form) : "") : draft;
     const close = () => setOpen(false);
     const insert = (text: string) => {
         if (!view.current) return;
@@ -91,11 +91,11 @@ export function ChannelParameterTranslationEditor({ name, baseUrl, apiKey, proto
                 <header className="shrink-0 border-b border-[var(--ant-color-border-secondary)] px-6 py-3 pr-14">
                     <div className="text-base font-semibold">{name || "当前渠道"} · 自定传参转译</div>
                     <Typography.Text type="secondary" className="text-xs">
-                        空配置使用默认调用；填写后对应模型优先使用。编辑内容随渠道保存生效。
+                        模型专属规则优先于同类型公共规则。
                     </Typography.Text>
                 </header>
                 <div className="px-6 py-2"><Segmented value={mode} options={[{value:"form",label:"表单配置"},{value:"code",label:"高级编辑"}]} onChange={next => {
-                    try { if (next === "code") { setDraft(form?.models.length ? compileTemplate(form) : ""); } else { const parsed = readTemplate(draft); if (!parsed) throw new Error("现有高级代码无法无损转换为表单，请继续使用高级编辑；不会覆盖配置"); setForm(parsed); } setMode(next as "form" | "code"); } catch(error) { message.error(error instanceof Error ? error.message : "配置无效"); }
+                    try { if (next === "code") { setDraft(form && (form.models.length || form.defaults?.length) ? compileTemplate(form) : ""); } else { const parsed = readTemplate(draft); if (!parsed) throw new Error("现有高级代码无法无损转换为表单，请继续使用高级编辑；不会覆盖配置"); setForm(parsed); } setMode(next as "form" | "code"); } catch(error) { message.error(error instanceof Error ? error.message : "配置无效"); }
                 }} /></div>
                 {mode === "form" && form ? <ChannelTemplateForm value={form} onChange={setForm} models={models} /> : <div className="flex min-h-0 flex-1 overflow-hidden">
                     <aside className="flex h-full w-[420px] shrink-0 flex-col border-r border-stone-200 bg-stone-50/80 dark:border-stone-800 dark:bg-stone-900/40">
@@ -173,7 +173,7 @@ export function ChannelParameterTranslationEditor({ name, baseUrl, apiKey, proto
                 <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-[var(--ant-color-border-secondary)] px-6 py-3">
                     <Space wrap>
                         <Button onClick={() => file.current?.click()}>导入</Button>
-                        <Button onClick={() => { try { saveAs(new Blob([exportChannelTemplate({name,baseUrl,protocol,apiKey,models}, currentSource())], {type:"application/json"}), "ican-channel.json"); } catch(error) { message.error(error instanceof Error ? error.message : "导出失败"); } }}>导出（不含凭据）</Button>
+                        <Button onClick={() => { try { saveAs(new Blob([exportChannelTemplate({name,baseUrl,protocol,apiKey,models}, currentSource())], {type:"application/json"}), "ican-channel.json"); } catch(error) { message.error(error instanceof Error ? error.message : "导出失败"); } }}>导出</Button>
                         <input hidden ref={file} type="file" accept=".json,application/json" onChange={async event => {
                             const chosen = event.target.files?.[0]; event.target.value = ""; if (!chosen) return;
                             try {
@@ -181,8 +181,8 @@ export function ChannelParameterTranslationEditor({ name, baseUrl, apiKey, proto
                                 if (data.baseUrl !== baseUrl || data.protocol !== protocol || data.models.some(model => !models.includes(model))) throw new Error("导入地址、协议或模型列表与当前渠道不符；请在新增自定义 API 中导入为新渠道");
                                 const source = currentSource();
                                 const existing = readTemplate(source);
-                                if (!existing || data.authoring.models.some(m => existing.models.some(old => old.name === m.name))) throw new Error("导入包含已有模型配置；请导入为新渠道，避免覆盖");
-                                const next = {...existing,models:[...existing.models,...data.authoring.models]}; setForm(next); setDraft(compileTemplate(next)); setMode("form");
+                                if (!existing || data.authoring.models.some(m => existing.models.some(old => old.name === m.name)) || data.authoring.defaults?.some(m => existing.defaults?.some(old => old.kind === m.kind))) throw new Error("导入包含已有模型配置；请导入为新渠道，避免覆盖");
+                                const next = {...existing,version:Math.max(existing.version,data.authoring.version) as 1 | 2,models:[...existing.models,...data.authoring.models],...((existing.defaults || data.authoring.defaults) ? {defaults:[...(existing.defaults || []),...(data.authoring.defaults || [])]} : {})}; setForm(next); setDraft(compileTemplate(next)); setMode("form");
                             } catch(error) { message.error(error instanceof Error ? error.message : "导入失败"); }
                         }} />
                         <Button disabled={mode !== "code"} size="small" onClick={() => insert(translationTemplate(models[0]))}>

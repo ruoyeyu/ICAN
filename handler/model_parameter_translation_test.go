@@ -43,11 +43,14 @@ func TestParameterTranslationChannelFlow(t *testing.T) {
 	if err := db.Create(&user).Error; err != nil {
 		t.Fatal(err)
 	}
-	for _, kind := range []string{"image", "audio", "video"} {
+	for _, kind := range []string{"image", "audio", "video", "text"} {
 		t.Run(kind, func(t *testing.T) {
 			source := `{models:{"custom-model":{POST:{url:"/custom",body:{text:prompt,model}},result:"output.url"}}}`
 			if kind == "video" {
 				source = `{poll:{taskId:"id",GET:{url:"/custom/{taskId}"},status:"state",success:["done"],failure:["failed"]},models:{"custom-model":{POST:{url:"/custom",body:{text:prompt,model}},result:"output.url"}}}`
+			}
+			if kind == "text" {
+				source = `{models:{},defaults:{text:{POST:{url:"/custom",body:{text:prompt,model}},result:"reply"}}}`
 			}
 			channel := model.ModelChannel{ID: "custom-channel", Name: "custom", Protocol: "apimart", BaseURL: "https://upstream.invalid/v1", APIKey: "secret-key", Models: []string{"custom-model"}, Enabled: true, Weight: 1, ParameterTranslation: source}
 			if _, err := repository.SaveSettings(model.Settings{Private: model.PrivateSetting{Channels: []model.ModelChannel{channel}}, Public: model.PublicSetting{ModelChannel: model.PublicModelChannelSetting{ModelCosts: []model.ModelCost{{Model: "custom-model", Credits: 2}}}}}, "fixture"); err != nil {
@@ -55,7 +58,7 @@ func TestParameterTranslationChannelFlow(t *testing.T) {
 			}
 			public, err := service.PublicSettings()
 			encoded, _ := json.Marshal(public)
-			if err != nil || strings.Contains(string(encoded), source) || strings.Contains(string(encoded), channel.APIKey) || len(public.ModelChannel.Channels[0].ParameterTranslationModels) != 1 {
+			if err != nil || strings.Contains(string(encoded), source) || strings.Contains(string(encoded), channel.APIKey) || len(public.ModelChannel.Channels[0].ParameterTranslationRules[kind]) != 1 {
 				t.Fatalf("public metadata leaked or missing: %s %v", encoded, err)
 			}
 			calls := 0
@@ -63,6 +66,9 @@ func TestParameterTranslationChannelFlow(t *testing.T) {
 				calls++
 				path := "/v1/custom"
 				payload := `{"output":{"url":"https://media.invalid/` + kind + `"}}`
+				if kind == "text" {
+					payload = `{"reply":"hello"}`
+				}
 				if kind == "video" {
 					if calls == 1 {
 						payload = `{"id":"job"}`
@@ -80,7 +86,7 @@ func TestParameterTranslationChannelFlow(t *testing.T) {
 				}
 				return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"application/json"}}, Body: io.NopCloser(strings.NewReader(payload))}, nil
 			})
-			endpoint := map[string]string{"image": "/images/generations", "audio": "/audio/speech", "video": "/videos"}[kind]
+			endpoint := map[string]string{"image": "/images/generations", "audio": "/audio/speech", "video": "/videos", "text": "/chat/completions"}[kind]
 			body := `{"model":"custom-model","seconds":5,"_parameterTranslation":{"kind":"` + kind + `","variables":{"prompt":"hello","seconds":5}}}`
 			request := httptest.NewRequest("POST", endpoint, strings.NewReader(body))
 			request.Header.Set("Content-Type", "application/json")
@@ -126,10 +132,12 @@ func TestParameterTranslationChannelFlow(t *testing.T) {
 				if err := db.Model(&model.CreditLog{}).Where("type = ?", model.CreditLogTypeAIRefund).Count(&refunds).Error; err != nil || refunds != 0 {
 					t.Fatalf("refunds=%d err=%v", refunds, err)
 				}
+			} else if kind == "text" {
+				assertProtocolJSONValue(t, json.RawMessage(writer.Body.Bytes()), `{"choices":[{"message":{"role":"assistant","content":"hello"}}]}`)
 			} else if !strings.Contains(writer.Body.String(), "https://media.invalid/"+kind) {
 				t.Fatalf("media result=%s", writer.Body)
 			}
-			if calls != map[string]int{"image": 1, "audio": 1, "video": 2}[kind] {
+			if calls != map[string]int{"image": 1, "audio": 1, "video": 2, "text": 1}[kind] {
 				t.Fatalf("unexpected resubmission: %d", calls)
 			}
 		})
@@ -170,4 +178,26 @@ func TestParameterTranslationChannelFlow(t *testing.T) {
 			t.Fatalf("personal clear failed: %v %s", err, channel.ParameterTranslation)
 		}
 	})
+}
+
+func TestMissingCustomRuleCannotFallBack(t *testing.T) {
+	for _, protocol := range []string{"custom", "openai"} {
+		channel := model.ModelChannel{Protocol: protocol, BaseURL: "https://must-not-be-called.invalid"}
+		for _, video := range []bool{false, true} {
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("POST", "/", nil)
+			handled := false
+			if video {
+				handled = serveParameterTranslationVideo(w, r, []byte(`{"model":"new"}`), channel, model.AuthUser{}, 0, time.Now())
+			} else {
+				handled = serveParameterTranslation(w, r, []byte(`{"model":"new"}`), "/images/generations", channel, model.AuthUser{}, 0, time.Now())
+			}
+			if handled != (protocol == "custom") {
+				t.Fatalf("wrong fallback %s %v", protocol, video)
+			}
+			if protocol == "custom" && !strings.Contains(w.Body.String(), "调用规则") {
+				t.Fatal(w.Body.String())
+			}
+		}
+	}
 }

@@ -52,7 +52,7 @@ export function VideoSettingsPanel({ config, modelName, onConfigChange, theme, s
     const model = modelName || config.model || config.videoModel;
     const autodl = isAutoDLConfig(config, model);
     const { data: workflow } = useAutoDLWorkflow(config, model);
-    const translation = useTranslationInputs(config, model);
+    const translation = useTranslationInputs(config, model, "video");
     if (translation.configured || channelProtocolForConfig({ ...config, model }) === "custom") {
         const fields = [
             { key: "size" as const, title: "比例（aspect_ratio）", input: "aspectRatio" as const, options: ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "adaptive"] },
@@ -68,7 +68,6 @@ export function VideoSettingsPanel({ config, modelName, onConfigChange, theme, s
                     : <AutoComplete aria-label={field.title} className="w-full" value={config[field.key]} options={(translation.inputs?.parameters[field.input]?.options || (translation.configured ? [] : field.options)).map(value => ({ value }))} onChange={value => onConfigChange(field.key, value)} placeholder="选择或输入当前模型支持的值" />}
                 {translation.inputs?.parameters[field.input]?.allowCustom === false && !translation.inputs.parameters[field.input]!.options.includes(config[field.key]) && <p role="alert">当前值不在此模型选项中，请手动选择。</p>}
             </SettingGroup>)}
-            <p style={{ color: theme.node.muted }}>参数按输入提交，请以所用模型的接口要求为准。</p>
         </div></ImageSettingsTheme>;
     }
     if (isAPIMartKlingV26Config(config, modelName || config.model || config.videoModel) || isAPIMartKlingV3Config(config, modelName || config.model || config.videoModel) || isKIEKlingV3Config(config, modelName || config.model || config.videoModel)) {

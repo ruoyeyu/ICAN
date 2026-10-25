@@ -63,3 +63,7 @@ JSON 文件使用 `format: "ican-channel"`、`version: 1`，包含名称、地�
 ### 验证范围
 
 共享 JSON/JS fixture 同时用于前端导入导出和后端真实转译请求验证；包括单图/多图/首尾帧映射、字符串参数、声明拒绝、四阶段异步状态、快照恢复、鉴权下载及重定向拒绝。所有供应商请求为本地替身，没有调用付费生成。公开 fixture 使用虚构模型和保留域名；真实供应商实例单独交付，不进入预设或公共仓库。
+
+## Typed supplier defaults
+
+The existing template editor now supports task-specific shared rules and full per-model overrides; see [supplier templates](supplier-templates.md). The portable envelope remains v1 and shared-rule authoring uses version 2. Legacy v1 compilation remains byte-for-byte compatible. Custom channels without a matching rule fail before submission, including requests that omit the translation marker. Native-compatible interfaces keep their normal unconfigured behavior. No new dependencies, resource limits, database tables or credentials are introduced.

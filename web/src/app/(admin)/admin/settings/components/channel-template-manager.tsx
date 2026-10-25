@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, App, Button, Card, Form, Input, Modal, Select, Space, Table, Typography } from "antd";
+import { Alert, App, Button, Card, Form, Input, Modal, Select, Space, Table } from "antd";
 import { saveAs } from "file-saver";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChannelTemplateForm } from "@/components/channel-template-form";
@@ -82,11 +82,10 @@ export function ChannelTemplateManager() {
         try {
             const value = importChannelTemplate(JSON.stringify(draft));
             await saveChannelTemplate(token, value, editing?.id, editing?.revision);
-            if (current()) { changeDraft(); message.success("模板已保存，用户重新打开选择器即可使用"); await refresh(); }
+            if (current()) { changeDraft(); message.success("模板已保存"); await refresh(); }
         } catch (error) { report(error); } finally { if (current()) setSaving(false); }
     };
     return <Card title="供应商模板" variant="borderless" extra={<Space><Button onClick={() => void refresh()}>刷新模板</Button><Button onClick={() => file.current?.click()}>导入模板</Button><Button type="primary" onClick={() => { setEditing(undefined); changeDraft(blank()); }}>新增模板</Button></Space>}>
-        <Typography.Paragraph type="secondary">仅当前站点登录用户可见。模板不保存 Key，用户选择后填写自己的 Key；修改或删除模板不影响已保存渠道。</Typography.Paragraph>
         {error && <Alert type="error" title={error} />}
         {catalog.errors?.map(item => <Alert key={item} type="warning" title={item} />)}
         <Table rowKey="id" dataSource={catalog.items} pagination={false} columns={[
@@ -103,14 +102,14 @@ export function ChannelTemplateManager() {
                 <Form.Item label="供应商名称"><Input aria-label="模板名称" value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} /></Form.Item>
                 <Form.Item label="基础地址"><Input aria-label="模板基础地址" value={draft.baseUrl} onChange={e => setDraft({ ...draft, baseUrl: e.target.value })} placeholder="https://api.example.com" /></Form.Item>
                 <Form.Item label="基础协议"><Select value={draft.protocol} onChange={protocol => setDraft({ ...draft, protocol })} options={[{ value: "custom", label: "自定义接口" }, { value: "openai", label: "OpenAI 兼容" }]} /></Form.Item>
-                <Form.Item label="临时 API Key" extra="仅用于拉取候选模型，不保存、不导出；不进行生成测试。">
+                <Form.Item label="临时 API Key">
                     <Space.Compact className="w-full">
                         <Input.Password aria-label="模板临时 API Key" autoComplete="off" value={temporaryKey} onChange={e => setTemporaryKey(e.target.value)} />
                         <Button loading={fetchingModels} onClick={async () => { const models = await fetchModels(); if (models !== undefined) setSourceModels(models); }}>拉取模型</Button>
                     </Space.Compact>
                 </Form.Item>
                 <Form.Item label="模型名称"><Select aria-label="模板模型名称" mode="tags" value={draft.models} onChange={models => setDraft({ ...draft, models })} /></Form.Item>
-                <Form.Item label="使用说明"><Input.TextArea aria-label="模板使用说明" value={draft.instructions || ""} onChange={e => setDraft({ ...draft, instructions: e.target.value })} placeholder="说明支持的参数和素材；不要填写密钥" /></Form.Item>
+                <Form.Item label="使用说明"><Input.TextArea aria-label="模板使用说明" value={draft.instructions || ""} onChange={e => setDraft({ ...draft, instructions: e.target.value })} /></Form.Item>
             </Form>
             <ChannelTemplateForm key={editing?.id || "new"} models={draft.models} value={draft.authoring} onChange={authoring => setDraft({ ...draft, authoring })} />
         </Modal>}

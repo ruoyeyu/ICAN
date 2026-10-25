@@ -7,22 +7,28 @@ import { fieldSources, newTemplateField, newTemplateModel, type TemplateAuthorin
 export function ChannelTemplateForm({ value, onChange, models }: { value: TemplateAuthoring; onChange: (value: TemplateAuthoring) => void; models: string[] }) {
     const { message } = App.useApp();
     const [selected, setSelected] = useState(value.models[0]?.name || "");
+    const [scope, setScope] = useState<"models" | "defaults">(!value.models.length && value.defaults?.length ? "defaults" : "models");
+    const [kind, setKind] = useState<TemplateModel["kind"]>(value.defaults?.[0]?.kind || "video");
+    const rules = scope === "defaults" ? value.defaults || [] : value.models;
     const [name, setName] = useState("");
     const [preset, setPreset] = useState<"blank" | "openai" | "video">("blank");
-    const model = value.models.find(m => m.name === selected);
-    const patch = (next: Partial<TemplateModel>) => onChange({ ...value, models: value.models.map(m => m.name === selected ? { ...m, ...next } : m) });
+    const model = rules.find(m => (scope === "defaults" ? m.kind === kind : m.name === selected));
+    const patch = (next: Partial<TemplateModel>) => onChange({ ...value, ...((scope === "defaults" || next.kind === "text") ? {version:2 as const} : {}), [scope]: rules.map(m => m === model ? { ...m, ...next } : m) });
     const text = (label: string, val: string, change: (v: string) => void, placeholder = "") => <Form.Item label={label}><Input aria-label={label} value={val} onChange={e => change(e.target.value)} placeholder={placeholder} /></Form.Item>;
     return <div className="min-h-0 flex-1 overflow-auto p-5"><Form layout="vertical">
-        <Space wrap className="mb-5">
+        <Select aria-label="规则范围" className="mb-5" value={scope} onChange={setScope} options={[{value:"models",label:"模型专属规则"},{value:"defaults",label:"供应商公共规则"}]} />
+        {scope === "defaults" ? <Space wrap className="mb-5">
+            <Select aria-label="公共规则类型" value={kind} onChange={setKind} options={[{value:"text",label:"文本"},{value:"image",label:"图片"},{value:"video",label:"视频"},{value:"audio",label:"音频"}]} />
+            <Button disabled={!!model} onClick={() => onChange({...value,version:2,defaults:[...rules,{...newTemplateModel(kind),kind}]})}>新增公共规则</Button>
+        </Space> : <Space wrap className="mb-5">
             <Select aria-label="初始化预设" value={preset} onChange={setPreset} options={[{ value: "blank", label: "空白自定义" }, { value: "openai", label: "OpenAI 兼容图片" }, { value: "video", label: "通用异步视频" }]} />
             <Select aria-label="待配置模型" style={{ minWidth: 200 }} showSearch value={name || undefined} onChange={setName} options={models.filter(n => !value.models.some(m => m.name === n)).map(n => ({ value: n, label: n }))} placeholder="选择已添加的模型" />
             <Button onClick={() => { if (!name || value.models.some(m => m.name === name)) { message.error("请选择尚未配置的模型"); return; } onChange({ ...value, models: [...value.models, newTemplateModel(name, preset)] }); setSelected(name); setName(""); }}>初始化模型配置</Button>
-        </Space>
-        <Typography.Paragraph type="secondary">预设仅初始化新模型。地址、字段和状态需按供应商文档核对；每个模型独立配置，无默认时长或分辨率。</Typography.Paragraph>
-        <Select aria-label="当前配置模型" className="mb-5 w-full" value={model?.name} onChange={setSelected} options={value.models.map(m => ({ value: m.name, label: m.name }))} placeholder="尚未配置模型" />
+        </Space>}
+        {scope === "models" && <Select aria-label="当前配置模型" className="mb-5 w-full" value={model?.name} onChange={setSelected} options={value.models.map(m => ({ value: m.name, label: m.name }))} placeholder="尚未配置模型" />}
         {model && <>
             <div className="grid gap-x-4 md:grid-cols-3">
-                <Form.Item label="媒体类型"><Select value={model.kind} onChange={kind => patch({ kind })} options={[{ value: "image", label: "图片" }, { value: "video", label: "视频" }, { value: "audio", label: "音频" }]} /></Form.Item>
+                <Form.Item label="任务类型"><Select disabled={scope === "defaults"} value={model.kind} onChange={kind => patch({ kind })} options={[{ value: "text", label: "文本" }, { value: "image", label: "图片" }, { value: "video", label: "视频" }, { value: "audio", label: "音频" }]} /></Form.Item>
                 <Form.Item label="请求方法"><Select value={model.method} onChange={method => patch({ method })} options={["POST", "PUT", "PATCH", "GET"].map(value => ({ value }))} /></Form.Item>
                 <Form.Item label="编码"><Select value={model.format} onChange={format => patch({ format })} options={["json", "formData", "urlencoded"].map(value => ({ value }))} /></Form.Item>
             </div>
@@ -31,7 +37,6 @@ export function ChannelTemplateForm({ value, onChange, models }: { value: Templa
                 <Form.Item label="鉴权方式"><Select value={model.auth.type} onChange={type => patch({ auth: { ...model.auth, type } })} options={[{ value: "bearer", label: "Bearer" }, { value: "header", label: "自定义请求头" }, { value: "none", label: "无需鉴权" }]} /></Form.Item>
                 {model.auth.type === "header" && <>{text("鉴权头名称", model.auth.header, header => patch({ auth: { ...model.auth, header } }))}{text("Key 前缀（可空）", model.auth.prefix, prefix => patch({ auth: { ...model.auth, prefix } }))}</>}
             </div>
-            <Typography.Paragraph type="secondary">密钥使用渠道的个人 API Key。模板中只保存鉴权方式。</Typography.Paragraph>
             <Typography.Title level={5}>请求字段映射</Typography.Title>
             {model.fields.map((field, index) => {
                 const update = (next: Partial<typeof field>) => patch({ fields: model.fields.map((f, i) => i === index ? { ...f, ...next } : f) });
@@ -52,7 +57,7 @@ export function ChannelTemplateForm({ value, onChange, models }: { value: Templa
             })}
             <Button onClick={() => patch({ fields: [...model.fields, newTemplateField()] })}>添加字段</Button>
             <Collapse className="my-5" items={[
-                { key: "inputs", label: "此模型的参数选项与素材编码", children: <>
+                { key: "inputs", label: "参数选项与素材编码", children: <>
                     {(["seconds", "resolution", "aspectRatio", "mode"] as const).map(key => {
                         const option = model.inputs.parameters[key];
                         const update = (next: typeof option) => patch({ inputs: { ...model.inputs, parameters: { ...model.inputs.parameters, [key]: next } } });
@@ -61,7 +66,6 @@ export function ChannelTemplateForm({ value, onChange, models }: { value: Templa
                         </Form.Item>;
                     })}
                     {(["images", "firstFrame", "lastFrame", "videos", "audios"] as const).map(key => <Form.Item key={key} label={key}><Select value={model.inputs.media[key]?.format || "legacy"} onChange={format => patch({ inputs: { ...model.inputs, media: { ...model.inputs.media, [key]: format === "legacy" ? undefined : { format } } } })} options={[{ value: "legacy", label: "未声明此类素材（有输入时报错）" }, { value: "auto", label: "使用此类素材，保持原有编码" }, { value: "url", label: "HTTP(S) URL（私有素材签发限时链接）" }, ...(["videos", "audios"].includes(key) ? [] : [{ value: "dataUrl", label: "图片 Data URL" }])]} /></Form.Item>)}
-                    <Typography.Text type="secondary">不选择统一默认值，不裁剪素材。视频、音频支持 URL；二进制图片 multipart 可在高级编辑器沿用 parts。</Typography.Text>
                 </> },
                 { key: "poll", label: "异步任务查询", children: <>
                     <Form.Item label="启用轮询"><Switch checked={model.poll.enabled} onChange={enabled => patch({ poll: { ...model.poll, enabled } })} /></Form.Item>
@@ -69,13 +73,17 @@ export function ChannelTemplateForm({ value, onChange, models }: { value: Templa
                         <Form.Item label="查询方法"><Select value={model.poll.method} onChange={method => patch({ poll: { ...model.poll, method } })} options={[{ value: "GET" }, { value: "POST" }]} /></Form.Item>
                         {([['path', '查询路径（含 {taskId}）'], ['taskId', '创建响应中的任务 ID 路径'], ['status', '状态路径'], ['progress', '进度路径（可空）']] as const).map(([key, label]) => <div key={key}>{text(label, model.poll[key], val => patch({ poll: { ...model.poll, [key]: val } }))}</div>)}
                         {([['success', '成功状态'], ['failure', '失败状态']] as const).map(([key, label]) => <Form.Item key={key} label={label}><Select mode="tags" value={model.poll[key]} onChange={values => patch({ poll: { ...model.poll, [key]: values } })} /></Form.Item>)}
-                        <Typography.Text type="secondary">未列入成功或失败的状态继续等待，不重新创建任务。</Typography.Text>
                     </>}
                 </> },
             ]} />
             {text("结果提取路径（如 data.0.url；使用鉴权下载可空）", model.result, result => patch({ result }))}
             {text("鉴权下载路径（可空；含 {taskId}，与查询同源）", model.content, content => patch({ content }))}
-            <Button danger onClick={() => { onChange({ ...value, models: value.models.filter(m => m.name !== selected) }); setSelected(""); }}>删除此模型的转译配置</Button>
+            {scope === "models" && <Button className="mr-3" onClick={() => {
+                if (value.defaults?.some(rule => rule.kind === model.kind)) { message.error("该任务类型已有公共规则"); return; }
+                onChange({...value, version:2, defaults:[...(value.defaults || []), {...model,name:model.kind}]});
+                setKind(model.kind); setScope("defaults");
+            }}>复制为公共规则</Button>}
+            <Button danger onClick={() => { onChange({ ...value, [scope]: rules.filter(m => m !== model) }); setSelected(""); }}>{scope === "defaults" ? "删除公共规则" : "删除此模型的转译配置"}</Button>
         </>}
     </Form></div>;
 }

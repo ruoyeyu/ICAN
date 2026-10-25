@@ -67,7 +67,7 @@ func ParameterTranslationReferenceInputs(source string, names []string) map[stri
 	}
 	result := map[string]model.ParameterTranslationReferences{}
 	for _, name := range names {
-		if program := programs[name]; program != nil && program.references != nil {
+		if program := programs.resolve(name, ""); program != nil && program.references != nil {
 			result[name] = *program.references
 		}
 	}

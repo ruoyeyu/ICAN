@@ -228,7 +228,7 @@ export type AdminModelCost = {
 };
 
 export type AdminPublicModelChannelInfo = {
-	parameterTranslationModels?: string[]; parameterTranslationInputs?: Record<string, import("@/lib/translation-inputs").TranslationInputs>; parameterTranslationReferences?: Record<string, import("@/lib/channel-parameter-translation").TranslationReferences>;
+	parameterTranslationRules?: import("@/lib/channel-parameter-translation").PublicTranslationRules; parameterTranslationModels?: string[]; parameterTranslationInputs?: Record<string, import("@/lib/translation-inputs").TranslationInputs>; parameterTranslationReferences?: Record<string, import("@/lib/channel-parameter-translation").TranslationReferences>;
     id: string;
     protocol: AdminModelChannel["protocol"];
     name: string;
