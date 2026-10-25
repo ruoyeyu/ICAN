@@ -41,7 +41,9 @@
     "paidCalls": 0,
     "builtInSupplierPreset": false,
     "firstLastFrameSupplierContract": "not provided fully; not enabled in private example",
-    "otherModesLiveTested": false
+    "otherModesLiveTested": false,
+    "liveValidationSource": "User-reported single-image case only; local mocks do not establish provider support for other modes",
+    "ambiguousReferenceContract": "Unresolved supplier counts and video/audio field types are not converted into global defaults or limits"
   },
   "securityChecks": [
     "static versioned input declarations, no new runtime host bindings",
