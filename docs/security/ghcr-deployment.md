@@ -6,13 +6,15 @@ ICAN 0.1.0 is built on GitHub Actions for **linux/amd64**. The server needs Dock
 
 ## Verified publication
 
-[CI 40184337184](https://github.com/ruoyeyu/ICAN/actions/runs/40184337184) passed, including publication and registry digest verification. Source: `53f8aa31d8fd803668cc138b3d91262ea9903c89`.
+This build adds model discovery to the existing supplier-template editor and fixes the private local-storage form. Database, template and credential formats are unchanged; keep the original data directory and encryption key when updating.
+
+[CI 40186851015](https://github.com/ruoyeyu/ICAN/actions/runs/40186851015) passed, including publication and registry digest verification. Source: `64b218af18605c2a34342451e1af2579b52e0537`.
 
 ```text
-ghcr.io/ruoyeyu/ican@sha256:79e0eec12706e735ccf8243776944abc339d677e9b27d29fa7c8152934ab3887
+ghcr.io/ruoyeyu/ican@sha256:8ce1a857be1ae82335f19910acea7bec0406401135d75de271710359f5ad4ade
 ```
 
-[Publication and check results](evidence/ghcr-v0.1.0-restart-publication.json) · [Raw security evidence](evidence/ghcr-40184337184-evidence.zip). These records describe this exact image; later builds require their own records.
+[Publication and check results](evidence/template-editor-publication.json) · [Raw security evidence](evidence/ghcr-40186851015-evidence.zip). These records describe this exact image; later builds require their own records.
 
 The manifest above was also retrieved anonymously and its digest verified. This published image is accessible without a GitHub login.
 

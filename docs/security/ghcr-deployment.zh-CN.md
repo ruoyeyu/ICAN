@@ -4,13 +4,13 @@ ICAN 的 Go 后端、Web 前端和导演台全部由 GitHub Actions 编译。服
 
 ## 本次已发布成品
 
-[流水线 40184337184](https://github.com/ruoyeyu/ICAN/actions/runs/40184337184) 的构建、检查及发布全部通过。源码 commit：`53f8aa31d8fd803668cc138b3d91262ea9903c89`。
+[流水线 40186851015](https://github.com/ruoyeyu/ICAN/actions/runs/40186851015) 的构建、检查及发布全部通过。源码 commit：`64b218af18605c2a34342451e1af2579b52e0537`。
 
 ```sh
-docker pull ghcr.io/ruoyeyu/ican@sha256:79e0eec12706e735ccf8243776944abc339d677e9b27d29fa7c8152934ab3887
+docker pull ghcr.io/ruoyeyu/ican@sha256:8ce1a857be1ae82335f19910acea7bec0406401135d75de271710359f5ad4ade
 ```
 
-[镜像及检查记录](evidence/ghcr-v0.1.0-restart-publication.json) · [完整原始安全证据](evidence/ghcr-40184337184-evidence.zip)。
+[镜像及检查记录](evidence/template-editor-publication.json) · [完整原始安全证据](evidence/ghcr-40186851015-evidence.zip)。
 
 上述镜像 manifest 已验证可匿名获取且 digest 一致，无需登录 GitHub。
 
@@ -75,6 +75,8 @@ curl --fail "http://127.0.0.1:$ICAN_REVIEWED_HOST_PORT/api/health"
 环境文件中的 `ICAN_IMAGE` 必须与核对过的 digest 一致。Compose 禁止隐式拉取；先明确 `docker pull`，再创建容器。端口仅绑定 127.0.0.1，对外代理、TLS 和防火墙仍由服务器运维单独验收。
 
 ## 更新和回滚
+
+本次仅修改模板编辑与存储表单，不改账号、模板、Key、素材的数据格式。更新继续沿用原数据目录及加密密钥；回退前按下方步骤保留完整备份。
 
 v0.1.0 不增加数据库列；旧账号、渠道 ID、配置和素材沿用。新表单规则含旧版不支持的原始参数变量，回退 v0.1.2 必须同时恢复更新前的配置或匹配备份，不能只换旧镜像。旧版程序创建测试数据后，备份副本升级、重启和恢复旧版已验证，见 [本地证据](evidence/api-config-ui-local.json)。生产数据和期间新增内容仍需单独验收与保留。
 

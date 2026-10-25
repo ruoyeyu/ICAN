@@ -1,8 +1,8 @@
 # ICAN 交接
 
-本轮追加：供应商模板编辑复用现有管理员模型拉取接口和模型选择器；临时 Key 与模板分离，候选默认不选，确认后才更新草稿。私有存储监听增加 preserve，避免 local/S3 表单闪烁。Go/Web 31/类型检查/生产构建/Python 9 及两组生产浏览器回归通过，见 docs/security/evidence/template-editor-local.json。待本次 CI 构建及 GHCR 发布；不操作服务器，不改变数据格式或密钥。原 v0.1.0 Release 标签权限阻断单独保留。
+本轮追加：供应商模板编辑复用现有管理员模型拉取接口和模型选择器；临时 Key 与模板分离，候选默认不选，确认后才更新草稿。私有存储监听增加 preserve，避免 local/S3 表单闪烁。Go/Web 31/类型检查/生产构建/Python 9 及两组生产浏览器回归通过，见 docs/security/evidence/template-editor-local.json。CI 40186851015 构建、测试、隔离/恢复和扫描全部通过，GHCR 已发布，匿名 manifest/config 与源码标签验证通过。固定 digest 见 docs/security/evidence/template-editor-publication.json。不操作服务器，不改变数据格式或密钥。原 v0.1.0 Release 标签权限阻断单独保留。
 
-当前状态：供应商模板和可配置 Docker 资源已提交；源码 53f8aa31d8fd803668cc138b3d91262ea9903c89 / CI 40184337184 全通过，GHCR 固定 digest 可用。v0.1.0 Release 尚未创建：GitHub 拒绝 Actions 令牌的标签移动，原子操作未改标签。一次性重置脚本已移除，正常发布门槛保留。最后需要仓库所有者按 docs/security/version-reset.md 重置两个精确标签，再手动运行 Publish checked pre-release。未改服务器。
+此前交付记录：供应商模板和可配置 Docker 资源已提交；源码 53f8aa31d8fd803668cc138b3d91262ea9903c89 / CI 40184337184 全通过，GHCR 固定 digest 可用。v0.1.0 Release 尚未创建：GitHub 拒绝 Actions 令牌的标签移动，原子操作未改标签。一次性重置脚本已移除，正常发布门槛保留。最后需要仓库所有者按 docs/security/version-reset.md 重置两个精确标签，再手动运行 Publish checked pre-release。未改服务器。
 最新源码 `53f8aa31d8fd803668cc138b3d91262ea9903c89` 的 CI 40184337184 已通过：Go/Web 31/导演台 294、隔离与账号/模板重启恢复、两组 Compose 限额、运行时回归和扫描均通过。固定 digest 与匿名核验见 `docs/security/evidence/ghcr-v0.1.0-restart-publication.json`（pending-test 相对路径为 `../security/evidence/ghcr-v0.1.0-restart-publication.json`）。发布复核通过，但标签重置权限阻断尚未解除；没有操作服务器。
 本轮追加：站点供应商模板目录与管理员增删改、现有选择器动态读取；个人导入保留模板并沿用账号同步。公共仓库不预置私人供应商。模板保存为独立 JSON，个人渠道保留快照，删除不改已有渠道/任务。使用及兼容说明见 docs/security/supplier-templates.zh-CN.md。后端/Web 与生产浏览器验证已通过，见 docs/security/evidence/supplier-template-local.json；新镜像发布验收进行中，未操作服务器。
 

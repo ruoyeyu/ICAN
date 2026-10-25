@@ -1,0 +1,76 @@
+{
+  "sourceCommit": "64b218af18605c2a34342451e1af2579b52e0537",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:8ce1a857be1ae82335f19910acea7bec0406401135d75de271710359f5ad4ade",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-64b218af18605c2a34342451e1af2579b52e0537-run-40186851015-1",
+  "imageId": "sha256:13603dc05266ead1527c875b3040793a6ed3e408d2cdc74adcad87d4550a4fc4",
+  "platform": "linux/amd64",
+  "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
+  "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40186851015",
+  "runAttempt": "1",
+  "productionApproved": false,
+  "scope": "supplier-template model discovery/selection and private local-storage form stability; no schema or credential-storage changes",
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "unknownMatch": {
+    "id": "GO-2026-5932",
+    "package": "golang.org/x/crypto",
+    "installedVersion": "v0.58.0",
+    "advisory": "https://vuln.go.dev/ID/GO-2026-5932.json",
+    "dependencyListSHA256": "50065e8f1e5dca3faa8b9a5540fa9b00575d34edd666226c21177204e9d7657b",
+    "review": "The advisory affects openpgp imports. None are in the exact application dependency list. Raw match retained; excluded only from effective counts, without changing scanner gates."
+  },
+  "effectiveRiskCounts": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "tests": {
+    "goSuite": "passed",
+    "web": 31,
+    "director": 294,
+    "deploymentAndPublicationPolicies": 9,
+    "productionBuilds": "passed",
+    "imageIsolationAndRestart": "passed, including accounts and supplier/personal templates",
+    "runtimeDNSAndTLS": "passed",
+    "actualComposeConfigurations": [
+      "1.6 CPUs / 1536m",
+      "2 CPUs / 2g"
+    ],
+    "localBrowserEvidence": "template-editor-local.json",
+    "sourceVersionMetadata": "passed"
+  },
+  "evidenceArchive": {
+    "path": "ghcr-40186851015-evidence.zip",
+    "sha256": "4e5832d29b2b4c7f055cf23863927b3860956baa53622c96ea1f0126a724ca6d",
+    "artifactId": 12595944799
+  },
+  "publicationArtifact": {
+    "id": 12596830042,
+    "sha256": "d7973e3d347554d71e17dba867fe7ae471854a8c6dc4c192f404a1758dbc716d"
+  },
+  "anonymousRegistryManifestAndConfig": {
+    "passed": true,
+    "manifestDigestVerified": true,
+    "configDigestVerified": true,
+    "sourceAndVersionLabelsVerified": true,
+    "user": "10001:10001",
+    "image": "ghcr.io/ruoyeyu/ican@sha256:8ce1a857be1ae82335f19910acea7bec0406401135d75de271710359f5ad4ade"
+  },
+  "preservation": {
+    "schemaChanged": false,
+    "backendProductionGoSourceChanged": false,
+    "persistentPathsChanged": false,
+    "dependenciesChanged": false,
+    "privateSupplierPresetsAdded": false,
+    "productionServerModified": false,
+    "paidGenerationCalls": 0
+  }
+}
