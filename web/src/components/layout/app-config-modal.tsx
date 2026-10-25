@@ -4,6 +4,9 @@ import { App, Button, Form, Input, Modal, Radio, Segmented, Select, Switch } fro
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
+import { ChannelTemplateDialog } from "@/components/channel-template-dialog";
+import { exportChannelTemplate } from "@/lib/channel-template";
+import { saveAs } from "file-saver";
 import { ChannelModelSelectorModal } from "@/components/channel-model-selector-modal";
 import type { WorkflowChannelSettings } from "@/components/workflow/workflow-channel-pane";
 import { GrokTtsVoiceSelect } from "@/components/grok-tts-voice-select";
@@ -290,8 +293,13 @@ export function AppConfigModal() {
         updateLocalChannels(normalizeLocalChannels(config).map((channel) => (channel.id === id ? { ...channel, ...patch } : channel)));
     };
 
-    const addLocalChannel = () => {
-        updateLocalChannels([...normalizeLocalChannels(config), { id: "local-" + Date.now(), protocol: "custom", name: "新渠道", baseUrl: "", apiKey: "", models: [] }]);
+    const [addingChannel, setAddingChannel] = useState(false);
+    const addLocalChannel = () => setAddingChannel(true);
+    const exportLocalChannel = async (channel: LocalModelChannel) => {
+        try {
+            const source = (await useChannelTranslationStore.getState().load(user?.id || "guest"))[channel.id] || "";
+            saveAs(new Blob([exportChannelTemplate(channel, source)], { type: "application/json" }), "ican-channel.json");
+        } catch(error) { message.error(error instanceof Error ? error.message : "导出失败"); }
     };
 
     const removeLocalChannel = (id: string) => {
@@ -419,6 +427,13 @@ export function AppConfigModal() {
 
     return (
         <>
+            {addingChannel && <ChannelTemplateDialog onCancel={() => setAddingChannel(false)} onSave={async (channel, source) => {
+                const accountId = user?.id;
+                if (!accountId || !token || !accountConfigRef.current.ready) throw new Error("请等待账号配置加载后添加渠道");
+                await useChannelTranslationStore.getState().save(accountId, channel.id, source);
+                if (useUserStore.getState().user?.id !== accountId || useUserStore.getState().token !== token) throw new Error("登录状态已变化");
+                updateLocalChannels([...normalizeLocalChannels(useConfigStore.getState().config), channel]);
+            }} />}
             <Modal
             title={
                 <div>
@@ -462,7 +477,7 @@ export function AppConfigModal() {
                                         <div className="mt-1 text-xs text-stone-500">可为生图、视频、文本、音频分别选择不同渠道的模型。</div>
                                     </div>
                                     <Button size="small" onClick={addLocalChannel}>
-                                        新增渠道
+                                        新增自定义 API
                                     </Button>
                                 </div>
                                 {normalizeLocalChannels(config).map((channel, index) => (
@@ -477,8 +492,9 @@ export function AppConfigModal() {
                                             {isWorkflowProtocol(channel.protocol) ? <div className="flex h-8 items-center justify-center rounded-md border border-dashed border-[var(--ant-color-border)] px-3 text-xs text-[var(--ant-color-text-secondary)] md:col-span-2">连接信息和工作流在「选择」里配置</div> : <><Input value={channel.baseUrl} placeholder="Base URL" onChange={(event) => patchLocalChannel(channel.id, { baseUrl: event.target.value })} /><Input.Password value={channel.apiKey} placeholder="API Key" onChange={(event) => patchLocalChannel(channel.id, { apiKey: event.target.value })} /></>}
                                             <div className="relative flex flex-wrap gap-2 md:flex-nowrap">
                                                 <Button size="small" onClick={() => openLocalModelSelector(channel)}>
-                                                    选择
+                                                    接口配置
                                                 </Button>
+                                                <Button size="small" onClick={() => void exportLocalChannel(channel)}>导出</Button>
                                                 <Button size="small" danger disabled={index === 0 && normalizeLocalChannels(config).length === 1} onClick={() => removeLocalChannel(channel.id)}>
                                                     删除
                                                 </Button>

@@ -215,7 +215,7 @@ func ReadPassivePrefix(body io.ReadCloser) ([]byte, string, error) {
 
 func mediaAddressField(key string) bool {
 	switch key {
-	case "url", "image", "image_url", "video_url", "audio_url", "input_reference[]", "video_reference[]", "audio_reference[]", "first_frame_url", "last_frame_url", "input_reference", "image_urls", "video_urls", "audio_urls":
+	case "images", "videos", "audios", "firstFrame", "lastFrame", "url", "image", "image_url", "video_url", "audio_url", "input_reference[]", "video_reference[]", "audio_reference[]", "first_frame_url", "last_frame_url", "input_reference", "image_urls", "video_urls", "audio_urls":
 		return true
 	}
 	return false

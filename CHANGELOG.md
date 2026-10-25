@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## ICAN v0.1.3
+
+- Configure custom API request fields, per-model parameters, reference encoding and asynchronous task polling through the existing channel editor. Add generic presets and versioned, credential-free configuration import/export.
+- Prepare private image, frame, video and audio references with owner-scoped links; enforce declared inputs before submission and support explicit authenticated video downloads. Reject cross-origin translation redirects and preserve pending task recovery.
+- Preserve existing channels, account data, keys and legacy translation rules; publish the tested container through the existing CI and GHCR workflow.
+
 ## ICAN v0.1.2
 
 - Fix saving custom/cloud channel permissions without rewriting local media storage; preserve channel IDs, credentials and backend permission checks.

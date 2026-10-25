@@ -1121,7 +1121,7 @@ func modelChannelsForModel(channels []model.ModelChannel, modelName string) []mo
 		if isWorkflowChannelProtocol(channel.Protocol) {
 			continue
 		}
-		if !channel.Enabled || channel.BaseURL == "" || channel.APIKey == "" {
+		if !channel.Enabled || channel.BaseURL == "" || (channel.APIKey == "" && !ParameterTranslationWithoutKey(channel.ParameterTranslation, modelName)) {
 			continue
 		}
 		for _, item := range channel.Models {
@@ -1181,6 +1181,7 @@ func publicChannelInfos(channels []model.ModelChannel, availableModels, availabl
 		result = append(result, model.PublicModelChannelInfo{
 			ParameterTranslationModels:     translated,
 			ParameterTranslationReferences: ParameterTranslationReferenceInputs(channel.ParameterTranslation, translated),
+			ParameterTranslationInputs:     ParameterTranslationModelInputs(channel.ParameterTranslation, translated),
 			ID:                             channel.ID,
 			Protocol:                       channel.Protocol,
 			Name:                           channel.Name,

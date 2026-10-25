@@ -28,7 +28,7 @@ import (
 
 var parameterTranslationVariables = []string{
 	"model", "prompt", "rawPrompt", "size", "rawSize", "aspectRatio", "quality", "count", "images",
-	"resolution", "seconds", "mode", "negativePrompt", "generateAudio", "watermark",
+	"resolution", "seconds", "rawSeconds", "mode", "negativePrompt", "generateAudio", "watermark",
 	"videos", "audios", "firstFrame", "lastFrame", "voice", "audioFormat", "speed", "instructions",
 }
 var parameterTranslationMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
@@ -36,6 +36,7 @@ var parameterTranslationMethods = []string{"GET", "POST", "PUT", "PATCH", "DELET
 type parameterTranslationProgram struct {
 	code       *goja.Program
 	references *model.ParameterTranslationReferences
+	inputs     *model.ParameterTranslationInputs
 }
 
 var parameterTranslationCache = struct {
@@ -160,7 +161,11 @@ func parameterTranslationPrograms(source string) (map[string]*parameterTranslati
 		if err != nil {
 			return nil, fmt.Errorf("模型 %s：%w", name, err)
 		}
-		programs[name] = &parameterTranslationProgram{code: program, references: references}
+		inputs, err := parseTranslationInputs(fragment(items["inputs"], ""))
+		if err != nil {
+			return nil, fmt.Errorf("模型 %s：%w", name, err)
+		}
+		programs[name] = &parameterTranslationProgram{code: program, references: references, inputs: inputs}
 	}
 	if len(parameterTranslationCache.items) >= 32 {
 		for key := range parameterTranslationCache.items {
@@ -226,6 +231,9 @@ func NewParameterTranslation(channel model.ModelChannel, modelName string, varia
 	if err := validateTranslationReferences(programs[modelName].references, variables["images"]); err != nil {
 		return nil, err
 	}
+	if err := validateTranslationInputs(programs[modelName].inputs, variables); err != nil {
+		return nil, err
+	}
 	runtime := goja.New()
 	for _, name := range parameterTranslationVariables {
 		_ = runtime.Set(name, goja.Undefined())
@@ -241,7 +249,18 @@ func NewParameterTranslation(channel model.ModelChannel, modelName string, varia
 		}
 	}
 	_ = runtime.Set("model", modelName)
-	translation := &ParameterTranslation{runtime: runtime, channel: channel, Client: HTTPClientForChannel(channel)}
+	client := *HTTPClientForChannel(channel)
+	checkRedirect := client.CheckRedirect
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if len(via) > 0 && !strings.EqualFold(req.URL.Scheme+"://"+req.URL.Host, via[0].URL.Scheme+"://"+via[0].URL.Host) {
+			return errors.New("自定义接口不允许跨来源重定向")
+		}
+		if checkRedirect != nil {
+			return checkRedirect(req, via)
+		}
+		return nil
+	}
+	translation := &ParameterTranslation{runtime: runtime, channel: channel, Client: &client}
 	value, err := translation.run(func() (goja.Value, error) { return runtime.RunProgram(programs[modelName].code) })
 	if err != nil {
 		return nil, fmt.Errorf("自定配置求值失败：%w", err)
@@ -284,7 +303,7 @@ func NewParameterTranslation(channel model.ModelChannel, modelName string, varia
 		if err != nil {
 			return nil, err
 		}
-		if _, err := translation.configuredImageContent("任务ID", queryRequest.URL); err != nil {
+		if _, err := translation.configuredMediaContent("任务ID", queryRequest.URL); err != nil {
 			return nil, err
 		}
 	} else if content := parameterTranslationValue(translation.rule, "content"); !goja.IsUndefined(content) && !goja.IsNull(content) {
@@ -406,7 +425,11 @@ func ParameterTranslationVideoContent(ctx context.Context, task model.VideoTask,
 	content.RawQuery = params.Encode()
 	request.URL, request.Method = content, http.MethodGet
 	request.Body, request.GetBody, request.ContentLength = nil, nil, 0
-	return translation.Client.Do(request)
+	request.Header.Del("Content-Type")
+	request.Header.Del("Content-Length")
+	client := *translation.Client
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return errors.New("鉴权内容下载不允许重定向") }
+	return client.Do(request)
 }
 
 func PollParameterTranslationVideo(ctx context.Context, task model.VideoTask, channel model.ModelChannel) (VideoTaskPollUpdate, error) {
@@ -612,7 +635,7 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 	}
 	// Explicit raw inputs remain literal even when they contain template placeholders.
 	replaceBody := func(value string) string {
-		for _, name := range []string{"rawPrompt", "rawSize"} {
+		for _, name := range []string{"rawPrompt", "rawSize", "rawSeconds", "resolution", "mode", "model"} {
 			if raw := translation.runtime.Get(name); raw != nil && !goja.IsUndefined(raw) && raw.String() == value {
 				return value
 			}
@@ -626,6 +649,13 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 		encoded, _ := json.Marshal(value)
 		return replace(string(encoded))
 	}
+	plainText := func(value any) string {
+		if text, ok := value.(string); ok {
+			return text
+		}
+		encoded, _ := json.Marshal(value)
+		return string(encoded)
+	}
 	queryValues := parsed.Query()
 	for key, value := range plan.Params {
 		queryValues.Del(key)
@@ -634,10 +664,10 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 				queryValues.Set(key, "")
 			}
 			for _, value := range values {
-				queryValues.Add(key, fieldText(value))
+				queryValues.Add(key, plainText(replaceParameterTranslationValues(value, replaceBody)))
 			}
 		} else {
-			queryValues.Set(key, fieldText(value))
+			queryValues.Set(key, plainText(replaceParameterTranslationValues(value, replaceBody)))
 		}
 	}
 	parsed.RawQuery = queryValues.Encode()
@@ -665,7 +695,7 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 		}
 	case "raw":
 		if len(plan.Body) > 0 {
-			body = strings.NewReader(fieldText(bodyValue))
+			body = strings.NewReader(plainText(bodyValue))
 		}
 	case "formData", "urlencoded":
 		fields, ok := bodyValue.(map[string]any)
@@ -691,10 +721,10 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 					values.Set(key, "")
 				}
 				for _, item := range items {
-					values.Add(key, fieldText(item))
+					values.Add(key, plainText(item))
 				}
 			} else {
-				values.Set(key, fieldText(value))
+				values.Set(key, plainText(value))
 			}
 		}
 		if plan.Format == "urlencoded" {
@@ -733,7 +763,7 @@ func (translation *ParameterTranslation) request(ctx context.Context, query bool
 		}
 	}
 	authConfig := encoded.String()
-	for _, name := range []string{"rawPrompt", "rawSize"} {
+	for _, name := range []string{"rawPrompt", "rawSize", "rawSeconds", "resolution", "mode", "model"} {
 		if raw := translation.runtime.Get(name); raw != nil && !goja.IsUndefined(raw) {
 			literal, _ := json.Marshal(raw.String())
 			authConfig = strings.ReplaceAll(authConfig, string(literal), `""`)
@@ -983,10 +1013,13 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 			target.Path, target.RawPath, target.RawQuery = target.Path+"/content", target.EscapedPath()+"/content", ""
 			content = &target
 		}
-		if kind == "image" && len(result.URLs) == 0 && query && (defaultResult || (value == nil && selector.ExportType() != reflect.TypeFor[string]())) {
-			content, err = translation.configuredImageContent(taskID, request.URL)
-			if err != nil {
-				return result, err
+		if query && ((len(result.URLs) == 0 && (defaultResult || (value == nil && selector.ExportType() != reflect.TypeFor[string]()))) || (kind == "video" && defaultResult)) {
+			configured, contentErr := translation.configuredMediaContent(taskID, request.URL)
+			if contentErr != nil {
+				return result, contentErr
+			}
+			if configured != nil {
+				content = configured
 			}
 		}
 		if content != nil {

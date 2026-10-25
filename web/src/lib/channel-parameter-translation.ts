@@ -1,3 +1,4 @@
+import { translationInputsSchema, type TranslationInputs } from "./translation-inputs";
 export type TranslationReferences = { format: "auto" | "url" | "dataUrl"; max?: number };
 export type ChannelTranslation = { channelId: string; parameterTranslation: string };
 export type TranslationVariable = readonly [label: string, name: string, type: string, description: string];
@@ -17,6 +18,7 @@ export const translationVariableGroups = {
         ["参考图片", "images", "string[]", "普通参考图片的可用地址"],
     ],
     video: [
+        ["原始时长", "rawSeconds", "string", "用户输入的时长原文"],
         ["尺寸", "size", "string", "当前视频尺寸"],
         ["宽高比", "aspectRatio", "string", "当前视频比例"],
         ["视频分辨率", "resolution", "string", "当前视频分辨率"],
@@ -131,6 +133,13 @@ export function translationAuthoringPrompt(models: string[] = [], baseUrl = "") 
 
 // 只读取静态模型名称；保存校验不运行用户的请求表达式或响应函数。
 const translationProgramsCache = new Map<string, Record<string, string>>();
+const modelInputsCache = new Map<string, Record<string, TranslationInputs>>();
+export function cachedTranslationModel(source: string, model: string) { return {configured:!!translationProgramsCache.get(source)?.[model],inputs:modelInputsCache.get(source)?.[model]}; }
+export async function translationModelInputs(source: string, model: string) {
+    await translationPrograms(source);
+    return modelInputsCache.get(source)?.[model];
+}
+
 const referenceInputsCache = new Map<string, Record<string, TranslationReferences>>();
 
 export async function translationReferenceInput(source: string, model: string) {
@@ -203,7 +212,9 @@ export async function translationPrograms(source: string): Promise<Record<string
             if (!["auto", "url", "dataUrl"].includes(String(values.format)) || (values.max !== undefined && (!Number.isSafeInteger(values.max) || Number(values.max) < 0))) throw new Error("参考图片编码或数量配置无效");
             references = values as TranslationReferences;
         }
-        return { name, configured: requests.length === 1, rule: text.slice(rule.from, rule.to), references };
+        const inputField = rule.getChildren("Property").find((item) => key(item) === "inputs")?.lastChild;
+        const inputs = inputField ? translationInputsSchema.parse(JSON.parse(text.slice(inputField.from, inputField.to))) : undefined;
+        return { inputs, name, configured: requests.length === 1, rule: text.slice(rule.from, rule.to), references };
     });
     if (new Set(entries.map((item) => item.name)).size !== entries.length) throw new Error("模型名称不能重复");
     const fragment = (name: string, fallback: string) => {
@@ -214,8 +225,9 @@ export async function translationPrograms(source: string): Promise<Record<string
     const programs = Object.fromEntries(entries.filter((item) => item.configured).map((item) => [item.name, `({headers:(${fragment("headers", "{}")}),poll:(${fragment("poll", "false")}),rule:(${item.rule})})`]));
     if (translationProgramsCache.size >= 32) {
         const oldest = translationProgramsCache.keys().next().value!;
-        translationProgramsCache.delete(oldest); referenceInputsCache.delete(oldest);
+        translationProgramsCache.delete(oldest); referenceInputsCache.delete(oldest); modelInputsCache.delete(oldest);
     }
+    modelInputsCache.set(source, Object.fromEntries(entries.filter(item => item.inputs).map(item => [item.name, item.inputs!])));
     referenceInputsCache.set(source, Object.fromEntries(entries.filter((item) => item.references).map((item) => [item.name, item.references!])));
     translationProgramsCache.set(source, programs);
     return programs;

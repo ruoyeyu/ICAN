@@ -1,3 +1,4 @@
+import { prepareVideoImageInput, prepareVideoMediaInput } from "./translation-video-references";
 import { authorizeReferenceURL } from "./storage";
 import axios from "axios";
 import { nanoid } from "nanoid";
@@ -121,7 +122,7 @@ export async function createVideoGenerationTask(config: AiConfig, prompt: string
     const model = config.model || config.videoModel;
     const systemPrompt = (config.systemPrompts.video || config.systemPrompt).trim();
     const translation = await findParameterTranslation({...config,model});
-    if (translation) return createTranslatedVideoTask({...config,model},translation,systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt,normalizeVideoReferenceInput(references),normalizeVideoTaskCreateOptions(options),onProgress);
+    if (translation) return createTranslatedVideoTask({...config,model},translation,systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt,normalizeVideoReferenceInput(references),normalizeVideoTaskCreateOptions(options),onProgress,prompt);
     const body = await createVideoRequestBody(config, model, systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt, normalizeVideoReferenceInput(references));
     const startedAt = Date.now();
     try {
@@ -153,14 +154,14 @@ export async function createVideoGenerationTask(config: AiConfig, prompt: string
     }
 }
 
-async function createTranslatedVideoTask(config: AiConfig, match: MatchedTranslation, prompt: string, references: Required<VideoReferenceInput>, options: VideoTaskCreateOptions, onProgress?: VideoProgressHandler): Promise<CreatedVideoGenerationTask> {
+async function createTranslatedVideoTask(config: AiConfig, match: MatchedTranslation, prompt: string, references: Required<VideoReferenceInput>, options: VideoTaskCreateOptions, onProgress?: VideoProgressHandler, rawPrompt = prompt): Promise<CreatedVideoGenerationTask> {
     const imageURL = async (image: ReferenceImage) => publicHttpUrl(image.url) || publicHttpUrl(image.dataUrl) || imageToDataUrl(image);
     const mediaURL = async (media: ReferenceAudio) => translationMediaAddress(await resolveMediaUrl(media.storageKey, media.url));
     const input: TranslationInput = {
         kind: "video",
         variables: {
             model: config.model,
-            prompt,
+            prompt, rawPrompt, rawSize: config.size, rawSeconds: config.videoSeconds,
             size: config.size,
             aspectRatio: normalizeTranslationAspectRatio(config.size),
             resolution: config.vquality,
@@ -169,11 +170,11 @@ async function createTranslatedVideoTask(config: AiConfig, match: MatchedTransla
             negativePrompt: config.videoNegativePrompt,
             generateAudio: boolConfig(config.videoGenerateAudio, true),
             watermark: boolConfig(config.videoWatermark, false),
-            images: await Promise.all(references.references.map(imageURL)),
-            videos: await Promise.all(references.videoReferences.map((reference) => elementReferenceToInputUrl({ ...reference, kind: "video" }))),
-            audios: await Promise.all(references.audioReferences.map(mediaURL)),
-            firstFrame: references.firstFrame ? await imageURL(references.firstFrame) : "",
-            lastFrame: references.lastFrame ? await imageURL(references.lastFrame) : "",
+            images: match.inputs?.media.images || match.references ? await prepareVideoImageInput(references.references, match.inputs?.media.images || match.references!) : await Promise.all(references.references.map(imageURL)),
+            videos: match.inputs?.media.videos?.format === "url" ? await prepareVideoMediaInput(references.videoReferences, match.inputs.media.videos) : await Promise.all(references.videoReferences.map((reference) => elementReferenceToInputUrl({ ...reference, kind: "video" }))),
+            audios: match.inputs?.media.audios?.format === "url" ? await prepareVideoMediaInput(references.audioReferences, match.inputs.media.audios) : await Promise.all(references.audioReferences.map(mediaURL)),
+            firstFrame: references.firstFrame ? match.inputs?.media.firstFrame ? (await prepareVideoImageInput([references.firstFrame], match.inputs.media.firstFrame))[0] : await imageURL(references.firstFrame) : "",
+            lastFrame: references.lastFrame ? match.inputs?.media.lastFrame ? (await prepareVideoImageInput([references.lastFrame], match.inputs.media.lastFrame))[0] : await imageURL(references.lastFrame) : "",
         },
     };
     const startedAt = Date.now();

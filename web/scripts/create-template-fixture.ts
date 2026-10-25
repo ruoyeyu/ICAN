@@ -1,0 +1,10 @@
+import { writeFileSync } from "node:fs";
+import { compileTemplate, exportChannelTemplate, newTemplateField, newTemplateModel } from "../src/lib/channel-template";
+const model = newTemplateModel("fixture-video", "video");
+model.path="/jobs";model.poll.path="/jobs/{taskId}";model.content="/jobs/{taskId}/content";model.poll.progress="progress";
+model.inputs.parameters={seconds:{options:["2","5"],allowCustom:false},resolution:{options:["720p","1080p"],allowCustom:true},aspectRatio:{options:["16:9","9:16"],allowCustom:true}};
+model.inputs.media={images:{format:"url"},firstFrame:{format:"url"},lastFrame:{format:"url"},videos:{format:"url"},audios:{format:"url"}};
+model.fields.push({...newTemplateField("image_url","firstImage"),when:"singleImage",optional:true},{...newTemplateField("reference_image_urls","images"),when:"multipleImages",optional:true},...(["firstFrame","lastFrame"] as const).map(source=>({...newTemplateField(`video_config.${source}`,source),optional:true})),{...newTemplateField("video_config.reference_mode","mode"),when:"frames",optional:true},{...newTemplateField("video_urls","videos"),optional:true},{...newTemplateField("audio_urls","audios"),optional:true});
+const source=compileTemplate({version:1,models:[model]});
+writeFileSync("scripts/fixtures/channel-template-v1.json",exportChannelTemplate({name:"Async video fixture",baseUrl:"https://api.example.invalid",protocol:"custom",models:[model.name]},source));
+writeFileSync("../service/testdata/channel-template-v1.js",source);

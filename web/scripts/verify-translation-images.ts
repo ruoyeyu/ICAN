@@ -49,3 +49,18 @@ await assert.rejects(prepareTranslationImages([ref("https://user@external.invali
 switchDuringRead=true;await assert.rejects(prepareTranslationImages([ref(dataUrl)],{format:"dataUrl"}),/登录状态已变化/);
 state={token:"",user:null as never};await assert.rejects(prepareTranslationImages([],{format:"url"}),/登录/);
 console.log("reference encoding: URL, private share, Data URL, blob, count, failure, session checks passed");
+
+// Video templates reuse the same owner-scoped uploader for ordinary and frame inputs.
+state={token:"fixture-session",user:{id:"fixture-user"}};switchDuringRead=false;
+mock.module("../src/services/file-storage",()=>({resolveMediaUrl:async(key:string,url:string)=>key==="server:owned"?"/api/files/owned/content":url}));
+const {prepareVideoImageInput,prepareVideoMediaInput}=await import("../src/services/api/translation-video-references");
+for(const value of [dataUrl,"blob:fixture","/api/files/owned/content"]) {
+ assert.deepEqual(await prepareVideoImageInput([ref(value)],{format:"url"}),["https://ican.invalid/share/owned?signature=fixture"]);
+}
+await assert.rejects(prepareVideoImageInput([ref("/private/needs-login")],{format:"url"}),/浏览器登录/);
+const media=(url:string)=>({id:"audio",name:"reference.wav",type:"audio/wav",url});
+assert.deepEqual(await prepareVideoMediaInput([media("/api/files/owned/content")],{format:"url"}),["https://ican.invalid/share/owned?signature=fixture"]);
+assert.deepEqual(await prepareVideoMediaInput([media("https://media.invalid/audio")],{format:"url"}),["https://media.invalid/audio"]);
+await assert.rejects(prepareVideoMediaInput([media("/needs-login")],{format:"url"}),/浏览器登录/);
+await assert.rejects(prepareVideoMediaInput([media("https://user@external.invalid/audio")],{format:"url"}),/HTTP/);
+console.log("video reference images, frames, audio/video URLs: scoped authorization and private-path rejection passed");

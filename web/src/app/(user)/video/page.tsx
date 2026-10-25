@@ -27,7 +27,7 @@ import { createVideoGenerationTask, deleteVideoGenerationTask, listVideoGenerati
 import { stopCanvasTask } from "@/services/api/canvas-tasks";
 import { comfyOutputStorageKey, getWorkflowTask, isRetryableWorkflowError, submitWorkflowTask, workflowMediaSource } from "@/services/api/workflow-generation";
 import { useAssetStore } from "@/stores/use-asset-store";
-import { channelProtocolForConfig, normalizeLocalChannels, useConfigStore, useEffectiveConfig, type AiConfig, type VideoElementItem, type VideoElementReference } from "@/stores/use-config-store";
+import { declaredTranslationForModel, usesCustomVideoInterface, channelProtocolForConfig, normalizeLocalChannels, useConfigStore, useEffectiveConfig, type AiConfig, type VideoElementItem, type VideoElementReference } from "@/stores/use-config-store";
 import { useThemeStore } from "@/stores/use-theme-store";
 import { useUserStore } from "@/stores/use-user-store";
 import type { ReferenceImage } from "@/types/image";
@@ -589,7 +589,8 @@ export default function VideoPage() {
     };
 
     const buildRequestSnapshot = ({ promptText = prompt, negativePromptText, referenceItems = references, firstFrameItem = firstFrame, lastFrameItem = lastFrame, videoReferenceItems = videoReferences, audioReferenceItems = audioReferences, taskCountValue = taskCount, configValue = videoConfig, modelValue = model, workflowRef = videoConfig.videoWorkflowRef }: { promptText?: string; negativePromptText?: string; referenceItems?: ReferenceImage[]; firstFrameItem?: ReferenceImage | null; lastFrameItem?: ReferenceImage | null; videoReferenceItems?: ReferenceVideo[]; audioReferenceItems?: ReferenceAudio[]; taskCountValue?: number; configValue?: AiConfig; modelValue?: string; workflowRef?: WorkflowRef | null } = {}) => {
-        const text = promptText.trim();
+        const customInterface = usesCustomVideoInterface(configValue, modelValue);
+        const text = customInterface ? promptText : promptText.trim();
         const currentNegativePrompt = (negativePromptText ?? configValue.videoNegativePrompt ?? negativePrompt).trim();
         if (workflowRef) {
             if (!token) { message.error("工作流生成需要先登录"); return null; }
@@ -610,6 +611,7 @@ export default function VideoPage() {
             openConfigDialog(true);
             return null;
         }
+        if (customInterface) return { text, model:modelValue, config:{...configValue,model:modelValue,videoModel:modelValue}, references:[...referenceItems], firstFrame:firstFrameItem, lastFrame:lastFrameItem, videoReferences:[...videoReferenceItems], audioReferences:[...audioReferenceItems], taskCount:normalizeVideoCount(taskCountValue) };
         if (kling && omni !== "reference-to-video" && referenceItems.length > (omni === "transformation" ? 4 : 2)) {
             message.error(`Kling 参考图最多 ${omni === "transformation" ? 4 : 2} 张`);
             return null;
@@ -1543,7 +1545,10 @@ function WorkbenchPanel({
     bottomSettingsCollapsed?: boolean;
     setBottomSettingsCollapsed?: (value: boolean) => void;
 }) {
-    const frameReferencesEnabled = Boolean(config.videoWorkflowRef) || supportsVideoFrameReferences(model, channelProtocolForConfig({ ...config, model }));
+    const panelTheme = canvasThemes[useThemeStore(state => state.theme)];
+    const customInterface = usesCustomVideoInterface(config, model);
+    const declared = declaredTranslationForModel(config, model).inputs;
+    const frameReferencesEnabled = Boolean(config.videoWorkflowRef) || (customInterface ? Boolean(declared?.media.firstFrame || declared?.media.lastFrame) : supportsVideoFrameReferences(model, channelProtocolForConfig({ ...config, model })));
     const referenceLimits = !config.videoWorkflowRef && channelProtocolForConfig({ ...config, model, videoModel: model }) === "ark" && (modelKey(model).includes("seedance-2-5") || modelKey(model).includes("seedance2-5")) ? ARK_SEEDANCE_REFERENCE_LIMITS : SEEDANCE_REFERENCE_LIMITS;
     const autodl = !config.videoWorkflowRef && isAutoDLConfig(config, model);
     const { data: autodlWorkflow } = useAutoDLWorkflow(config, model);
@@ -1608,7 +1613,7 @@ function WorkbenchPanel({
                                 模型
                                 <ModelPicker config={config} value={model} channelId={config.videoChannelId} workflowRef={config.videoWorkflowRef} onWorkflowChange={(value) => updateConfig("videoWorkflowRef", value)} onChange={(value, channelId) => { updateConfig("videoModel", value); if (channelId) updateConfig("videoChannelId", channelId); }} capability="video" className="canvas-compact-control !h-11 !rounded-xl" onMissingConfig={() => openConfigDialog(false)} fullWidth />
                             </label>
-                            {klingBottom ? (
+                            {customInterface ? <div className="col-span-2 sm:col-span-3"><VideoSettingsPanel config={config} modelName={model} onConfigChange={updateConfig} theme={panelTheme} showTitle={false} className="grid gap-3 sm:grid-cols-3" /></div> : klingBottom ? (
                                 <KlingV26BottomSettings config={config} updateConfig={updateConfig} generateAudio={generateAudio} isKlingV3={klingBottomVariant === "v3"} />
                             ) : (
                                 <>
@@ -2284,7 +2289,7 @@ function buildDisplayConfig(config: AiConfig, model: string): GenerationLogConfi
         model: config.model,
         videoModel: config.videoModel || model,
         size: config.size,
-        vquality: normalizeResolution(config.vquality),
+        vquality: usesCustomVideoInterface(config, model) ? config.vquality : normalizeResolution(config.vquality),
         videoSeconds: config.videoSeconds,
         videoMode: config.videoMode,
         videoNegativePrompt: config.videoNegativePrompt,
@@ -2975,7 +2980,7 @@ function buildLog({ prompt, model, config, references, firstFrame, lastFrame, vi
 function buildVideoConfig(config: AiConfig, model: string): AiConfig {
     const videoChannelId = resolveVideoChannelId(config, model, config.videoChannelId, config.activeChannelId);
     config = { ...config, videoChannelId: videoChannelId || config.videoChannelId, activeChannelId: videoChannelId || config.activeChannelId };
-    if (isAutoDLConfig(config, model)) return { ...config, model, videoModel: model, activeChannelId: config.videoChannelId || config.activeChannelId };
+    if (usesCustomVideoInterface(config, model) || isAutoDLConfig(config, model)) return { ...config, model, videoModel: model, activeChannelId: config.videoChannelId || config.activeChannelId };
     const seedance = isSeedanceVideoConfig({ ...config, model });
     const cogVideoX3 = isCogVideoX3Model(model);
     const klingV26 = isAPIMartKlingV26Config(config, model);

@@ -1,0 +1,77 @@
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import crypto from 'node:crypto';
+const {chromium}=await import(process.env.ICAN_PLAYWRIGHT_MODULE || 'playwright-core');
+const repo=process.cwd(), origin='http://127.0.0.1:3417';
+assert.ok(process.env.ICAN_TEST_API_BINARY, 'Set ICAN_TEST_API_BINARY to the locally built API binary');
+assert.ok(process.env.ICAN_TEST_CHROMIUM, 'Set ICAN_TEST_CHROMIUM to an installed test Chromium');
+const data=fs.mkdtempSync(os.tmpdir()+'/ican-login-');
+const api=spawn(process.env.ICAN_TEST_API_BINARY,[],{cwd:repo,env:{...process.env,PUBLIC_ORIGIN:origin,PORT:'3418',ADMIN_USERNAME:'fixture-admin',ADMIN_PASSWORD:'fixture-admin-password-only',JWT_SECRET:crypto.randomBytes(48).toString('hex'),DATA_ENCRYPTION_KEY:crypto.randomBytes(32).toString('base64'),DATABASE_DSN:data+'/ican.db',MEDIA_DIR:data+'/media',AI_LOG_DIR:data+'/logs',AUTH_ATTEMPTS_PER_MINUTE:'1000',MEDIA_LINK_TTL_SECONDS:'60'},stdio:'ignore'});
+const next=spawn(process.execPath,['server.js'],{cwd:repo+'/web/.next/standalone',env:{...process.env,PORT:'3417',HOSTNAME:'127.0.0.1',NODE_ENV:'production',NEXT_TELEMETRY_DISABLED:'1',API_BASE_URL:'http://127.0.0.1:3418'},stdio:'ignore'});
+let browser;
+async function call(path,body,token){const r=await fetch(origin+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body)});const j=await r.json();assert.equal(j.code,0,path);return j.data;}
+try {
+for(let i=0;i<80;i++){try{if((await fetch(origin+'/api/health')).ok)break;}catch{}await new Promise(r=>setTimeout(r,250));}
+const admin=await call('/api/auth/login',{username:'fixture-admin',password:'fixture-admin-password-only'});
+const invite=async()=> (await call('/api/admin/invitations',{},admin.token)).code;
+const alice=await call('/api/auth/register',{username:'alice',password:'alice-password',invitationCode:await invite()});
+const bob=await call('/api/auth/register',{username:'bob',password:'bob-password',invitationCode:await invite()});
+
+const settings=await call('/api/admin/settings',undefined,admin.token);
+settings.public.modelChannel.allowCustomChannel=true;
+settings.public.modelChannel.allowUserRemoteChannel=true;
+await call('/api/admin/settings',settings,admin.token);
+browser=await chromium.launch({executablePath:process.env.ICAN_TEST_CHROMIUM,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--no-zygote'],env:process.env});
+let ctx=await browser.newContext({viewport:{width:1500,height:1000}});let page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+async function login(){await page.goto(origin+'/login');await page.getByLabel('用户名',{exact:true}).fill('alice');await page.getByLabel('密码',{exact:true}).fill('alice-password');await page.locator('button[type=submit]').click();await page.waitForURL(u=>!u.pathname.startsWith('/login'));await page.goto(origin+'/canvas');}
+await login();await page.getByRole('button',{name:'配置',exact:true}).click();
+await page.getByRole('button',{name:'新增自定义 API',exact:true}).click();
+await page.getByRole('dialog',{name:'新增自定义 API'}).locator('input[type=file]').setInputFiles(repo+'/web/scripts/fixtures/channel-template-v1.json');
+await page.getByLabel('个人 API Key',{exact:true}).fill('fixture-private-key');
+await page.getByRole('button',{name:'添加渠道',exact:true}).click();
+const row=page.locator('input[value="Async video fixture"]').locator('xpath=ancestor::div[contains(@class,"space-y-2")][1]');
+await row.getByRole('button',{name:'接口配置',exact:true}).click();
+await page.getByRole('button',{name:'自定传参转译',exact:true}).click();
+await page.getByLabel('创建请求路径（追加到渠道基础地址）',{exact:true}).fill('/edited-jobs');
+await page.getByRole('button',{name:/^保\s*存$/}).click();
+await page.getByRole('button',{name:/^确\s*定$/}).click();
+const downloadEvent=page.waitForEvent('download');await row.getByRole('button',{name:/^导\s*出$/}).click();
+const download=await downloadEvent;const stream=await download.createReadStream();const chunks=[];for await(const chunk of stream)chunks.push(chunk);const exported=JSON.parse(Buffer.concat(chunks).toString());
+assert.equal(exported.authoring.models[0].path,'/edited-jobs');assert.ok(!JSON.stringify(exported).includes('fixture-private-key'));
+const saving=page.waitForResponse(r=>r.url().endsWith('/api/v1/user-config/model')&&r.request().method()==='POST');
+await page.getByRole('button',{name:/^完\s*成$/}).click();assert.equal((await(await saving).json()).code,0);
+const saved=await call('/api/v1/user-config',undefined,alice.token);const channel=saved.modelConfig.localChannels.find(c=>c.name==='Async video fixture');
+assert.ok(channel);assert.equal(channel.apiKey,'fixture-private-key');assert.ok(saved.modelConfig.channelTranslations.find(t=>t.channelId===channel.id).parameterTranslation.includes('/edited-jobs'));
+await ctx.close();ctx=await browser.newContext({viewport:{width:1500,height:1000}});page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await login();
+await page.getByRole('button',{name:'配置',exact:true}).click();await page.locator('input[value="Async video fixture"]').waitFor();
+await page.getByRole('button',{name:'新增自定义 API',exact:true}).click();
+await page.getByLabel('初始化预设',{exact:true}).click();await page.getByText('OpenAI 兼容',{exact:true}).click();
+await page.getByLabel('渠道名称',{exact:true}).fill('Native compatible');await page.getByLabel('基础地址',{exact:true}).fill('https://native.example.invalid');await page.getByLabel('个人 API Key',{exact:true}).fill('second-private-key');
+await page.getByLabel('模型名称',{exact:true}).fill('my-chat-model');await page.getByLabel('模型名称',{exact:true}).press('Enter');
+await page.getByRole('button',{name:'添加渠道',exact:true}).click();
+const savedAgain=page.waitForResponse(r=>r.url().endsWith('/api/v1/user-config/model')&&r.request().method()==='POST');await page.getByRole('button',{name:/^完\s*成$/}).click();assert.equal((await(await savedAgain).json()).code,0);
+const after=await call('/api/v1/user-config',undefined,alice.token);assert.deepEqual(after.modelConfig.localChannels.find(c=>c.id===channel.id),channel);assert.deepEqual(after.modelConfig.channelTranslations,saved.modelConfig.channelTranslations);assert.ok(after.modelConfig.localChannels.some(c=>c.name==='Native compatible'&&c.protocol==='openai'&&c.models.includes('my-chat-model')));
+await page.goto(origin+'/video');
+await page.getByRole('combobox').filter({hasText:'选择模型'}).first().click();
+await page.getByRole('option',{name:/fixture-video/}).click();
+await page.getByText('当前值不在此模型选项中，请手动选择。',{exact:true}).waitFor();
+await page.getByRole('combobox',{name:'时长（seconds）',exact:true}).click();
+await page.locator('.ant-select-dropdown:visible .ant-select-item-option').filter({hasText:/^2$/}).click();
+await page.getByRole('combobox',{name:'分辨率（resolution）',exact:true}).fill('custom-res');
+await page.getByRole('combobox',{name:'比例（aspect_ratio）',exact:true}).fill('9:16');
+assert.equal(await page.getByRole('combobox',{name:'分辨率（resolution）',exact:true}).inputValue(),'custom-res');
+assert.equal(await page.getByRole('combobox',{name:'比例（aspect_ratio）',exact:true}).inputValue(),'9:16');
+let calls=0,captured;let ready;const submitted=new Promise(resolve=>{ready=resolve;});
+await page.route('**/api/v1/videos',async route=>{if(route.request().method()!=='POST'){await route.continue();return;}calls++;captured=route.request().postDataJSON();await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:'mock-browser-task',status:'queued',progress:0,parameter_translation:true})});ready();});
+await page.route('**/api/v1/videos/mock-browser-task',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:'mock-browser-task',status:'in_progress',progress:1,parameter_translation:true})}));
+const prompt='  unchanged prompt {channelKey}\n';
+await page.getByPlaceholder('描述镜头运动、主体动作、场景氛围和画面风格',{exact:true}).filter({visible:true}).first().fill(prompt);
+await page.getByRole('button',{name:/^开始(创作|生成)$/}).first().click();
+await Promise.race([submitted,new Promise((_,reject)=>setTimeout(async()=>reject(new Error('No submission: '+(await page.locator('.ant-message').innerText().catch(()=>'')))),15000))]);
+assert.equal(calls,1);const variables=captured._parameterTranslation.variables;
+assert.equal(variables.rawPrompt,prompt);assert.equal(variables.rawSize,'9:16');assert.equal(variables.resolution,'custom-res');assert.equal(variables.rawSeconds,'2');assert.equal(variables.model,'fixture-video');
+assert.ok(!JSON.stringify(captured).includes('fixture-private-key'));
+assert.deepEqual(errors,[]);console.log(JSON.stringify({import:'validated',edit:'saved in existing translator',export:'no credentials',freshBrowser:'account config restored',presets:'OpenAI added without overwriting existing channel',perModelParameters:'declared choices enforced; custom resolution and literal ratio retained',mockSubmit:'one intercepted request; exact prompt/ratio/resolution/duration/model',pageErrors:errors}));
+}finally{if(browser)await browser.close();next.kill();api.kill();fs.rmSync(data,{recursive:true,force:true});}

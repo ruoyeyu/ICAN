@@ -1,0 +1,67 @@
+{
+  "baseCommit": "5080380520a61db3c49dd34543b87350bfd10d8a",
+  "version": "v0.1.3",
+  "environment": "isolated local production Next/API, disposable accounts/databases/media, mocked supplier HTTP only",
+  "goSuite": "passed: go test ./...",
+  "webTests": 30,
+  "directorTests": 294,
+  "productionWebBuild": "passed",
+  "browser": {
+    "import": "validated",
+    "edit": "saved in existing translator",
+    "export": "no credentials",
+    "freshBrowser": "account config restored",
+    "presets": "OpenAI added without overwriting existing channel",
+    "perModelParameters": "declared choices enforced; custom resolution and literal ratio retained",
+    "mockSubmit": "one intercepted request; exact prompt/ratio/resolution/duration/model",
+    "pageErrors": []
+  },
+  "baselineBrowserRegression": {
+    "loginAndAnonymousUpload": "passed",
+    "directorCapture": "passed",
+    "revokedSessionAndTwoAccounts": "passed",
+    "adminChannelTogglesAndStorageIDs": "passed"
+  },
+  "upgrade": {
+    "baseline": "v0.1.2 source 5080380520a61db3c49dd34543b87350bfd10d8a",
+    "method": "create account/encrypted config/media with old binary; stopped copy; open using new binary; save new template; restart; restore backup with old binary",
+    "retained": [
+      "account",
+      "session",
+      "original encryption key",
+      "provider key",
+      "channel ID",
+      "legacy translation",
+      "media"
+    ],
+    "productionDataAccessed": false
+  },
+  "privateSupplierContract": {
+    "mockCases": 4,
+    "paidCalls": 0,
+    "builtInSupplierPreset": false,
+    "firstLastFrameSupplierContract": "not provided fully; not enabled in private example",
+    "otherModesLiveTested": false
+  },
+  "securityChecks": [
+    "static versioned input declarations, no new runtime host bindings",
+    "owner-scoped image/video/audio/frame references",
+    "reject undeclared reference types before submission",
+    "pending queued/unknown/in_progress states and persisted snapshot recovery",
+    "single creation, same-origin authenticated content download",
+    "reject cross-origin request redirects and all content redirects",
+    "sniff downloaded video and reject HTML/JSON/empty payload",
+    "literal prompt/model/parameters across JSON/form/query encodings",
+    "existing SSRF/DNS/permissions regression suites"
+  ],
+  "dependenciesChanged": false,
+  "databaseSchemaChanged": false,
+  "productionModified": false,
+  "newResourceDefaults": false,
+  "limitations": [
+    "actual provider modes need user validation",
+    "arbitrary advanced code remains editable but cannot be automatically exported as a credential-free form",
+    "existing production resource/session/restore acceptance gates remain separate"
+  ],
+  "typecheck": "passed"
+}

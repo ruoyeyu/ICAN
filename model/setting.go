@@ -120,7 +120,18 @@ type ParameterTranslationReferences struct {
 	Max    *int   `json:"max,omitempty"`
 }
 
+type ParameterTranslationOption struct {
+	Options     []string `json:"options"`
+	AllowCustom bool     `json:"allowCustom"`
+}
+type ParameterTranslationInputs struct {
+	Authentication string                                    `json:"authentication,omitempty"`
+	Version        int                                       `json:"version"`
+	Parameters     map[string]ParameterTranslationOption     `json:"parameters"`
+	Media          map[string]ParameterTranslationReferences `json:"media"`
+}
 type PublicModelChannelInfo struct {
+	ParameterTranslationInputs     map[string]ParameterTranslationInputs     `json:"parameterTranslationInputs,omitempty"`
 	ParameterTranslationReferences map[string]ParameterTranslationReferences `json:"parameterTranslationReferences,omitempty"`
 	ParameterTranslationModels     []string                                  `json:"parameterTranslationModels,omitempty"`
 	ID                             string                                    `json:"id"`

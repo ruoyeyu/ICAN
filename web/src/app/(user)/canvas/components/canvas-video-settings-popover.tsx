@@ -1,4 +1,5 @@
 "use client";
+import { declaredTranslationForModel, usesCustomVideoInterface } from "@/stores/use-config-store";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
@@ -95,7 +96,8 @@ function VideoSettingsPortal({ buttonRect, panelRef, placement, theme, config, o
     const kieKlingOmni = kieKlingOmniVariant(config, model);
     const isKlingMotionControl = isAPIMartKlingMotionControlConfig(config, model) || isKIEKlingMotionControlConfig(config, model) || (channelProtocolForConfig({ ...config, model, videoModel: model }) === "tokendance" && modelKey(model) === "kling-3-0");
     const isKlingV3 = isAPIMartKlingV3 || isKIEKlingV3;
-    const frameReferencesEnabled = !isKlingV3 && supportsVideoFrameReferences(model, channelProtocolForConfig({ ...config, model }));
+    const declared = declaredTranslationForModel(config,model).inputs;
+    const frameReferencesEnabled = usesCustomVideoInterface(config,model) ? Boolean(declared?.media.firstFrame || declared?.media.lastFrame) : !isKlingV3 && supportsVideoFrameReferences(model, channelProtocolForConfig({ ...config, model }));
     const optionIds = useMemo(() => new Set(frameOptions.map((item) => item.nodeId)), [frameOptions]);
     const firstFrameValue = firstFrameNodeId && optionIds.has(firstFrameNodeId) ? firstFrameNodeId : "";
     const lastFrameValue = lastFrameNodeId && optionIds.has(lastFrameNodeId) ? lastFrameNodeId : "";

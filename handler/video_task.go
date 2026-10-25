@@ -301,12 +301,20 @@ func serveGeminiVideoTaskContent(w http.ResponseWriter, r *http.Request, id stri
 		Fail(w, readUpstreamAIErrorMessage(nil, response.StatusCode))
 		return true
 	}
-	if contentType := response.Header.Get("Content-Type"); contentType != "" {
-		w.Header().Set("Content-Type", contentType)
-	}
-	w.WriteHeader(response.StatusCode)
-	_, _ = io.Copy(w, response.Body)
+	writeVideoDownload(w, response)
 	return true
+}
+
+func writeVideoDownload(w http.ResponseWriter, response *http.Response) {
+	prefix, contentType, err := service.ReadPassivePrefix(response.Body)
+	if err != nil || !strings.HasPrefix(contentType, "video/") {
+		Fail(w, "视频内容接口未返回有效视频")
+		return
+	}
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(response.StatusCode)
+	_, _ = io.Copy(w, io.MultiReader(bytes.NewReader(prefix), response.Body))
 }
 
 func pollVideoTaskFromUpstream(ctx context.Context, task model.VideoTask) (service.VideoTaskPollUpdate, error) {

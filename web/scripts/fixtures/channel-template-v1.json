@@ -1,0 +1,197 @@
+{
+  "format": "ican-channel",
+  "version": 1,
+  "name": "Async video fixture",
+  "baseUrl": "https://api.example.invalid",
+  "protocol": "custom",
+  "models": [
+    "fixture-video"
+  ],
+  "modelCapabilities": {},
+  "authoring": {
+    "version": 1,
+    "models": [
+      {
+        "name": "fixture-video",
+        "kind": "video",
+        "method": "POST",
+        "path": "/jobs",
+        "format": "json",
+        "fields": [
+          {
+            "target": "model",
+            "source": "model",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "prompt",
+            "source": "rawPrompt",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "aspect_ratio",
+            "source": "rawSize",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "resolution",
+            "source": "resolution",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "seconds",
+            "source": "rawSeconds",
+            "value": "null",
+            "string": true,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "image_url",
+            "source": "firstImage",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "singleImage",
+            "location": "body"
+          },
+          {
+            "target": "reference_image_urls",
+            "source": "images",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "multipleImages",
+            "location": "body"
+          },
+          {
+            "target": "video_config.firstFrame",
+            "source": "firstFrame",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "video_config.lastFrame",
+            "source": "lastFrame",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "video_config.reference_mode",
+            "source": "mode",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "frames",
+            "location": "body"
+          },
+          {
+            "target": "video_urls",
+            "source": "videos",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "audio_urls",
+            "source": "audios",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "header": "Authorization",
+          "prefix": "Bearer "
+        },
+        "poll": {
+          "enabled": true,
+          "method": "GET",
+          "path": "/jobs/{taskId}",
+          "taskId": "id",
+          "status": "status",
+          "progress": "progress",
+          "success": [
+            "completed"
+          ],
+          "failure": [
+            "failed"
+          ]
+        },
+        "result": "",
+        "content": "/jobs/{taskId}/content",
+        "inputs": {
+          "version": 1,
+          "parameters": {
+            "seconds": {
+              "options": [
+                "2",
+                "5"
+              ],
+              "allowCustom": false
+            },
+            "resolution": {
+              "options": [
+                "720p",
+                "1080p"
+              ],
+              "allowCustom": true
+            },
+            "aspectRatio": {
+              "options": [
+                "16:9",
+                "9:16"
+              ],
+              "allowCustom": true
+            }
+          },
+          "media": {
+            "images": {
+              "format": "url"
+            },
+            "firstFrame": {
+              "format": "url"
+            },
+            "lastFrame": {
+              "format": "url"
+            },
+            "videos": {
+              "format": "url"
+            },
+            "audios": {
+              "format": "url"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

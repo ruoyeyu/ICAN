@@ -1,4 +1,5 @@
 "use client";
+import { usesCustomVideoInterface } from "@/stores/use-config-store";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent as ReactChangeEvent, DragEvent as ReactDragEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
@@ -3058,7 +3059,7 @@ function InfiniteCanvasPage({ projectId }: { projectId: string }) {
             const generationContext = await hydrateNodeGenerationContext(
                 buildNodeGenerationContext(nodeId, nodesRef.current, connectionsRef.current, editingTextNode ? `请根据要求修改以下文本。\n\n原文：\n${sourceTextContent}\n\n修改要求：\n${prompt}` : prompt),
             );
-            const effectivePrompt = generationContext.prompt.trim();
+            const effectivePrompt = mode === "video" && usesCustomVideoInterface(generationConfig,generationConfig.model) ? generationContext.prompt : generationContext.prompt.trim();
             const requestPrompt =
                 mode === "video" || (mode === "image" && !isPanoramaNodeType(sourceNode?.type))
                     ? applyCameraPrompt(effectivePrompt, sourceNode?.metadata?.cameraControl)
@@ -3453,7 +3454,7 @@ function InfiniteCanvasPage({ projectId }: { projectId: string }) {
 
                 if (mode === "video") {
                     const videoGenerationConfig = workflowRef ? generationConfig : withCanvasVideoAdvancedConfig(generationConfig, generationContext);
-                    const frameReferencesEnabled = Boolean(workflowRef) || supportsVideoFrameReferences(videoGenerationConfig.model, channelProtocolForConfig(videoGenerationConfig));
+                    const frameReferencesEnabled = Boolean(workflowRef) || usesCustomVideoInterface(videoGenerationConfig,videoGenerationConfig.model) || supportsVideoFrameReferences(videoGenerationConfig.model, channelProtocolForConfig(videoGenerationConfig));
                     const firstFrame = frameReferencesEnabled ? generationContext.firstFrame : null;
                     const lastFrame = frameReferencesEnabled ? generationContext.lastFrame : null;
                     const videoReferenceImages = frameReferencesEnabled || isAutoDLConfig(videoGenerationConfig) ? generationContext.referenceImages : [...generationContext.referenceImages, ...[generationContext.firstFrame, generationContext.lastFrame].filter((image): image is ReferenceImage => Boolean(image))];
@@ -4138,7 +4139,7 @@ function InfiniteCanvasPage({ projectId }: { projectId: string }) {
                 }
                 if (node.type === CanvasNodeType.Video) {
                     const videoGenerationConfig = retryWorkflowRef ? generationConfig : context ? withCanvasVideoAdvancedConfig(generationConfig, context) : generationConfig;
-                    const frameReferencesEnabled = Boolean(retryWorkflowRef) || supportsVideoFrameReferences(videoGenerationConfig.model, channelProtocolForConfig(videoGenerationConfig));
+                    const frameReferencesEnabled = Boolean(retryWorkflowRef) || usesCustomVideoInterface(videoGenerationConfig,videoGenerationConfig.model) || supportsVideoFrameReferences(videoGenerationConfig.model, channelProtocolForConfig(videoGenerationConfig));
                     const firstFrame = frameReferencesEnabled ? context?.firstFrame || null : null;
                     const lastFrame = frameReferencesEnabled ? context?.lastFrame || null : null;
                     const references = frameReferencesEnabled || isAutoDLConfig(videoGenerationConfig) ? retryImages : [...retryImages, ...[context?.firstFrame, context?.lastFrame].filter((image): image is ReferenceImage => Boolean(image))];
@@ -5446,6 +5447,7 @@ function referenceUrl(image: ReferenceImage) {
 }
 
 function withCanvasVideoAdvancedConfig(config: AiConfig, context: Pick<NodeGenerationContext, "videoMultiPrompt" | "videoElementList">): AiConfig {
+    if (usesCustomVideoInterface(config, config.model || config.videoModel)) return config;
     const kieKlingV3 = isKIEKlingV3Config(config, config.model || config.videoModel);
     const kieKlingOmni = kieKlingOmniVariant(config, config.model || config.videoModel);
     return {
@@ -6015,19 +6017,21 @@ function buildGenerationConfig(config: AiConfig, node: CanvasNodeData | undefine
     const textChannelId = mode === "text" ? channelId || config.textChannelId : config.textChannelId;
     const audioChannelId = mode === "audio" ? channelId || config.audioChannelId : config.audioChannelId;
     const activeChannelId = mode === "image" ? imageChannelId : mode === "video" ? videoChannelId : mode === "text" ? textChannelId : mode === "audio" ? audioChannelId || config.activeChannelId : config.activeChannelId;
+    const selectedModel = mode === "text" ? resolveModelForCapability(config, node?.metadata?.model, "text") : node?.metadata?.model || defaultModel || (mode === "audio" ? defaultConfig.audioModel : config.model || defaultConfig.model);
+    const customVideo = mode === "video" && usesCustomVideoInterface({...config,activeChannelId,videoChannelId},selectedModel);
     return {
         ...config,
-        model: mode === "text" ? resolveModelForCapability(config, node?.metadata?.model, "text") : node?.metadata?.model || defaultModel || (mode === "audio" ? defaultConfig.audioModel : config.model || defaultConfig.model),
+        model: selectedModel,
         activeChannelId,
         imageChannelId,
         videoChannelId,
         textChannelId,
         audioChannelId,
         quality: node?.metadata?.quality || config.quality || defaultConfig.quality,
-        size: isPanoramaNodeType(node?.type) ? PANORAMA_IMAGE_SIZE : node?.metadata?.size || (mode === "video" ? config.videoSize || defaultConfig.videoSize : config.size || defaultConfig.size),
-        videoSeconds: node?.metadata?.seconds || config.videoSeconds || defaultConfig.videoSeconds,
-        vquality: node?.metadata?.vquality || config.vquality || defaultConfig.vquality,
-        videoMode: node?.metadata?.mode || config.videoMode || defaultConfig.videoMode,
+        size: customVideo ? (node?.metadata?.size ?? config.videoSize) : isPanoramaNodeType(node?.type) ? PANORAMA_IMAGE_SIZE : node?.metadata?.size || (mode === "video" ? config.videoSize || defaultConfig.videoSize : config.size || defaultConfig.size),
+        videoSeconds: customVideo ? (node?.metadata?.seconds ?? config.videoSeconds) : node?.metadata?.seconds || config.videoSeconds || defaultConfig.videoSeconds,
+        vquality: customVideo ? (node?.metadata?.vquality ?? config.vquality) : node?.metadata?.vquality || config.vquality || defaultConfig.vquality,
+        videoMode: customVideo ? (node?.metadata?.mode ?? config.videoMode) : node?.metadata?.mode || config.videoMode || defaultConfig.videoMode,
         videoNegativePrompt: node?.metadata?.negativePrompt || config.videoNegativePrompt || defaultConfig.videoNegativePrompt,
         videoMultiShot: node?.metadata?.multiShot || config.videoMultiShot || defaultConfig.videoMultiShot,
         videoShotType: node?.metadata?.shotType || config.videoShotType || defaultConfig.videoShotType,

@@ -1,7 +1,7 @@
 import { readFileAsDataUrl } from "@/lib/image-utils";
 import { audioMimeType } from "@/lib/audio-generation";
 import { modelChannelAttributionHeaders } from "@/lib/model-channel";
-import { translationPrograms, translationReferenceInput, translationVariableNames, type TranslationReferences, type TranslationVariables } from "@/lib/channel-parameter-translation";
+import { translationPrograms, translationModelInputs, translationReferenceInput, translationVariableNames, type TranslationReferences, type TranslationVariables } from "@/lib/channel-parameter-translation";
 import { channelIdForActiveModel, localChannelForActiveModel, type AiConfig } from "@/stores/use-config-store";
 import { useChannelTranslationStore } from "@/stores/use-channel-translation-store";
 import { useUserStore } from "@/stores/use-user-store";
@@ -9,7 +9,7 @@ import { uploadMediaFile } from "@/services/file-storage";
 import { WorkflowRequestError } from "./workflow-generation";
 
 export type TranslationInput = { kind: "image" | "video" | "audio"; variables: TranslationVariables };
-export type MatchedTranslation = { channelId: string; source: string; timeout: number; accountProxy: boolean; references?: TranslationReferences };
+export type MatchedTranslation = { channelId: string; source: string; timeout: number; accountProxy: boolean; references?: TranslationReferences; inputs?: import("@/lib/translation-inputs").TranslationInputs };
 export type TranslationResult = { status: string; progress: number; taskIds?: string[]; urls: string[]; storageKey?: string; responseBody?: unknown };
 type RequestPlan = { parts?: unknown[]; url: string; headers?: Record<string, unknown>; params?: Record<string, unknown>; body?: unknown; format?: string; responseType?: string };
 
@@ -41,11 +41,11 @@ export async function findParameterTranslation(config: AiConfig): Promise<Matche
     if (!channelId) return null;
     if (config.channelMode === "remote") {
         const channel = config.publicChannels.find((item) => item.id === channelId);
-        return channel?.parameterTranslationModels?.includes(config.model) ? { channelId, source: "", timeout: channel.timeout || 600, accountProxy: true, references: channel.parameterTranslationReferences?.[config.model] } : null;
+        return channel?.parameterTranslationModels?.includes(config.model) ? { channelId, source: "", timeout: channel.timeout || 600, accountProxy: true, references: channel.parameterTranslationInputs?.[config.model]?.media.images || channel.parameterTranslationReferences?.[config.model], inputs: channel.parameterTranslationInputs?.[config.model] } : null;
     }
     const source = (await useChannelTranslationStore.getState().load(user?.id || "guest"))[channelId];
     if (!source?.trim() || !(await translationPrograms(source))[config.model]) return null;
-    return { channelId, source, timeout: Number(config.timeout) || 600, accountProxy: Boolean(token), references: await translationReferenceInput(source, config.model) };
+    return { channelId, source, timeout: Number(config.timeout) || 600, accountProxy: Boolean(token), references: (await translationModelInputs(source, config.model))?.media.images || await translationReferenceInput(source, config.model), inputs: await translationModelInputs(source, config.model) };
 }
 
 export function translationHeaders(config: AiConfig, match: MatchedTranslation): Record<string, string> {

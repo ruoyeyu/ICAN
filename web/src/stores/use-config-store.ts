@@ -1,5 +1,8 @@
 "use client";
 
+import { readTemplate } from "@/lib/channel-template";
+import { cachedTranslationModel } from "@/lib/channel-parameter-translation";
+import { useChannelTranslationStore } from "@/stores/use-channel-translation-store";
 import { accountStateStorage } from "@/lib/account-storage";
 
 import { useMemo } from "react";
@@ -96,7 +99,7 @@ export type AiConfig = {
         workflowAgent: string;
     };
     localChannels: LocalModelChannel[];
-    publicChannels: Array<{ id?: string; protocol?: LocalModelChannel["protocol"]; name?: string; baseUrl?: string; models?: string[]; modelCapabilities?: ModelCapabilities; parameterTranslationModels?: string[]; parameterTranslationReferences?: Record<string, import("@/lib/channel-parameter-translation").TranslationReferences>; workflows?: WorkflowSummary[]; weight?: number; timeout?: number; enabled?: boolean; remark?: string }>;
+    publicChannels: Array<{ id?: string; protocol?: LocalModelChannel["protocol"]; name?: string; baseUrl?: string; models?: string[]; modelCapabilities?: ModelCapabilities; parameterTranslationModels?: string[]; parameterTranslationInputs?: Record<string, import("@/lib/translation-inputs").TranslationInputs>; parameterTranslationReferences?: Record<string, import("@/lib/channel-parameter-translation").TranslationReferences>; workflows?: WorkflowSummary[]; weight?: number; timeout?: number; enabled?: boolean; remark?: string }>;
     syncStorageConfig: boolean;
     syncWebDAVStorageConfig: boolean;
     activeChannelId: string;
@@ -376,9 +379,24 @@ export function resolveModelForCapability(config: AiConfig, currentModel: string
     return currentModel || configuredModel || "";
 }
 
+export function declaredTranslationForModel(config: AiConfig, model: string) {
+    if (config.channelMode === "remote") {
+        const channel = config.publicChannels.find(item => item.id === channelIdForActiveModel({...config,model}));
+        return {configured:!!channel?.parameterTranslationModels?.includes(model),inputs:channel?.parameterTranslationInputs?.[model]};
+    }
+    const channel = localChannelForActiveModel({...config,model});
+    const account = useUserStore.getState().user?.id || "";
+    const source = useChannelTranslationStore.getState().accounts[account]?.[channel?.id || ""] || "";
+    const form = readTemplate(source)?.models.find(item => item.name === model);
+    return form ? {configured:true,inputs:{...form.inputs,authentication:form.auth.type === "none" ? "none" as const : "key" as const}} : cachedTranslationModel(source, model);
+}
+export function usesCustomVideoInterface(config: AiConfig, model: string) {
+    return channelProtocolForConfig({...config,model}) === "custom" || declaredTranslationForModel(config,model).configured;
+}
+
 function isAiConfigReady(config: AiConfig, model: string) {
     const channel = localChannelForActiveModel({ ...config, model });
-    return Boolean(model.trim()) && (config.channelMode === "remote" || Boolean(channel?.baseUrl.trim() && channel?.apiKey.trim()));
+    return Boolean(model.trim()) && (config.channelMode === "remote" || Boolean(channel?.baseUrl.trim() && (channel?.apiKey.trim() || declaredTranslationForModel(config, model).inputs?.authentication === "none")));
 }
 
 export const useConfigStore = create<ConfigStore>()(

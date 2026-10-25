@@ -1,5 +1,6 @@
 "use client";
 
+import { readTemplate } from "@/lib/channel-template";
 import { ReloadOutlined } from "@ant-design/icons";
 import { App, Button, Checkbox, Flex, Input, Modal, Segmented, Space, Tabs, Typography } from "antd";
 import dynamic from "next/dynamic";
@@ -17,7 +18,7 @@ const capabilityOptions: Array<{ label: string; value: ModelCapability }> = [
 ];
 
 type ChannelModelSelectorModalProps = {
-    channel?: { name?: string; protocol?: string; baseUrl?: string; modelCapabilities?: ModelCapabilities };
+    channel?: { name?: string; protocol?: string; baseUrl?: string; apiKey?: string; modelCapabilities?: ModelCapabilities };
     parameterTranslation?: string;
     models: string[];
     sourceModels?: string[];
@@ -197,7 +198,7 @@ export function ChannelModelSelectorModal({ channel, parameterTranslation, model
                 </div>
             </Flex>
         </Modal>
-        {isTranslationOpen && <ChannelParameterTranslationEditor name={channel?.name} baseUrl={channel?.baseUrl} models={selected} value={translation ?? parameterTranslation ?? ""} onSave={setTranslation} onClose={() => setIsTranslationOpen(false)} />}
+        {isTranslationOpen && <ChannelParameterTranslationEditor name={channel?.name} baseUrl={channel?.baseUrl} protocol={channel?.protocol} apiKey={channel?.apiKey} models={selected} value={translation ?? parameterTranslation ?? ""} onSave={source => { setTranslation(source); const data = readTemplate(source); if (data) setModelCapabilities(current => ({...current,...Object.fromEntries(data.models.map(m => [m.name,m.kind]))})); }} onClose={() => setIsTranslationOpen(false)} />}
         </>
     );
 }

@@ -203,7 +203,7 @@ func translationContentURL(baseURL, configured, taskID string, source *url.URL) 
 	return target, nil
 }
 
-func (translation *ParameterTranslation) configuredImageContent(taskID string, source *url.URL) (*url.URL, error) {
+func (translation *ParameterTranslation) configuredMediaContent(taskID string, source *url.URL) (*url.URL, error) {
 	configured := parameterTranslationValue(translation.rule, "content")
 	if goja.IsUndefined(configured) || goja.IsNull(configured) {
 		return nil, nil

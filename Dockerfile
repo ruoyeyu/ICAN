@@ -7,6 +7,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 DO_NOT_TRACK=1
 COPY web/package.json web/bun.lock ./
 RUN bun install --frozen-lockfile --ignore-scripts
 COPY web ./
+COPY service/testdata /app/service/testdata
 COPY director /app/director
 WORKDIR /app/director
 RUN bun install --frozen-lockfile --ignore-scripts && bun audit && bun run test && bun run build
@@ -37,7 +38,7 @@ FROM cgr.dev/chainguard/glibc-dynamic@sha256:2827063c9efb4ba971d8621eb75f4e61b8d
 ARG SOURCE_REVISION
 LABEL org.opencontainers.image.source="https://github.com/ruoyeyu/ICAN" \
       org.opencontainers.image.revision=$SOURCE_REVISION \
-      org.opencontainers.image.version="0.1.2"
+      org.opencontainers.image.version="0.1.3"
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0
 COPY --from=web-build /usr/local/bin/node /usr/local/bin/node

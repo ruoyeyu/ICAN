@@ -199,6 +199,24 @@ func TestSecurityBoundaries(t *testing.T) {
 		settings.Public.ModelChannel.AllowCustomChannel = &on
 		repository.SaveSettings(settings, "fixture")
 	})
+	t.Run("explicit-keyless-template-still-requires-owned-enabled-channel", func(t *testing.T) {
+		previous, _ := service.CurrentUserConfig(aliceCtx)
+		t.Cleanup(func() { service.SaveCurrentUserModelConfig(aliceCtx, previous.ModelConfig) })
+		source := `{models:{"no-key":{inputs:{"version":1,"authentication":"none","parameters":{},"media":{}},POST:{url:"/generate",headers:{Authorization:""}},result:"url"}}}`
+		raw, _ := json.Marshal(map[string]any{"localChannels": []any{map[string]any{"id": "keyless", "protocol": "custom", "baseUrl": "https://provider.invalid", "apiKey": "", "models": []string{"no-key", "needs-key"}}}, "channelTranslations": []any{map[string]any{"channelId": "keyless", "parameterTranslation": source}}})
+		if _, err := service.SaveCurrentUserModelConfig(aliceCtx, raw); err != nil {
+			t.Fatal(err)
+		}
+		if channel, err := service.SelectUserLocalModelChannelForModel(alice.User.ID, "no-key", "keyless"); err != nil || channel.APIKey != "" {
+			t.Fatal("keyless declaration lost", err)
+		}
+		if _, err := service.SelectUserLocalModelChannelForModel(alice.User.ID, "needs-key", "keyless"); err == nil {
+			t.Fatal("missing key bypassed undeclared model")
+		}
+		if _, err := service.SelectUserLocalModelChannelForModel(bob.User.ID, "no-key", "keyless"); err == nil {
+			t.Fatal("cross-account keyless channel")
+		}
+	})
 	t.Run("admin-cannot-enable-removed-protocols", func(t *testing.T) {
 		for _, protocol := range []string{"tokendance", "autodl", "runninghub", "comfyui"} {
 			channel := model.ModelChannel{Protocol: protocol, BaseURL: "https://supplier.invalid", APIKey: "fixture-key"}
@@ -258,6 +276,20 @@ func TestSecurityBoundaries(t *testing.T) {
 		}
 		if _, err := service.SignedMediaURL(service.WithUser(context.Background(), bob.User), fileID); err == nil {
 			t.Fatal("cross-user signing")
+		}
+		for _, field := range []string{"images", "videos", "audios", "firstFrame", "lastFrame"} {
+			value := any(link)
+			if field == "images" || field == "videos" || field == "audios" {
+				value = []string{link}
+			}
+			raw, _ := json.Marshal(map[string]any{"_parameterTranslation": map[string]any{"variables": map[string]any{field: value}}})
+			owned, err := service.AuthorizeMediaReferences(aliceCtx, raw)
+			if err != nil || !strings.Contains(string(owned), "grant=") {
+				t.Fatal("owned translation media authorization failed", field, err)
+			}
+			if _, err := service.AuthorizeMediaReferences(service.WithUser(context.Background(), bob.User), raw); err == nil {
+				t.Fatal("cross-user translation reference", field)
+			}
 		}
 		if err := service.RevokeMediaLinks(aliceCtx, fileID); err != nil {
 			t.Fatal(err)

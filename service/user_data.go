@@ -94,7 +94,7 @@ func SelectUserLocalModelChannelForModel(userID string, modelName string, channe
 		if apiKey != strings.TrimSpace(apiKey) || strings.ContainsAny(apiKey, "\r\n") {
 			return model.ModelChannel{}, errors.New("API Key 包含无效空白，请明确修正配置")
 		}
-		if baseURL == "" || apiKey == "" {
+		if baseURL == "" {
 			return model.ModelChannel{}, errors.New("本地渠道配置不完整")
 		}
 		models := userLocalChannelModels(channel.Models)
@@ -114,6 +114,9 @@ func SelectUserLocalModelChannelForModel(userID string, modelName string, channe
 				parameterTranslation = translation.ParameterTranslation
 				break
 			}
+		}
+		if apiKey == "" && !ParameterTranslationWithoutKey(parameterTranslation, modelName) {
+			return model.ModelChannel{}, errors.New("本地渠道缺少 API Key")
 		}
 		return model.ModelChannel{
 			ID:                   channelID,

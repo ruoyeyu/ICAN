@@ -1,9 +1,10 @@
 "use client";
 
+import { useTranslationInputs } from "@/hooks/use-translation-inputs";
 import { channelProtocolForConfig } from "@/stores/use-config-store";
 
 import { type CSSProperties, type ReactNode } from "react";
-import { AutoComplete, Input, Switch } from "antd";
+import { AutoComplete, Input, Select, Switch } from "antd";
 
 import { ImageSettingsTheme } from "@/components/image-settings-panel";
 import { useAutoDLWorkflow } from "@/hooks/use-autodl-workflow";
@@ -51,16 +52,21 @@ export function VideoSettingsPanel({ config, modelName, onConfigChange, theme, s
     const model = modelName || config.model || config.videoModel;
     const autodl = isAutoDLConfig(config, model);
     const { data: workflow } = useAutoDLWorkflow(config, model);
-    if (channelProtocolForConfig({ ...config, model }) === "custom") {
+    const translation = useTranslationInputs(config, model);
+    if (translation.configured || channelProtocolForConfig({ ...config, model }) === "custom") {
         const fields = [
-            { key: "size" as const, title: "比例（aspect_ratio）", options: ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "adaptive"] },
-            { key: "vquality" as const, title: "分辨率（resolution）", options: ["360p", "480p", "720p", "1080p", "1440p", "2160p"] },
-            { key: "videoSeconds" as const, title: "时长（seconds）", options: ["4", "5", "6", "8", "10", "12", "15", "20", "30"] },
+            { key: "size" as const, title: "比例（aspect_ratio）", input: "aspectRatio" as const, options: ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "adaptive"] },
+            { key: "vquality" as const, title: "分辨率（resolution）", input: "resolution" as const, options: ["360p", "480p", "720p", "1080p", "1440p", "2160p"] },
+            { key: "videoSeconds" as const, title: "时长（seconds）", input: "seconds" as const, options: ["4", "5", "6", "8", "10", "12", "15", "20", "30"] },
+            ...(translation.inputs?.parameters.mode ? [{key:"videoMode" as const,title:"参考模式（mode）",input:"mode" as const,options:[] as string[]}] : []),
         ];
         return <ImageSettingsTheme theme={theme}><div className={className} style={{ color: theme.node.text }} onMouseDown={event => event.stopPropagation()}>
             {showTitle ? <div className="text-lg font-semibold">视频设置</div> : null}
             {fields.filter(field => !visualOnly || field.key !== "videoSeconds").map(field => <SettingGroup key={field.key} title={field.title} color={theme.node.muted}>
-                <AutoComplete className="w-full" value={config[field.key]} options={field.options.map(value => ({ value }))} onChange={value => onConfigChange(field.key, value)} placeholder="选择或输入当前模型支持的值" />
+                {translation.inputs?.parameters[field.input]?.allowCustom === false
+                    ? <Select aria-label={field.title} className="w-full" value={config[field.key]} status={!translation.inputs.parameters[field.input]!.options.includes(config[field.key]) ? "error" : undefined} options={translation.inputs.parameters[field.input]!.options.map(value => ({value}))} onChange={value => onConfigChange(field.key, value)} />
+                    : <AutoComplete aria-label={field.title} className="w-full" value={config[field.key]} options={(translation.inputs?.parameters[field.input]?.options || (translation.configured ? [] : field.options)).map(value => ({ value }))} onChange={value => onConfigChange(field.key, value)} placeholder="选择或输入当前模型支持的值" />}
+                {translation.inputs?.parameters[field.input]?.allowCustom === false && !translation.inputs.parameters[field.input]!.options.includes(config[field.key]) && <p role="alert">当前值不在此模型选项中，请手动选择。</p>}
             </SettingGroup>)}
             <p style={{ color: theme.node.muted }}>参数按输入提交，请以所用模型的接口要求为准。</p>
         </div></ImageSettingsTheme>;
