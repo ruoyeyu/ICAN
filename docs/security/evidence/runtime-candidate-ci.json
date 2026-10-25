@@ -50,7 +50,7 @@
     "25 baseline CVEs need individual source/fix/absence reconciliation across distributions; scan counts alone are insufficient",
     "Production CPU, rootless/cgroup, kernel/runtime patches, egress ACL and Nginx acceptance",
     "User-confirmed upload/concurrency/storage/auth/link boundaries",
-    "Real Huajing contract and existing HB data, backup and rollback acceptance"
+    "Real provider contract and existing application data, backup and rollback acceptance"
   ],
   "effectiveScanMatches": {
     "CRITICAL": 0,

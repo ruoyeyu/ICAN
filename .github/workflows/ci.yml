@@ -17,6 +17,19 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
+      - name: Verify source version metadata
+        run: |
+          python3 - <<'PYVERSION'
+          import json, pathlib, re
+          version = pathlib.Path('VERSION').read_text().strip()
+          if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+', version):
+              raise SystemExit('VERSION must use the release tag format vX.Y.Z')
+          for name in ('web', 'director'):
+              if json.loads(pathlib.Path(name, 'package.json').read_text())['version'] != version[1:]:
+                  raise SystemExit('Package version mismatch: ' + name)
+          if 'org.opencontainers.image.version="' + version[1:] + '"' not in pathlib.Path('Dockerfile').read_text():
+              raise SystemExit('OCI version label mismatch')
+          PYVERSION
       - name: Build and test image without registry credentials
         env:
           SOURCE_REVISION: ${{ github.sha }}
