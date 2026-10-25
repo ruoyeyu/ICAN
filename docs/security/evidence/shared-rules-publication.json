@@ -1,0 +1,77 @@
+{
+  "sourceCommit": "13757f8911c63a6e5b8614506f93ef4323826946",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:9e0b742b06472a92ebffef1b942717a05f3aa5dd055c56695f6c231f711d2ca1",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-13757f8911c63a6e5b8614506f93ef4323826946-run-40191736678-1",
+  "imageId": "sha256:5556748c38abdb41a958df7ab4d4b5689afd4e6198f00f2c30f2c9efc840f4f5",
+  "platform": "linux/amd64",
+  "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
+  "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40191736678",
+  "runAttempt": "1",
+  "productionApproved": false,
+  "scope": "Task-specific supplier shared rules, model overrides, explicit missing-rule errors and unnecessary UI copy removal",
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "unknownMatch": {
+    "id": "GO-2026-5932",
+    "package": "golang.org/x/crypto",
+    "installedVersion": "v0.58.0",
+    "advisory": "https://vuln.go.dev/ID/GO-2026-5932.json",
+    "dependencyTarget": "Go 1.27.3; CGO_ENABLED=0 GOOS=linux GOARCH=amd64",
+    "dependencyListSHA256": "99ebfed8dd203aa470db42404934e21c59b40bb898008246762664916b78f6d1",
+    "review": "Affected openpgp imports are absent from the application dependency graph. Raw scan retained; excluded only from effective counts, without changing scanner gates."
+  },
+  "effectiveRiskCounts": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "tests": {
+    "goSuite": "passed (CGO_ENABLED=0)",
+    "web": 35,
+    "director": 294,
+    "deploymentAndPublicationPolicies": 9,
+    "productionBuilds": "passed",
+    "imageIsolationAndRestart": "passed: accounts, v1/v2 supplier and personal templates, channel rules and API credentials, private media",
+    "runtimeDNSAndTLS": "passed",
+    "actualComposeConfigurations": [
+      "1.6 CPUs / 1536m",
+      "2 CPUs / 2g"
+    ],
+    "localBrowserEvidence": "shared-rules-local.json",
+    "sourceVersionMetadata": "passed"
+  },
+  "evidenceArchive": {
+    "path": "ghcr-40191736678-evidence.zip",
+    "sha256": "2178ce04ee5c1180ffa0230d7754742da2b8791f46e3c3e694c3f70a8d972814",
+    "artifactId": 12598331682
+  },
+  "publicationArtifact": {
+    "id": 12598860727,
+    "sha256": "e33188e606150465e3c61935f0788e7c4991df1706abb0ef4aa01f38f7a90822"
+  },
+  "anonymousRegistryManifestAndConfig": {
+    "passed": true,
+    "manifestDigestVerified": true,
+    "configDigestVerified": true,
+    "sourceAndVersionLabelsVerified": true,
+    "user": "10001:10001",
+    "image": "ghcr.io/ruoyeyu/ican@sha256:9e0b742b06472a92ebffef1b942717a05f3aa5dd055c56695f6c231f711d2ca1"
+  },
+  "preservation": {
+    "databaseSchemaChanged": false,
+    "persistentPathsChanged": false,
+    "dependenciesChanged": false,
+    "privateSupplierPresetsAdded": false,
+    "productionServerModified": false,
+    "paidGenerationCalls": 0,
+    "configuration": "v1 unchanged until explicit edit; shared rules use authoring v2; rollback requires matching configuration backup"
+  }
+}

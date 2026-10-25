@@ -6,15 +6,15 @@ ICAN 0.1.0 is built on GitHub Actions for **linux/amd64**. The server needs Dock
 
 ## Verified publication
 
-This build adds model discovery to the existing supplier-template editor and fixes the private local-storage form. Database, template and credential formats are unchanged; keep the original data directory and encryption key when updating.
+This build adds task-specific supplier shared rules and model overrides in the existing editor/engine, and removes added explanatory UI copy. Unedited v1 channels remain unchanged; explicitly saved shared rules use authoring v2. Database and credential formats remain unchanged. Keep the original data directory and encryption key. Rollback to a pre-v2 image requires the matching database/template backup from before enabling shared rules; see [supplier templates](supplier-templates.md).
 
-[CI 40186851015](https://github.com/ruoyeyu/ICAN/actions/runs/40186851015) passed, including publication and registry digest verification. Source: `64b218af18605c2a34342451e1af2579b52e0537`.
+[CI 40191736678](https://github.com/ruoyeyu/ICAN/actions/runs/40191736678) passed, including publication and registry digest verification. Source: `13757f8911c63a6e5b8614506f93ef4323826946`.
 
 ```text
-ghcr.io/ruoyeyu/ican@sha256:8ce1a857be1ae82335f19910acea7bec0406401135d75de271710359f5ad4ade
+ghcr.io/ruoyeyu/ican@sha256:9e0b742b06472a92ebffef1b942717a05f3aa5dd055c56695f6c231f711d2ca1
 ```
 
-[Publication and check results](evidence/template-editor-publication.json) · [Raw security evidence](evidence/ghcr-40186851015-evidence.zip). These records describe this exact image; later builds require their own records.
+[Publication and check results](evidence/shared-rules-publication.json) · [Raw security evidence](evidence/ghcr-40191736678-evidence.zip). These records describe this exact image; later builds require their own records.
 
 The manifest above was also retrieved anonymously and its digest verified. This published image is accessible without a GitHub login.
 

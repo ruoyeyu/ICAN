@@ -4,13 +4,13 @@ ICAN 的 Go 后端、Web 前端和导演台全部由 GitHub Actions 编译。服
 
 ## 本次已发布成品
 
-[流水线 40186851015](https://github.com/ruoyeyu/ICAN/actions/runs/40186851015) 的构建、检查及发布全部通过。源码 commit：`64b218af18605c2a34342451e1af2579b52e0537`。
+[流水线 40191736678](https://github.com/ruoyeyu/ICAN/actions/runs/40191736678) 的构建、检查及发布全部通过。源码 commit：`13757f8911c63a6e5b8614506f93ef4323826946`。
 
 ```sh
-docker pull ghcr.io/ruoyeyu/ican@sha256:8ce1a857be1ae82335f19910acea7bec0406401135d75de271710359f5ad4ade
+docker pull ghcr.io/ruoyeyu/ican@sha256:9e0b742b06472a92ebffef1b942717a05f3aa5dd055c56695f6c231f711d2ca1
 ```
 
-[镜像及检查记录](evidence/template-editor-publication.json) · [完整原始安全证据](evidence/ghcr-40186851015-evidence.zip)。
+[镜像及检查记录](evidence/shared-rules-publication.json) · [完整原始安全证据](evidence/ghcr-40191736678-evidence.zip)。
 
 上述镜像 manifest 已验证可匿名获取且 digest 一致，无需登录 GitHub。
 
@@ -76,7 +76,7 @@ curl --fail "http://127.0.0.1:$ICAN_REVIEWED_HOST_PORT/api/health"
 
 ## 更新和回滚
 
-本次仅修改模板编辑与存储表单，不改账号、模板、Key、素材的数据格式。更新继续沿用原数据目录及加密密钥；回退前按下方步骤保留完整备份。
+本轮新增按任务类型划分的公共规则。未编辑的 v1 模板与已有渠道不重写；保存公共规则后内部配置采用 authoring v2。数据库结构、Key 和媒体存储不变。更新沿用原数据目录及加密密钥；回退不识别 v2 的旧镜像时，恢复启用公共规则前的配套数据库与模板目录备份。参见 [公共规则使用与回滚](supplier-templates.zh-CN.md)。
 
 v0.1.0 不增加数据库列；旧账号、渠道 ID、配置和素材沿用。新表单规则含旧版不支持的原始参数变量，回退 v0.1.2 必须同时恢复更新前的配置或匹配备份，不能只换旧镜像。旧版程序创建测试数据后，备份副本升级、重启和恢复旧版已验证，见 [本地证据](evidence/api-config-ui-local.json)。生产数据和期间新增内容仍需单独验收与保留。
 
@@ -87,4 +87,4 @@ v0.1.0 不增加数据库列；旧账号、渠道 ID、配置和素材沿用。�
 
 不要重新生成密钥、清库、用空目录替换原数据，也不要让新旧实例同时写同一 SQLite 库。未同步的浏览器本地数据不包含在服务器备份中。
 
-冷备份命令及详细发布策略见 [完整说明](ghcr-deployment.md)。测试副本的本次升级/回滚已验证；生产数据恢复及后续结构迁移仍需验收；“发布成功”表示成品通过本次自动化检查，**不表示资源边界、会话凭据及生产部署验收全部完成**。参见 [上线阻断项](../progress/todo.md)。
+冷备份命令及详细发布策略见 [完整说明](ghcr-deployment.md)。历史版本的副本升级/回滚证据保留；本轮 v2 配置应按上面的匹配备份要求回退；生产数据恢复及后续结构迁移仍需验收；“发布成功”表示成品通过本次自动化检查，**不表示资源边界、会话凭据及生产部署验收全部完成**。参见 [上线阻断项](../progress/todo.md)。
