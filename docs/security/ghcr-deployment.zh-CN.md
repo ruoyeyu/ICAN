@@ -4,13 +4,13 @@ ICAN 的 Go 后端、Web 前端和导演台全部由 GitHub Actions 编译。服
 
 ## 本次已发布成品
 
-[流水线 40110294471](https://github.com/ruoyeyu/ICAN/actions/runs/40110294471) 的构建、检查及发布全部通过。源码 commit：`9b3b8db415e785c7e179e135185f257a016d697b`。
+[流水线 40179792350](https://github.com/ruoyeyu/ICAN/actions/runs/40179792350) 的构建、检查及发布全部通过。源码 commit：`e03fc098cca2efdbac74a9e85f61b81692f9d4f9`。
 
 ```sh
-docker pull ghcr.io/ruoyeyu/ican@sha256:4898ff358185dcb049c3460b79d54f2aef8e28239396c9849507d5ba2f3cebc5
+docker pull ghcr.io/ruoyeyu/ican@sha256:7c67aebfd53e60b2bbcdf5eed80b68742a756c9e5ca22bd5b3f6a601305d5580
 ```
 
-[镜像及检查记录](evidence/ghcr-v0.1.2-publication.json) · [完整原始安全证据](evidence/ghcr-40110294471-evidence.zip)。
+[镜像及检查记录](evidence/ghcr-v0.1.3-publication.json) · [完整原始安全证据](evidence/ghcr-40179792350-evidence.zip)。
 
 上述镜像 manifest 已验证可匿名获取且 digest 一致，无需登录 GitHub。
 
@@ -62,6 +62,8 @@ curl --fail "http://127.0.0.1:$ICAN_REVIEWED_HOST_PORT/api/health"
 
 ## 更新和回滚
 
+v0.1.3 不增加数据库列；旧账号、渠道 ID、配置和素材沿用。新表单规则含旧版不支持的原始参数变量，回退 v0.1.2 必须同时恢复更新前的配置或匹配备份，不能只换旧镜像。旧版程序创建测试数据后，备份副本升级、重启和恢复旧版已验证，见 [本地证据](evidence/api-config-ui-local.json)。生产数据和期间新增内容仍需单独验收与保留。
+
 1. 先拉取新 digest，保留旧 digest 及对应 Compose、配置和密钥。不要删除正在使用或回滚需要的 GHCR 镜像版本。
 2. 先在数据副本验收新版本。维护窗口停止应用写入后，备份整个数据目录（SQLite 主库、WAL/SHM、媒体等），另外安全备份环境配置和密钥。备份放在应用不可写的位置，验证能够恢复和解密；不能只复制运行中的 `.db`。
 3. 更新只修改环境文件的 `ICAN_IMAGE`。保持 `ICAN_DATA_DIR`、`DATA_ENCRYPTION_KEY`、`JWT_SECRET` 不变，再按上面流程重建、检查和启动。账号、用户配置、API/渠道配置和素材索引保存在原数据库，媒体文件仍在原目录。
@@ -69,4 +71,4 @@ curl --fail "http://127.0.0.1:$ICAN_REVIEWED_HOST_PORT/api/health"
 
 不要重新生成密钥、清库、用空目录替换原数据，也不要让新旧实例同时写同一 SQLite 库。未同步的浏览器本地数据不包含在服务器备份中。
 
-冷备份命令及详细发布策略见 [完整说明](ghcr-deployment.md)。当前仍需完成显式版本迁移和跨版本恢复验证；“发布成功”表示成品通过本次自动化检查，**不表示资源边界、会话凭据及生产部署验收全部完成**。参见 [上线阻断项](../progress/todo.md)。
+冷备份命令及详细发布策略见 [完整说明](ghcr-deployment.md)。测试副本的本次升级/回滚已验证；生产数据恢复及后续结构迁移仍需验收；“发布成功”表示成品通过本次自动化检查，**不表示资源边界、会话凭据及生产部署验收全部完成**。参见 [上线阻断项](../progress/todo.md)。

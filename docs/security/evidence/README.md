@@ -21,3 +21,5 @@
 第二轮：`second-pass-advisories.json` 保存 25 个 CVE 的官方追踪器表格；`second-pass-*.log.gz` 为回归/构建原始记录；`second-pass-runtime-smoke.json` 为 19 项真实进程验证；`second-pass-native-runtime.json` 为 Node 静态组件版本；`second-pass-local-checks.json` 为锁图/打包/源码 blob 检查摘要。最终镜像 CI、SBOM 与二进制盘点已保存为 `second-pass-*`，历史报告不覆盖。`node-aligned-allocation-review.json` 为 Node 对齐分配导入和直接调用复核；`zlib-source-review.json` 记录源包及归档二进制核对范围。
 
 `api-config-ui-local.json`：v0.1.3 通用接口表单、版本化导入导出、请求捕获、私有素材、任务恢复以及旧版本数据副本升级/回滚的本地验证索引；供应商 mock 与真实供应商验收分开记录。
+
+- `ghcr-v0.1.3-publication.json` 与 `ghcr-40179792350-evidence.zip`：界面接口配置版本的源码、固定镜像、完整扫描/SBOM/原生组件、隔离和 Compose 检查。原始 UNKNOWN 记录保留，受影响 openpgp 包不在该构建依赖路径中。

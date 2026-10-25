@@ -1,0 +1,64 @@
+{
+  "sourceCommit": "e03fc098cca2efdbac74a9e85f61b81692f9d4f9",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:7c67aebfd53e60b2bbcdf5eed80b68742a756c9e5ca22bd5b3f6a601305d5580",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-e03fc098cca2efdbac74a9e85f61b81692f9d4f9-run-40179792350-1",
+  "imageId": "sha256:97c405055b9fa16a9b0451c7a0cb6c90dbc11f629a8c04d4270c8208f2c2abea",
+  "platform": "linux/amd64",
+  "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
+  "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40179792350",
+  "runAttempt": "1",
+  "productionApproved": false,
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "unknownMatch": {
+    "id": "GO-2026-5932",
+    "package": "golang.org/x/crypto",
+    "note": "Raw module match retained. This exact source dependency list does not import any affected openpgp package; not counted as an effective finding. No ignore filter added.",
+    "advisory": "https://vuln.go.dev/ID/GO-2026-5932.json",
+    "dependencyListSHA256": "50065e8f1e5dca3faa8b9a5540fa9b00575d34edd666226c21177204e9d7657b"
+  },
+  "effectiveRiskCounts": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "tests": {
+    "goSuite": "passed",
+    "web": 30,
+    "director": 294,
+    "deploymentAndPublicationPolicies": 7,
+    "imageAndRestart": "passed",
+    "runtimeRegression": "passed",
+    "actualComposeAtRequestedLimits": "passed",
+    "localBrowserEvidence": "api-config-ui-local.json",
+    "privateSupplierContract": "4 mock cases; no paid calls"
+  },
+  "runtimeLimits": {
+    "cpus": 1.6,
+    "memoryBytes": 1610612736,
+    "additionalSwap": false
+  },
+  "evidenceArchive": {
+    "path": "ghcr-40179792350-evidence.zip",
+    "sha256": "a772c0a67fd0570b6bef5cf0e69b5cd6ce760e9d6b074cb3038df7d01b3c0edd",
+    "artifactId": 12593561463
+  },
+  "publicationArtifact": {
+    "id": 12594366615,
+    "sha256": "4c25f9fc93a8713a4a19550854555e30c0eeca1bcf63bdc7dde3d29aa62c44e8"
+  },
+  "anonymousRegistryPullCheck": {
+    "passed": true,
+    "manifestDigestVerified": true,
+    "configDigestVerified": true,
+    "sourceAndVersionLabelsVerified": true
+  }
+}
