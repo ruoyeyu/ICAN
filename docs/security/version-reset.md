@@ -27,3 +27,20 @@ Then run **Actions → Publish checked pre-release → Run workflow → main**. 
 完成后运行 **Actions → Publish checked pre-release → Run workflow → main**。正常发布流程会再次核对成功 CI、源码版本、标签、镜像 digest/标签和证据，全部通过才发布六个校验附件。不会重编译或部署服务器。
 
 Until then, use the existing immutable image through the [deployment guide](ghcr-deployment.md) / [中文部署说明](ghcr-deployment.zh-CN.md); do not use the old v0.1.0 tag as the new source.
+
+## Merged historical branches / 已合并的历史分支
+
+A final remote check found two remaining historical branches. Both tips are ancestors of current `main`; neither was modified by the failed reset. To finish the previously requested main-only cleanup, the same authorized owner/local agent can delete only these exact tips:
+
+最终远端核对仍有两条历史分支，已验证其提交都包含在当前主线中。完成此前要求的“仅保留主线”清理，可由同一所有者或本地 Agent 删除以下精确分支，不影响主线代码：
+
+```sh
+git push --atomic \
+  --force-with-lease=refs/heads/security/ican-hardening:bd112957b2121fdbc80a4eaffab50e61bcde92af \
+  --force-with-lease=refs/heads/security/runtime-isolation-candidate:bad3a1b93df6c671d985f76ccf88498171ed7dbc \
+  https://github.com/ruoyeyu/ICAN.git \
+  :refs/heads/security/ican-hardening \
+  :refs/heads/security/runtime-isolation-candidate
+```
+
+If a tip changed, stop and recheck ancestry; do not remove the lease protection.

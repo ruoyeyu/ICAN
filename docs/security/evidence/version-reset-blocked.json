@@ -11,5 +11,10 @@
   },
   "releaseCount": 0,
   "cleanup": "Remove temporary tag-reset code; keep regular publication gates. Owner must reset exact refs before running Publish checked pre-release.",
-  "serverChanged": false
+  "serverChanged": false,
+  "remainingMergedBranches": {
+    "security/ican-hardening": "bd112957b2121fdbc80a4eaffab50e61bcde92af",
+    "security/runtime-isolation-candidate": "bad3a1b93df6c671d985f76ccf88498171ed7dbc"
+  },
+  "mergedBranchVerification": "Both tips verified by git merge-base --is-ancestor against current main; no branch deletion attempted."
 }

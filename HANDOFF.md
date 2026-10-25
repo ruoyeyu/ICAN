@@ -52,3 +52,5 @@ Docker 候选代码 dcbd8399213cf290994fcd69fa224697535d280c 的 CI 40086299774 
 See docs/security/director-integration.md and director/README.md. Director is built from pinned MIT source with opaque iframe isolation. No ComfyUI/RunningHub backend enablement, schema migration or production deployment. Final image and account/cross-device acceptance remain separate gates.
 
 Director image CI 40093383952 passed on fbc1b4bea836566f5422ba104867984de9d64f6d. See docs/security/director-verification.json for image/artifact hashes and raw scan counts. Production host, authenticated cross-device checks and legacy scene migration remain unverified.
+
+最终核对远端仍有 security/ican-hardening 与 security/runtime-isolation-candidate，两条 tip 均已验证包含在 main；未删除。为完成原先仅保留主线的要求，所有者精确清理命令已补入 docs/security/version-reset.md。
