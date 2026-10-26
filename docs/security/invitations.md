@@ -18,4 +18,4 @@ Take the normal consistent database/media/configuration backup before updating, 
 
 Free integration tests cover encrypted storage, repeated administrator reads, no-store headers, anonymous/user denial, irreversible deletion from the active table, rejected use after deletion, used-record retention, legacy-code registration, swapped ciphertext rejection and concurrent consume/delete requests. The isolated production browser fixture covers visible codes, clipboard copying, refresh, API restart with the same database/key, deletion and used-record behavior. No deployment server or paid model API is involved.
 
-Local results are recorded in `evidence/invitations-local.json`. Publication evidence and immutable image reference are recorded separately after the original CI gates complete.
+Local results are recorded in `evidence/invitations-local.json`. [CI 40347559560](https://github.com/ruoyeyu/ICAN/actions/runs/40347559560) passed; the [publication evidence](evidence/invitations-publication.json) records the immutable image and anonymous manifest/config verification. See the [pull-only deployment guide](ghcr-deployment.zh-CN.md).

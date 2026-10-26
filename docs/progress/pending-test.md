@@ -1,5 +1,7 @@
 # 本版本待验收
 
+邀请码改动已发布：源码 `5b5022e9313ae501f1e2267bc8e01f8750b566f4` / CI 40347559560 全通过，固定 digest、原始扫描及匿名核验见 `../security/evidence/invitations-publication.json`。Go 全套、Web 40、导演台 294、Python 9、最终镜像与 Compose 检查通过；本地浏览器验证创建/复制/刷新/重启/删除和使用后保留。V1 迁移已在备份 fixture 验证，保留原数据和加密密钥。未付费调用、未操作服务器。
+
 邀请码管理本轮变更：新码在原列表显示、复制、刷新/重启恢复；撤销删除未使用项，已使用项无撤销入口且后端禁止删除。旧哈希码保留效力，旧的已撤销未使用项由 V1 迁移清理；部署前保留一致备份和原密钥。免费验证及发布证据见 ../security/evidence/invitations-local.json，迁移见 ../security/invitations.md。
 
 视频取回修复已发布：源码 `2177b1777a20f9d7c93b49efbe239d5272989421` / CI 40331537237 全部通过，固定镜像及匿名 manifest/config 核验见 `../security/evidence/video-retrieval-publication.json`。Go 全套、Web 40、导演台 294、Python 9、容器/Compose/运行组件检查通过，另有三组本地浏览器回归。新表 V1 迁移已在备份 fixture 验证；保留旧数据和原加密密钥。未付费生成、未部署服务器；真实慢速取回及旧损坏文件恢复待部署后验收。

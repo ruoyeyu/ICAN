@@ -6,15 +6,15 @@ ICAN 0.1.0 is built on GitHub Actions for **linux/amd64**. The server needs Dock
 
 ## Verified publication
 
-This build separates upstream generation from verified video retrieval. It rejects incomplete transfers before media indexing, persists delivery independently of browser metadata, and resumes only the original task after an explicit retrieval retry. An additive `video_retrievals` table stores delivery state; existing account, channel, template, canvas and media fields are unchanged. Keep the original data directory and encryption key. See [retrieval, migration and rollback](video-retrieval.md).
+This build displays invitation codes in the existing administrator list using encrypted persistence. Revoking an unused code deletes it; used records cannot be revoked. An explicit migration adds the ciphertext column and removes only legacy revoked, unused rows, keeping old hashes valid. Previous video retrieval fixes remain included. See [invitation migration and rollback](invitations.md).
 
-[CI 40331537237](https://github.com/ruoyeyu/ICAN/actions/runs/40331537237) passed, including publication and registry digest verification. Source: `2177b1777a20f9d7c93b49efbe239d5272989421`.
+[CI 40347559560](https://github.com/ruoyeyu/ICAN/actions/runs/40347559560) passed, including publication and registry digest verification. Source: `5b5022e9313ae501f1e2267bc8e01f8750b566f4`.
 
 ```text
-ghcr.io/ruoyeyu/ican@sha256:ae07b572a07854e1afa0df9552287b50a30e1f5e92109f0e5582ef374e87bb01
+ghcr.io/ruoyeyu/ican@sha256:e6d6d61be3b3d1653872c5d7bdea7b650ef9f9398f522ce7400f03babc340749
 ```
 
-[Publication and check results](evidence/video-retrieval-publication.json) · [Raw security evidence](evidence/ghcr-40331537237-evidence.zip). These records describe this exact image; later builds require their own records.
+[Publication and check results](evidence/invitations-publication.json) · [Raw security evidence](evidence/ghcr-40347559560-evidence.zip). These records describe this exact image; later builds require their own records.
 
 The manifest above was also retrieved anonymously and its digest verified. This published image is accessible without a GitHub login.
 
@@ -87,12 +87,12 @@ Compose keeps `pull_policy: never`: pull the chosen digest explicitly before cre
 
 ## Updating without losing data
 
-This build adds the V1 `video_retrievals` table. Backup-copy migration, repeat migration and existing task reads passed. Existing tables and encryption keys are preserved; recreate with `--no-build` after a consistent backup. See [the migration record](video-retrieval.md).
+This build adds `invitations.encrypted_code` through an explicit V1 migration and removes only legacy revoked, unused invitation rows. Existing invitation hashes, used records and other account/configuration/media data remain intact. Backup-copy and repeat migration checks passed. Keep the original encryption key and recreate with `--no-build` after a consistent backup. See [invitation migration](invitations.md); the earlier [video delivery migration](video-retrieval.md) is retained.
 
 The bind mount `/app/data` contains SQLite `ican.db` (and WAL/SHM), media and logs. User/configuration records, API addresses/Keys, channels, canvas and task records remain in the database. Unsynced browser-only data is not included. New images do not contain or replace these records.
 
 1. Download the new publication manifest and check results. Pull the new digest before stopping the existing app. Keep the old digest, source commit, Compose file, environment file and original encryption/signing keys.
-2. Validate the new version against a backup copy first. The new delivery table has an explicit additive V1 migration. Existing `AutoMigrate` behavior for other tables is not a general downgrade mechanism; verify the exact source/target pair.
+2. Validate the new version against a backup copy first. The invitation column and earlier delivery table each have explicit V1 migrations. Existing `AutoMigrate` behavior for other tables is not a general downgrade mechanism; verify the exact source/target pair.
 3. Schedule a maintenance window and stop app writes. With the app stopped, back up the **entire data directory** (including any WAL/SHM), preserve permissions, and independently back up the operator environment/keys. Store backups outside app-writable paths. Do not copy only a live SQLite `.db` file.
 4. Verify backup readability/checksums and a restore on an isolated copy. Change only `ICAN_IMAGE` in the protected environment file to the new verified digest. Keep `ICAN_DATA_DIR`, `DATA_ENCRYPTION_KEY`, `JWT_SECRET` and saved business settings unchanged.
 5. Run the same `config --quiet`, `create --no-build`, policy check and `start` steps above. No server build is involved. Confirm the mount is the original directory and test users, API config decryption, media, canvas and tasks before restoring traffic.
@@ -115,7 +115,7 @@ A checksum proves archive integrity, not recoverability. Test restoration and de
 
 ## Rollback
 
-The immediately previous pinned image can read existing tables while leaving the additive delivery table present. It still contains the old download defect, so do not use it for retrieval retries. Preserve the data and original keys. Historical corrupt media are not deleted or regenerated automatically; recovery needs the original retained task.
+The immediately previous pinned image ignores the new invitation ciphertext column and returns to its old invitation UI/deletion behavior. Keep the original data and encryption key; changing images does not restore deleted invitation rows. Restoring an older database snapshot can restore invitations with their earlier use/revocation state, which requires review before reopening registration.
 
 The earlier v0.1.0 baseline added no database columns. Its versioned form rules use raw-parameter variables unsupported by v0.1.2: **restore pre-update channel configuration or the matching full backup when downgrading**, not just the old image. A real old-binary fixture passed backup-copy upgrade, restart and old-version restore; see [local evidence](evidence/api-config-ui-local.json). Production data and post-update writes still require separate acceptance and preservation.
 

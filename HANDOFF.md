@@ -1,5 +1,7 @@
 # ICAN 交接
 
+邀请码改动已发布：源码 `5b5022e9313ae501f1e2267bc8e01f8750b566f4` / CI 40347559560 全通过，固定 digest、原始扫描及匿名核验见 `docs/security/evidence/invitations-publication.json`。Go 全套、Web 40、导演台 294、Python 9、最终镜像与 Compose 检查通过；本地浏览器验证创建/复制/刷新/重启/删除和使用后保留。V1 迁移已在备份 fixture 验证，保留原数据和加密密钥。未付费调用、未操作服务器。
+
 本轮邀请码：复用原加密密钥保存新码密文，管理员列表可再次显示/复制，移除一次性弹窗；撤销条件删除未使用记录，已使用记录保留且后端拒绝删除。V1 增量迁移仅加 encrypted_code 并清理旧的已撤销未使用记录，旧哈希不旋转，不能还原原文。迁移/回滚见 docs/security/invitations.md。未操作服务器。
 
 视频取回修复已发布：源码 `2177b1777a20f9d7c93b49efbe239d5272989421` / CI 40331537237 全部通过，固定镜像及匿名 manifest/config 核验见 `docs/security/evidence/video-retrieval-publication.json`。Go 全套、Web 40、导演台 294、Python 9、容器/Compose/运行组件检查通过，另有三组本地浏览器回归。新表 V1 迁移已在备份 fixture 验证；保留旧数据和原加密密钥。未付费生成、未部署服务器；真实慢速取回及旧损坏文件恢复待部署后验收。

@@ -4,15 +4,15 @@ ICAN 的 Go 后端、Web 前端和导演台全部由 GitHub Actions 编译。服
 
 ## 本次已发布成品
 
-本轮修复视频已生成但画布持续等待：完整下载并校验后才保存素材，生成与取回分开显示；失败可继续取回原任务，不重新生成。新增 `video_retrievals` 状态表，旧账号、模板、Key、画布和素材字段不变，沿用原数据目录与加密密钥。见[取回、迁移及回滚说明](video-retrieval.md)。
+本轮更新邀请码管理：新邀请码在管理员列表显示并可随时复制，沿用现有加密保存；未使用项撤销即删除，已使用项保留且后端禁止删除。新增密文字段并清理旧的已撤销未使用记录，旧哈希邀请码保持有效。保留视频取回等此前修复。见[邀请码迁移及回滚说明](invitations.md)。
 
-[流水线 40331537237](https://github.com/ruoyeyu/ICAN/actions/runs/40331537237) 的构建、检查及发布全部通过。源码 commit：`2177b1777a20f9d7c93b49efbe239d5272989421`。
+[流水线 40347559560](https://github.com/ruoyeyu/ICAN/actions/runs/40347559560) 的构建、检查及发布全部通过。源码 commit：`5b5022e9313ae501f1e2267bc8e01f8750b566f4`。
 
 ```sh
-docker pull ghcr.io/ruoyeyu/ican@sha256:ae07b572a07854e1afa0df9552287b50a30e1f5e92109f0e5582ef374e87bb01
+docker pull ghcr.io/ruoyeyu/ican@sha256:e6d6d61be3b3d1653872c5d7bdea7b650ef9f9398f522ce7400f03babc340749
 ```
 
-[镜像及检查记录](evidence/video-retrieval-publication.json) · [完整原始安全证据](evidence/ghcr-40331537237-evidence.zip)。
+[镜像及检查记录](evidence/invitations-publication.json) · [完整原始安全证据](evidence/ghcr-40347559560-evidence.zip)。
 
 上述镜像 manifest 已验证可匿名获取且 digest 一致，无需登录 GitHub。
 
@@ -78,7 +78,7 @@ curl --fail "http://127.0.0.1:$ICAN_REVIEWED_HOST_PORT/api/health"
 
 ## 更新和回滚
 
-本次通过 V1 增量迁移新增取回状态表；备份副本已验证重复迁移和旧任务读取。更新前做好一致备份，保留原配置和密钥；重建只使用 `--no-build`。回退到上一固定镜像可保留新表，但旧镜像仍存在下载缺陷，不用于取回重试。历史已损坏文件不会自动删除或重建，恢复需要保留的原任务记录。
+本次邀请码 V1 增量迁移新增 `encrypted_code`，并且只清理旧的已撤销、未使用记录。旧哈希、已使用记录及其他账号/配置/素材保持不变；备份副本已验证重复迁移和旧模型读取。更新前做好一致备份，保留原配置和加密密钥，重建使用 `--no-build`。回退上一镜像会恢复旧邀请码界面及撤销逻辑，不会因换镜像重新出现已删除记录；恢复旧数据库备份则需核对邀请码在备份时的使用/撤销状态。详见[邀请码迁移和回滚](invitations.md)。此前[视频取回迁移](video-retrieval.md)继续保留。
 
 此前公共规则改动：按任务类型划分调用规则。未编辑的 v1 模板与已有渠道不重写；保存公共规则后内部配置采用 authoring v2。该次改动未改变数据库结构、Key 和媒体存储。更新沿用原数据目录及加密密钥；回退不识别 v2 的旧镜像时，恢复启用公共规则前的配套数据库与模板目录备份。参见 [公共规则使用与回滚](supplier-templates.zh-CN.md)。
 

@@ -1,0 +1,82 @@
+{
+  "sourceCommit": "5b5022e9313ae501f1e2267bc8e01f8750b566f4",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:e6d6d61be3b3d1653872c5d7bdea7b650ef9f9398f522ce7400f03babc340749",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-5b5022e9313ae501f1e2267bc8e01f8750b566f4-run-40347559560-1",
+  "imageId": "sha256:9e4a76c7696cb1e10b84847147ac2cbd58f875ee33681cc58f29e6943f1c7e62",
+  "platform": "linux/amd64",
+  "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
+  "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40347559560",
+  "runAttempt": "1",
+  "productionApproved": false,
+  "scope": "Administrator-visible invitations with existing encryption; deletion of unused invitations and retention of used records",
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "unknownMatch": {
+    "id": "GO-2026-5932",
+    "package": "golang.org/x/crypto",
+    "installedVersion": "v0.58.0",
+    "advisory": "https://vuln.go.dev/ID/GO-2026-5932.json",
+    "dependencyTarget": "Go 1.27.3; CGO_ENABLED=0 GOOS=linux GOARCH=amd64",
+    "dependencyListSHA256": "0e9810b91b14d1050ff228d239ee4ec363b3b5e8926824836557584bc19d931b",
+    "dependencyCount": 430,
+    "review": "Affected openpgp imports are absent from this exact source dependency graph. Raw scan retained; only this record is excluded from effective counts. Runtime dependencies and scan gates unchanged."
+  },
+  "effectiveRiskCounts": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "tests": {
+    "goSuite": "passed, including invitation admin/crypto/deletion/concurrency and backup-copy migration fixtures",
+    "web": 40,
+    "director": 294,
+    "deploymentAndPublicationPolicies": 9,
+    "productionBuilds": "passed",
+    "imageIsolationAndRestart": "passed: accounts, templates, credentials and media",
+    "runtimeDNSAndTLS": "passed",
+    "actualComposeConfigurations": [
+      "1.6 CPUs / 1536m",
+      "2 CPUs / 2g"
+    ],
+    "nativeInventory": {
+      "files": 23,
+      "setIdFiles": 0
+    },
+    "localBrowserEvidence": "invitations-local.json",
+    "sourceVersionMetadata": "passed"
+  },
+  "evidenceArchive": {
+    "path": "ghcr-40347559560-evidence.zip",
+    "sha256": "4ad311ce214b1e118e42266069541b6cf1664ee9a130366238a70f456b87222f",
+    "artifactId": 12662936228
+  },
+  "publicationArtifact": {
+    "id": 12662152237,
+    "sha256": "ed36ef21e7bf0f63ae6646f4a01a5c2676cc575b8f4a87752ec917e6fdec288a"
+  },
+  "anonymousRegistryManifestAndConfig": {
+    "manifestDigest": "sha256:e6d6d61be3b3d1653872c5d7bdea7b650ef9f9398f522ce7400f03babc340749",
+    "imageConfigDigest": "sha256:9e4a76c7696cb1e10b84847147ac2cbd58f875ee33681cc58f29e6943f1c7e62",
+    "sourceRevision": "5b5022e9313ae501f1e2267bc8e01f8750b566f4",
+    "version": "0.1.0",
+    "user": "10001:10001",
+    "platform": "linux/amd64",
+    "embeddedCredentialEnvironment": false,
+    "verified": true
+  },
+  "paidCalls": 0,
+  "productionDeployment": false,
+  "databaseSchemaChanged": true,
+  "migration": "migrateInvitationsV1 explicitly adds encrypted_code, preserving original hashes and fields; cleans only revoked unused rows. SQLite backup-copy fixture verifies repeated migration, used/revoked-used retention, untouched original database and old-model reads.",
+  "rollback": "Previous image ignores added column; preserve original data and encryption key. Image-only rollback does not restore deleted invitations. Database snapshot restore requires review of restored invite usage/revocation state.",
+  "runtimeDependenciesChanged": false,
+  "previousVerifiedImage": "ghcr.io/ruoyeyu/ican@sha256:ae07b572a07854e1afa0df9552287b50a30e1f5e92109f0e5582ef374e87bb01"
+}
