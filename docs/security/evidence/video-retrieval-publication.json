@@ -1,0 +1,85 @@
+{
+  "sourceCommit": "2177b1777a20f9d7c93b49efbe239d5272989421",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:ae07b572a07854e1afa0df9552287b50a30e1f5e92109f0e5582ef374e87bb01",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-2177b1777a20f9d7c93b49efbe239d5272989421-run-40331537237-1",
+  "imageId": "sha256:7c4693294541520ea809591ac4840ec7677a3d8cb60e22a915f792f8068c85fd",
+  "platform": "linux/amd64",
+  "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
+  "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40331537237",
+  "runAttempt": "1",
+  "productionApproved": false,
+  "scope": "Verified, persisted video retrieval separate from upstream completion; original-task explicit recovery and metadata-independent canvas delivery",
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "unknownMatch": {
+    "id": "GO-2026-5932",
+    "package": "golang.org/x/crypto",
+    "installedVersion": "v0.58.0",
+    "advisory": "https://vuln.go.dev/ID/GO-2026-5932.json",
+    "dependencyTarget": "Go 1.27.3; CGO_ENABLED=0 GOOS=linux GOARCH=amd64",
+    "dependencyListSHA256": "0e9810b91b14d1050ff228d239ee4ec363b3b5e8926824836557584bc19d931b",
+    "dependencyCount": 430,
+    "review": "Affected openpgp imports are absent from this exact source dependency graph. Raw scan retained; only this record is excluded from effective counts. Scan gates unchanged."
+  },
+  "effectiveRiskCounts": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "tests": {
+    "goSuite": "passed, including free transfer/lifecycle/migration fixtures",
+    "web": 40,
+    "director": 294,
+    "deploymentAndPublicationPolicies": 9,
+    "productionBuilds": "passed",
+    "imageIsolationAndRestart": "passed: accounts, supplier/personal templates, rules, credentials and private media",
+    "runtimeDNSAndTLS": "passed",
+    "actualComposeConfigurations": [
+      "1.6 CPUs / 1536m",
+      "2 CPUs / 2g"
+    ],
+    "nativeInventory": {
+      "files": 23,
+      "setIdFiles": 0
+    },
+    "localBrowserEvidence": "video-retrieval-local.json",
+    "sourceVersionMetadata": "passed"
+  },
+  "evidenceArchive": {
+    "path": "ghcr-40331537237-evidence.zip",
+    "sha256": "1bd78a0e624f70fa9025f1b53bfc99358087082eedaa5b5be4354195697f943b",
+    "artifactId": 12654403632
+  },
+  "publicationArtifact": {
+    "id": 12655222964,
+    "sha256": "102047b425707518b51b4f64637c4820ca8ed326d38420f61b3bdfbfbe826bea"
+  },
+  "anonymousRegistryManifestAndConfig": {
+    "manifestDigest": "sha256:ae07b572a07854e1afa0df9552287b50a30e1f5e92109f0e5582ef374e87bb01",
+    "imageConfigDigest": "sha256:7c4693294541520ea809591ac4840ec7677a3d8cb60e22a915f792f8068c85fd",
+    "sourceRevision": "2177b1777a20f9d7c93b49efbe239d5272989421",
+    "version": "0.1.0",
+    "user": "10001:10001",
+    "platform": "linux/amd64",
+    "embeddedCredentialEnvironment": false,
+    "verified": true
+  },
+  "paidCalls": 0,
+  "productionDeployment": false,
+  "databaseSchemaChanged": true,
+  "migration": "Additive migrateVideoRetrievalV1 creates video_retrievals; existing tables/fields and encryption keys preserved; backup-copy migration fixture passed",
+  "dependenciesChanged": [
+    "github.com/abema/go-mp4 v1.7.4 (MIT, pinned; no new runtime decoder binary)"
+  ],
+  "retentionChange": "Completed task records remain until explicit deletion, preserving retrieval recovery",
+  "rollback": "Retain data and original encryption key; restore previous pinned image with the additive table left in place. It can read old tables but still has the old download defect. Do not use it to retry downloads. Snapshot restoration is a separate operator action and must account for later writes.",
+  "previousVerifiedImage": "ghcr.io/ruoyeyu/ican@sha256:cdc6049cc294ee90e32e5f8d36532c982b36acf37654a2847d4632bc268af0f8"
+}

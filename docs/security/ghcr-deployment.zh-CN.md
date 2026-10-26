@@ -4,15 +4,15 @@ ICAN 的 Go 后端、Web 前端和导演台全部由 GitHub Actions 编译。服
 
 ## 本次已发布成品
 
-本轮修复创建、轮询及下载的上游错误透传，现有详情窗口保留完整脱敏正文及状态、阶段、request ID；超长正文明确标注截断。模板、账号、Key、素材和数据库格式不变，沿用原数据目录与加密密钥。见[错误详情及回滚说明](upstream-errors.md)。
+本轮修复视频已生成但画布持续等待：完整下载并校验后才保存素材，生成与取回分开显示；失败可继续取回原任务，不重新生成。新增 `video_retrievals` 状态表，旧账号、模板、Key、画布和素材字段不变，沿用原数据目录与加密密钥。见[取回、迁移及回滚说明](video-retrieval.md)。
 
-[流水线 40297564050](https://github.com/ruoyeyu/ICAN/actions/runs/40297564050) 的构建、检查及发布全部通过。源码 commit：`0c9b9393161df2519dfe86a8a7938e944d5a87c6`。
+[流水线 40331537237](https://github.com/ruoyeyu/ICAN/actions/runs/40331537237) 的构建、检查及发布全部通过。源码 commit：`2177b1777a20f9d7c93b49efbe239d5272989421`。
 
 ```sh
-docker pull ghcr.io/ruoyeyu/ican@sha256:cdc6049cc294ee90e32e5f8d36532c982b36acf37654a2847d4632bc268af0f8
+docker pull ghcr.io/ruoyeyu/ican@sha256:ae07b572a07854e1afa0df9552287b50a30e1f5e92109f0e5582ef374e87bb01
 ```
 
-[镜像及检查记录](evidence/upstream-errors-publication.json) · [完整原始安全证据](evidence/ghcr-40297564050-evidence.zip)。
+[镜像及检查记录](evidence/video-retrieval-publication.json) · [完整原始安全证据](evidence/ghcr-40331537237-evidence.zip)。
 
 上述镜像 manifest 已验证可匿名获取且 digest 一致，无需登录 GitHub。
 
@@ -78,9 +78,11 @@ curl --fail "http://127.0.0.1:$ICAN_REVIEWED_HOST_PORT/api/health"
 
 ## 更新和回滚
 
-本轮新增按任务类型划分的公共规则。未编辑的 v1 模板与已有渠道不重写；保存公共规则后内部配置采用 authoring v2。数据库结构、Key 和媒体存储不变。更新沿用原数据目录及加密密钥；回退不识别 v2 的旧镜像时，恢复启用公共规则前的配套数据库与模板目录备份。参见 [公共规则使用与回滚](supplier-templates.zh-CN.md)。
+本次通过 V1 增量迁移新增取回状态表；备份副本已验证重复迁移和旧任务读取。更新前做好一致备份，保留原配置和密钥；重建只使用 `--no-build`。回退到上一固定镜像可保留新表，但旧镜像仍存在下载缺陷，不用于取回重试。历史已损坏文件不会自动删除或重建，恢复需要保留的原任务记录。
 
-v0.1.0 不增加数据库列；旧账号、渠道 ID、配置和素材沿用。新表单规则含旧版不支持的原始参数变量，回退 v0.1.2 必须同时恢复更新前的配置或匹配备份，不能只换旧镜像。旧版程序创建测试数据后，备份副本升级、重启和恢复旧版已验证，见 [本地证据](evidence/api-config-ui-local.json)。生产数据和期间新增内容仍需单独验收与保留。
+此前公共规则改动：按任务类型划分调用规则。未编辑的 v1 模板与已有渠道不重写；保存公共规则后内部配置采用 authoring v2。该次改动未改变数据库结构、Key 和媒体存储。更新沿用原数据目录及加密密钥；回退不识别 v2 的旧镜像时，恢复启用公共规则前的配套数据库与模板目录备份。参见 [公共规则使用与回滚](supplier-templates.zh-CN.md)。
+
+此前 v0.1.0 基线未增加数据库列；旧账号、渠道 ID、配置和素材沿用。新表单规则含旧版不支持的原始参数变量，回退 v0.1.2 必须同时恢复更新前的配置或匹配备份，不能只换旧镜像。旧版程序创建测试数据后，备份副本升级、重启和恢复旧版已验证，见 [本地证据](evidence/api-config-ui-local.json)。生产数据和期间新增内容仍需单独验收与保留。
 
 1. 先拉取新 digest，保留旧 digest 及对应 Compose、配置和密钥。不要删除正在使用或回滚需要的 GHCR 镜像版本。
 2. 先在数据副本验收新版本。维护窗口停止应用写入后，备份整个数据目录（SQLite 主库、WAL/SHM、媒体等），另外安全备份环境配置和密钥。备份放在应用不可写的位置，验证能够恢复和解密；不能只复制运行中的 `.db`。

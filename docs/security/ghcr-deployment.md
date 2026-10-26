@@ -6,15 +6,15 @@ ICAN 0.1.0 is built on GitHub Actions for **linux/amd64**. The server needs Dock
 
 ## Verified publication
 
-This build preserves full sanitized upstream error details across creation, polling and protected downloads, including HTTP status, failure stage and request IDs. Oversized bodies are explicitly marked as truncated. Account, template, credential and database formats are unchanged; keep the original data directory and encryption key. See [diagnostics and rollback](upstream-errors.md).
+This build separates upstream generation from verified video retrieval. It rejects incomplete transfers before media indexing, persists delivery independently of browser metadata, and resumes only the original task after an explicit retrieval retry. An additive `video_retrievals` table stores delivery state; existing account, channel, template, canvas and media fields are unchanged. Keep the original data directory and encryption key. See [retrieval, migration and rollback](video-retrieval.md).
 
-[CI 40297564050](https://github.com/ruoyeyu/ICAN/actions/runs/40297564050) passed, including publication and registry digest verification. Source: `0c9b9393161df2519dfe86a8a7938e944d5a87c6`.
+[CI 40331537237](https://github.com/ruoyeyu/ICAN/actions/runs/40331537237) passed, including publication and registry digest verification. Source: `2177b1777a20f9d7c93b49efbe239d5272989421`.
 
 ```text
-ghcr.io/ruoyeyu/ican@sha256:cdc6049cc294ee90e32e5f8d36532c982b36acf37654a2847d4632bc268af0f8
+ghcr.io/ruoyeyu/ican@sha256:ae07b572a07854e1afa0df9552287b50a30e1f5e92109f0e5582ef374e87bb01
 ```
 
-[Publication and check results](evidence/upstream-errors-publication.json) · [Raw security evidence](evidence/ghcr-40297564050-evidence.zip). These records describe this exact image; later builds require their own records.
+[Publication and check results](evidence/video-retrieval-publication.json) · [Raw security evidence](evidence/ghcr-40331537237-evidence.zip). These records describe this exact image; later builds require their own records.
 
 The manifest above was also retrieved anonymously and its digest verified. This published image is accessible without a GitHub login.
 
@@ -87,10 +87,12 @@ Compose keeps `pull_policy: never`: pull the chosen digest explicitly before cre
 
 ## Updating without losing data
 
+This build adds the V1 `video_retrievals` table. Backup-copy migration, repeat migration and existing task reads passed. Existing tables and encryption keys are preserved; recreate with `--no-build` after a consistent backup. See [the migration record](video-retrieval.md).
+
 The bind mount `/app/data` contains SQLite `ican.db` (and WAL/SHM), media and logs. User/configuration records, API addresses/Keys, channels, canvas and task records remain in the database. Unsynced browser-only data is not included. New images do not contain or replace these records.
 
 1. Download the new publication manifest and check results. Pull the new digest before stopping the existing app. Keep the old digest, source commit, Compose file, environment file and original encryption/signing keys.
-2. Validate the new version against a backup copy first. Current `AutoMigrate` is not a complete versioned migration or downgrade mechanism; real cross-version recovery remains a release gate.
+2. Validate the new version against a backup copy first. The new delivery table has an explicit additive V1 migration. Existing `AutoMigrate` behavior for other tables is not a general downgrade mechanism; verify the exact source/target pair.
 3. Schedule a maintenance window and stop app writes. With the app stopped, back up the **entire data directory** (including any WAL/SHM), preserve permissions, and independently back up the operator environment/keys. Store backups outside app-writable paths. Do not copy only a live SQLite `.db` file.
 4. Verify backup readability/checksums and a restore on an isolated copy. Change only `ICAN_IMAGE` in the protected environment file to the new verified digest. Keep `ICAN_DATA_DIR`, `DATA_ENCRYPTION_KEY`, `JWT_SECRET` and saved business settings unchanged.
 5. Run the same `config --quiet`, `create --no-build`, policy check and `start` steps above. No server build is involved. Confirm the mount is the original directory and test users, API config decryption, media, canvas and tasks before restoring traffic.
@@ -113,7 +115,9 @@ A checksum proves archive integrity, not recoverability. Test restoration and de
 
 ## Rollback
 
-v0.1.0 adds no database columns. Its versioned form rules use raw-parameter variables unsupported by v0.1.2: **restore pre-update channel configuration or the matching full backup when downgrading**, not just the old image. A real old-binary fixture passed backup-copy upgrade, restart and old-version restore; see [local evidence](evidence/api-config-ui-local.json). Production data and post-update writes still require separate acceptance and preservation.
+The immediately previous pinned image can read existing tables while leaving the additive delivery table present. It still contains the old download defect, so do not use it for retrieval retries. Preserve the data and original keys. Historical corrupt media are not deleted or regenerated automatically; recovery needs the original retained task.
+
+The earlier v0.1.0 baseline added no database columns. Its versioned form rules use raw-parameter variables unsupported by v0.1.2: **restore pre-update channel configuration or the matching full backup when downgrading**, not just the old image. A real old-binary fixture passed backup-copy upgrade, restart and old-version restore; see [local evidence](evidence/api-config-ui-local.json). Production data and post-update writes still require separate acceptance and preservation.
 
 Stop the new app and preserve its current data separately; writes made after the backup may need reconciliation. Never let old and new containers write the same SQLite directory concurrently.
 
