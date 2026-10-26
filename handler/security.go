@@ -18,6 +18,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func AdminInvitations(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store")
 	if r.Method == http.MethodGet {
 		items, err := repository.ListInvitations()
 		if err != nil {
@@ -40,7 +41,6 @@ func AdminInvitations(w http.ResponseWriter, r *http.Request) {
 		FailError(w, err)
 		return
 	}
-	w.Header().Set("Cache-Control", "no-store")
 	OK(w, map[string]any{"invitation": item, "code": code})
 }
 

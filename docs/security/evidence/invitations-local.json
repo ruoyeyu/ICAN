@@ -1,0 +1,69 @@
+{
+  "baseCommit": "c1c5b8ffdf1bcfe975d5dd43bd82e5f3b6e622aa",
+  "scope": "Administrator-visible invitations with existing encryption; deletion of unused invitations and retention of used records",
+  "local": {
+    "go": "CGO_ENABLED=0 go test ./... passed",
+    "web": {
+      "passed": 40,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "webAudit": {
+      "packages": 467,
+      "findings": 0
+    },
+    "python": {
+      "passed": 9,
+      "failed": 0
+    },
+    "browser": {
+      "create": "code in existing table, no one-time modal",
+      "copy": "clipboard matches before and after refresh/restart",
+      "persistence": "original key and database restore displayed code",
+      "revoke": "unused row disappears and code cannot register",
+      "used": "record retained, no revoke action, backend deletion rejected",
+      "permissions": "admin only; list is no-store",
+      "paidCalls": 0,
+      "pageErrors": []
+    }
+  },
+  "securityCases": [
+    "SHA-256 lookup unchanged; display copy stored as AES-256-GCM ciphertext with invitation ID associated data",
+    "Creation and list are administrator-only and no-store; hashes and ciphertext excluded from JSON",
+    "Used invitation deletion rejected on server; account and usage link retained",
+    "Physical deletion disables registration; no revoked-unused tombstone remains",
+    "Ten simultaneous consume/delete pairs permit exactly one success",
+    "Legacy hash-only invitation still registers; no code rotation",
+    "Swapped invitation ciphertext raises visible error without plaintext leakage"
+  ],
+  "migration": "migrateInvitationsV1 explicitly adds encrypted_code, preserving original hashes and fields; cleans only revoked unused rows. SQLite backup-copy fixture verifies repeated migration, used/revoked-used retention, untouched original database and old-model reads.",
+  "rollback": "Previous image ignores added column; preserve original data and encryption key. Image-only rollback does not restore deleted invitations. Database snapshot restore requires review of restored invite usage/revocation state.",
+  "runtimeDependenciesChanged": false,
+  "resourceLimitsChanged": false,
+  "paidCalls": 0,
+  "productionDeployment": false,
+  "dependencyTarget": "CGO_ENABLED=0 GOOS=linux GOARCH=amd64",
+  "dependencyCount": 430,
+  "dependencyListSHA256": "0e9810b91b14d1050ff228d239ee4ec363b3b5e8926824836557584bc19d931b",
+  "resolvedLocalFailures": [
+    "Browser locator initially missed the existing Ant Design two-Chinese-character button spacing. Locator now matches the rendered label; same deletion assertions pass without application changes or skipped checks."
+  ],
+  "limitations": [
+    "No deployment-server access or live-data migration performed",
+    "Legacy hashes cannot reveal their original code; existing code validity is retained",
+    "Migration backup-copy test uses SQLite; live MySQL/PostgreSQL upgrade was not exercised"
+  ],
+  "logs": {
+    "go.log": "91eba46b8d6baa26a2d7b7c17b92a08835eb542d78229524adf3fa4529d8d54c",
+    "web.log": "ee9b9cd82b0bf253b6482acc6f1f68c0b8aa74dea0c984702df0c8df746a1320",
+    "ts.log": "8366207267355d3e3d5bf3bf6e8c94c5f93f6078c34f08973fa2b38cdda6cc92",
+    "build.log": "c5784df7c475359a06d55c6675663e71b908033e881d497f16982b0d1239963e",
+    "web-audit.log": "7fa3a93c245326d6a1787e1beee0b7c5b0dc5884aba6ebb85fd875cd24a233d1",
+    "python.log": "cefcb8a12814d00efdc207cf9cbe7f867c8e9540dcb9cf3485896294b1febc02",
+    "browser.log": "699a0a668a1e7e8d43222374e7d7e8b5f15e2c4e0f34cc4c2011faaaf1204c96",
+    "browser-initial.log": "9a8a200dd9dc5780e0998eedfb26f95e1943af3237a86f8eca294ba0cb6c21de",
+    "go-deps.txt": "0e9810b91b14d1050ff228d239ee4ec363b3b5e8926824836557584bc19d931b"
+  },
+  "logsArchiveSHA256": "28b3e0a96a3c93e35ed302175a0186f14c518e626005f31d844c80decddf7b2c"
+}

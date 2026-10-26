@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Display invitation codes in the administrator list with encrypted persistence; revoke unused codes by deletion, retain used records and enforce the same rule on the backend.
+
 - Separate completed video generation from delivery; reject interrupted/truncated downloads, persist single delivery attempts across refreshes, and resume the original task without another paid generation. Media metadata no longer blocks canvas completion.
 
 - Preserve sanitized upstream error bodies, HTTP status, failure stage and request IDs across custom API creation, polling and downloads; retain account ownership checks and metadata-only public logs.

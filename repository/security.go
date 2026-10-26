@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"github.com/tigerowo/infinite-canvas/config"
 	"github.com/tigerowo/infinite-canvas/model"
 	"gorm.io/gorm"
 	"time"
@@ -41,6 +42,10 @@ func SaveInvitation(invitation model.Invitation) error {
 	if err != nil {
 		return err
 	}
+	invitation.EncryptedCode, err = config.EncryptData(invitation.Code, "invitation:"+invitation.ID)
+	if err != nil {
+		return err
+	}
 	return db.Create(&invitation).Error
 }
 func ListInvitations() ([]model.Invitation, error) {
@@ -50,14 +55,30 @@ func ListInvitations() ([]model.Invitation, error) {
 	}
 	var items []model.Invitation
 	err = db.Order("created_at desc").Find(&items).Error
-	return items, err
+	if err != nil {
+		return nil, err
+	}
+	for i := range items {
+		items[i].Code, err = config.DecryptData(items[i].EncryptedCode, "invitation:"+items[i].ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return items, nil
 }
 func RevokeInvitation(id string) error {
 	db, err := DB()
 	if err != nil {
 		return err
 	}
-	return db.Model(&model.Invitation{}).Where("id = ?", id).Update("revoked", true).Error
+	deleted := db.Where("id = ? AND used_by = ''", id).Delete(&model.Invitation{})
+	if deleted.Error != nil {
+		return deleted.Error
+	}
+	if deleted.RowsAffected != 1 {
+		return errors.New("邀请码已使用或不存在，无法撤销")
+	}
+	return nil
 }
 func RegisterInvitedUser(user model.User, codeHash string) (model.User, error) {
 	db, err := DB()

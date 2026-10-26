@@ -25,6 +25,6 @@ func CreateInvitation(adminID string, expiresAt int64) (model.Invitation, string
 		return model.Invitation{}, "", err
 	}
 	code := base64.RawURLEncoding.EncodeToString(raw)
-	item := model.Invitation{ID: newID("invite"), CodeHash: invitationHash(code), CreatedBy: adminID, CreatedAt: now(), ExpiresAt: expiresAt}
+	item := model.Invitation{ID: newID("invite"), CodeHash: invitationHash(code), Code: code, CreatedBy: adminID, CreatedAt: now(), ExpiresAt: expiresAt}
 	return item, code, repository.SaveInvitation(item)
 }

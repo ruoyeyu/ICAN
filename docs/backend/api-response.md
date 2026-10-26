@@ -47,3 +47,7 @@ description: 业务接口统一响应结构与前端处理约定
 Owned video-task responses retain upstream `status`/`task_id` and add `server_task` plus optional `retrieval: {status, attempt, errorDetail}`. Delivery states are `fetching`, `saving`, `ready`, `failed`; `ready` includes the existing private `url`, `storageKey`, `bytes`, and `mimeType`. Failed delivery does not change upstream completion.
 
 `POST /api/v1/video-tasks/:id/retrieve` starts one persisted delivery attempt and returns the ordinary task envelope. Repeated requests return the existing state. A failed attempt requires `{retryAttempt: <observed attempt>}` to continue; stale retry requests cannot claim another attempt. The optional `provider` uses existing user-storage authorization. Generation is never submitted by this endpoint. Retrieval errors use the existing sanitized upstream diagnostics and are owner-only.
+
+## 管理员邀请码
+
+`GET /api/admin/invitations` 在原记录中增加可选 `code`，供管理员列表显示及复制；旧哈希记录没有该字段。`POST` 保留 `{invitation, code}`，创建及列表响应均为 `Cache-Control: no-store`，不返回哈希或密文。`DELETE /api/admin/invitations/:id` 条件删除未使用记录；已使用或不存在时返回非零业务 `code`，不修改账号或使用记录。三个接口均沿用管理员鉴权。

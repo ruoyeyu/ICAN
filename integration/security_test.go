@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"image"
 	"image/png"
 	"io"
@@ -13,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -183,6 +185,119 @@ func TestSecurityBoundaries(t *testing.T) {
 		db.Model(&exp).Update("expires_at", time.Now().Add(-time.Second).Unix())
 		if _, err := service.Register("fifth", "password", c); err == nil {
 			t.Fatal("expired invitation accepted")
+		}
+	})
+	t.Run("invitation-display-delete-and-consumption", func(t *testing.T) {
+		created := request("POST", "/api/admin/invitations", adminSession.Token, `{}`)
+		if !successful(created) {
+			t.Fatal("create invitation failed")
+		}
+		var result struct {
+			Data struct {
+				Invitation model.Invitation `json:"invitation"`
+				Code       string           `json:"code"`
+			} `json:"data"`
+		}
+		if err := json.Unmarshal(created.Body.Bytes(), &result); err != nil {
+			t.Fatal(err)
+		}
+		id, secret := result.Data.Invitation.ID, result.Data.Code
+		var stored model.Invitation
+		if err := db.First(&stored, "id = ?", id).Error; err != nil {
+			t.Fatal(err)
+		}
+		if secret == "" || stored.Code != "" || strings.Contains(stored.EncryptedCode, secret) || !strings.HasPrefix(stored.EncryptedCode, "ican:v1:") {
+			t.Fatal("invitation plaintext persisted or ciphertext absent")
+		}
+		for i := 0; i < 2; i++ {
+			w := request("GET", "/api/admin/invitations", adminSession.Token, "")
+			if !successful(w) || w.Header().Get("Cache-Control") != "no-store" || !strings.Contains(w.Body.String(), secret) || strings.Contains(w.Body.String(), stored.CodeHash) || strings.Contains(w.Body.String(), stored.EncryptedCode) {
+				t.Fatal("admin invitation reload failed or storage fields leaked")
+			}
+		}
+		for _, token := range []string{"", alice.Token} {
+			for _, method := range []string{"GET", "POST", "DELETE"} {
+				path := "/api/admin/invitations"
+				if method == "DELETE" {
+					path += "/" + id
+				}
+				w := request(method, path, token, `{}`)
+				if successful(w) || strings.Contains(w.Body.String(), secret) {
+					t.Fatal("invitation admin boundary failed")
+				}
+			}
+		}
+		if !successful(request("DELETE", "/api/admin/invitations/"+id, adminSession.Token, "")) {
+			t.Fatal("revoke failed")
+		}
+		var count int64
+		db.Model(&model.Invitation{}).Where("id = ?", id).Count(&count)
+		if count != 0 {
+			t.Fatal("revoked row retained")
+		}
+		if _, err := service.Register("deleted-invite", "fixture-password", secret); err == nil {
+			t.Fatal("deleted code accepted")
+		}
+		used, usedCode, err := service.CreateInvitation(admin.ID, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		registered, err := service.Register("invited-once", "fixture-password", usedCode)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if successful(request("DELETE", "/api/admin/invitations/"+used.ID, adminSession.Token, "")) {
+			t.Fatal("used invite deleted")
+		}
+		var retained model.Invitation
+		if err := db.First(&retained, "id = ?", used.ID).Error; err != nil || retained.UsedBy != registered.User.ID || retained.Revoked {
+			t.Fatal("consumption history changed")
+		}
+		// A legacy hash remains valid; display migration must not rotate its code.
+		legacy, legacyCode, err := service.CreateInvitation(admin.ID, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		db.Model(&legacy).Update("encrypted_code", "")
+		if _, err := service.Register("legacy-invited", "fixture-password", legacyCode); err != nil {
+			t.Fatal("legacy code invalidated", err)
+		}
+		// Ciphertext is bound to its invitation, not interchangeable between records.
+		db.Model(&legacy).Update("encrypted_code", retained.EncryptedCode)
+		w := request("GET", "/api/admin/invitations", adminSession.Token, "")
+		if successful(w) || strings.Contains(w.Body.String(), usedCode) {
+			t.Fatal("corrupt ciphertext hidden or leaked")
+		}
+		db.Model(&legacy).Update("encrypted_code", "")
+	})
+	t.Run("invitation-revoke-register-race", func(t *testing.T) {
+		for i := 0; i < 10; i++ {
+			invite, _, err := service.CreateInvitation(admin.ID, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			user := model.User{ID: fmt.Sprint("invite-race-", i), Username: fmt.Sprint("invite-race-", i), AffCode: fmt.Sprint("invite-race-", i), Role: model.UserRoleUser, Status: model.UserStatusActive}
+			var usedErr, deleteErr error
+			var wg sync.WaitGroup
+			wg.Add(2)
+			gate := make(chan struct{})
+			go func() { defer wg.Done(); <-gate; _, usedErr = repository.RegisterInvitedUser(user, invite.CodeHash) }()
+			go func() { defer wg.Done(); <-gate; deleteErr = repository.RevokeInvitation(invite.ID) }()
+			close(gate)
+			wg.Wait()
+			if (usedErr == nil) == (deleteErr == nil) {
+				t.Fatal("expected exactly one of consumption or deletion")
+			}
+			var row model.Invitation
+			found := db.First(&row, "id = ?", invite.ID).Error == nil
+			var count int64
+			db.Model(&model.User{}).Where("id = ?", user.ID).Count(&count)
+			if usedErr == nil && (!found || row.UsedBy != user.ID || count != 1) {
+				t.Fatal("used code or registered account lost")
+			}
+			if deleteErr == nil && (found || count != 0) {
+				t.Fatal("deleted code registered account")
+			}
 		}
 	})
 	t.Run("anonymous-workspace-and-upload-rejected", func(t *testing.T) {

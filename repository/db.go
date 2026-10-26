@@ -70,7 +70,6 @@ func DB() (*gorm.DB, error) {
 		}
 		dbErr = db.AutoMigrate(
 			&model.LoginSession{},
-			&model.Invitation{},
 			&model.User{},
 			&model.CreditLog{},
 			&model.Prompt{},
@@ -91,6 +90,9 @@ func DB() (*gorm.DB, error) {
 			&model.ComfyBridge{},
 			&model.ComfyBridgeRequest{},
 		)
+		if dbErr == nil {
+			dbErr = migrateInvitationsV1(db)
+		}
 		if dbErr == nil {
 			dbErr = migrateVideoRetrievalV1(db)
 		}

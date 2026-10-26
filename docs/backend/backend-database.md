@@ -491,7 +491,7 @@ RunningHub/ComfyUI 不加入上述普通模型筛选：系统工作流公开列�
 
 - `users.token_version`：密码、状态、角色变化时递增；敏感修改按旧版本条件更新并撤销该账号会话，防止并发旧状态覆盖。
 - `login_sessions`：`id` 为 JWT JTI 主键，`user_id` 为账号索引，`expires_at` 为 Unix 秒；仅签名正确且会话仍存在/有效的登录令牌可用。
-- `invitations`：`id` 主键，`code_hash` 唯一 SHA256 摘要，`created_by/created_at/expires_at/used_by/revoked`；原始随机码只在创建响应返回。注册事务原子消费。
+- `invitations`：`id` 主键，`code_hash` 唯一 SHA256 摘要，`created_by/created_at/expires_at/used_by/revoked`；V1 显式增量迁移新增 `encrypted_code`，使用原加密密钥及绑定邀请码 ID 的 AES-256-GCM 密文供管理员再次查看。`code` 仅为 API 字段，不入库。旧哈希保持有效且不能还原原文；已撤销且未使用的旧记录清理，已使用记录保留。注册事务原子消费，撤销只条件删除未使用记录。见 [邀请码迁移](../security/invitations.md)。
 - `storage_objects.share_version`：供应商授权链接撤销版本；所有读取仍校验对象存在、所有者及其启用状态。
 - `user_configs.model_config`、`user_configs.storage_provider` 和 `settings.private` 使用 AES-256-GCM 密文（`ican:v1:` 前缀）；关联数据包含账号和字段，密钥不在数据库内。旧明文必须先在副本显式迁移。
 - 图片/音频任务创建只能 INSERT；客户端任务 ID 冲突不能覆盖已有账号数据。视频任务更新同时约束 user_id 与 id。
