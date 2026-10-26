@@ -1,0 +1,74 @@
+{
+  "sourceCommit": "73d90f36ec80eb84c960ec3c0981ca60d0a0674d",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:f57118a5c4fa079430189d4a6d84412efa63918fe0b2f4d9268dd0e59d573a3e",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-73d90f36ec80eb84c960ec3c0981ca60d0a0674d-run-40280932978-1",
+  "imageId": "sha256:f2f2c496c6a480635de661168593fdd99c960ef8f32a7d7d75da02836ff191fa",
+  "platform": "linux/amd64",
+  "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
+  "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40280932978",
+  "runAttempt": "1",
+  "productionApproved": false,
+  "scope": "Opt-in field omission in the existing template mapping/compiler; unchanged legacy rules and credentials",
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "unknownMatch": {
+    "id": "GO-2026-5932",
+    "package": "golang.org/x/crypto",
+    "installedVersion": "v0.58.0",
+    "advisory": "https://vuln.go.dev/ID/GO-2026-5932.json",
+    "dependencyTarget": "Go 1.27.3; CGO_ENABLED=0 GOOS=linux GOARCH=amd64",
+    "dependencyListSHA256": "99ebfed8dd203aa470db42404934e21c59b40bb898008246762664916b78f6d1",
+    "dependencyCount": 427,
+    "review": "Affected openpgp imports are absent from this source dependency graph. Raw scan is retained; only this record is excluded from effective risk counts; scanner gates and dependencies are unchanged."
+  },
+  "effectiveRiskCounts": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "tests": {
+    "goSuite": "passed (CGO_ENABLED=0); includes 24 captured HTTP omission cases",
+    "web": 36,
+    "director": 294,
+    "deploymentAndPublicationPolicies": 9,
+    "productionBuilds": "passed",
+    "imageIsolationAndRestart": "passed: accounts, supplier/personal templates including omission rules, channel rules/credentials and private media",
+    "runtimeDNSAndTLS": "passed",
+    "actualComposeConfigurations": [
+      "1.6 CPUs / 1536m",
+      "2 CPUs / 2g"
+    ],
+    "localBrowserEvidence": "field-omission-local.json",
+    "sourceVersionMetadata": "passed"
+  },
+  "evidenceArchive": {
+    "path": "ghcr-40280932978-evidence.zip",
+    "sha256": "ebfed7c4a1e13b09de897498e148e96f4bec2ac76ae0ccdceef76524f84f8f65",
+    "artifactId": 12631478767
+  },
+  "publicationArtifact": {
+    "id": 12632320701,
+    "sha256": "b9d0d2045c65df99c10071363952ac8122578d9c27ac82cbcd511847529cbac3"
+  },
+  "anonymousRegistryManifestAndConfig": {
+    "manifestDigest": "sha256:f57118a5c4fa079430189d4a6d84412efa63918fe0b2f4d9268dd0e59d573a3e",
+    "imageConfigDigest": "sha256:f2f2c496c6a480635de661168593fdd99c960ef8f32a7d7d75da02836ff191fa",
+    "sourceRevision": "73d90f36ec80eb84c960ec3c0981ca60d0a0674d",
+    "version": "0.1.0",
+    "user": "10001:10001",
+    "platform": "linux/amd64",
+    "embeddedCredentialEnvironment": false,
+    "verified": true
+  },
+  "paidCalls": 0,
+  "productionDeployment": false,
+  "rollback": "Keep data/keys unchanged. Save pre-change channel/template configuration before enabling omitValues; older images require matching pre-change configuration backup."
+}

@@ -6,15 +6,15 @@ ICAN 0.1.0 is built on GitHub Actions for **linux/amd64**. The server needs Dock
 
 ## Verified publication
 
-This build adds task-specific supplier shared rules and model overrides in the existing editor/engine, and removes added explanatory UI copy. Unedited v1 channels remain unchanged; explicitly saved shared rules use authoring v2. Database and credential formats remain unchanged. Keep the original data directory and encryption key. Rollback to a pre-v2 image requires the matching database/template backup from before enabling shared rules; see [supplier templates](supplier-templates.md).
+This build adds opt-in parameter omission to the existing template field mappings. Templates without omission rules keep their original behavior. Database and credential formats remain unchanged; retain the original data directory and encryption key. Before rolling back to an image without this optional field, restore matching pre-change channel/template configurations; see [supplier templates](supplier-templates.md).
 
-[CI 40191736678](https://github.com/ruoyeyu/ICAN/actions/runs/40191736678) passed, including publication and registry digest verification. Source: `13757f8911c63a6e5b8614506f93ef4323826946`.
+[CI 40280932978](https://github.com/ruoyeyu/ICAN/actions/runs/40280932978) passed, including publication and registry digest verification. Source: `73d90f36ec80eb84c960ec3c0981ca60d0a0674d`.
 
 ```text
-ghcr.io/ruoyeyu/ican@sha256:9e0b742b06472a92ebffef1b942717a05f3aa5dd055c56695f6c231f711d2ca1
+ghcr.io/ruoyeyu/ican@sha256:f57118a5c4fa079430189d4a6d84412efa63918fe0b2f4d9268dd0e59d573a3e
 ```
 
-[Publication and check results](evidence/shared-rules-publication.json) · [Raw security evidence](evidence/ghcr-40191736678-evidence.zip). These records describe this exact image; later builds require their own records.
+[Publication and check results](evidence/field-omission-publication.json) · [Raw security evidence](evidence/ghcr-40280932978-evidence.zip). These records describe this exact image; later builds require their own records.
 
 The manifest above was also retrieved anonymously and its digest verified. This published image is accessible without a GitHub login.
 

@@ -4,13 +4,13 @@ ICAN 的 Go 后端、Web 前端和导演台全部由 GitHub Actions 编译。服
 
 ## 本次已发布成品
 
-[流水线 40191736678](https://github.com/ruoyeyu/ICAN/actions/runs/40191736678) 的构建、检查及发布全部通过。源码 commit：`13757f8911c63a6e5b8614506f93ef4323826946`。
+[流水线 40280932978](https://github.com/ruoyeyu/ICAN/actions/runs/40280932978) 的构建、检查及发布全部通过。源码 commit：`73d90f36ec80eb84c960ec3c0981ca60d0a0674d`。
 
 ```sh
-docker pull ghcr.io/ruoyeyu/ican@sha256:9e0b742b06472a92ebffef1b942717a05f3aa5dd055c56695f6c231f711d2ca1
+docker pull ghcr.io/ruoyeyu/ican@sha256:f57118a5c4fa079430189d4a6d84412efa63918fe0b2f4d9268dd0e59d573a3e
 ```
 
-[镜像及检查记录](evidence/shared-rules-publication.json) · [完整原始安全证据](evidence/ghcr-40191736678-evidence.zip)。
+[镜像及检查记录](evidence/field-omission-publication.json) · [完整原始安全证据](evidence/ghcr-40280932978-evidence.zip)。
 
 上述镜像 manifest 已验证可匿名获取且 digest 一致，无需登录 GitHub。
 

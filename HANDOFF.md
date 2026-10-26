@@ -1,6 +1,6 @@
 # ICAN 交接
 
-本轮参数省略：复用字段 optional 与原转译引擎，新增可选 omitValues 精确匹配；固定值/变量、请求体/查询、公共规则/模型覆盖共用。旧 v1/v2 编译保持一致，不更改默认值或已保存渠道。Go 全套、24 组模拟 HTTP 请求、Web 36、类型检查、生产构建及 Python 9 已通过；两组隔离浏览器回归已通过，见 docs/security/evidence/field-omission-local.json；镜像 CI 待补。无付费调用、无服务器操作。用法和旧镜像回滚要求见 docs/security/supplier-templates.zh-CN.md。
+本轮参数省略：复用字段 optional 与原转译引擎，新增可选 omitValues 精确匹配；固定值/变量、请求体/查询、公共规则/模型覆盖共用。旧 v1/v2 编译保持一致，不更改默认值或已保存渠道。Go 全套、24 组模拟 HTTP 请求、Web 36、类型检查、生产构建及 Python 9 已通过；两组隔离浏览器回归已通过，见 docs/security/evidence/field-omission-local.json；CI 40280932978 全通过，GHCR 发布、匿名 manifest/config 摘要和源码标签核验完成；固定 digest 与原始扫描见 docs/security/evidence/field-omission-publication.json。无付费调用、无服务器操作。用法和旧镜像回滚要求见 docs/security/supplier-templates.zh-CN.md。
 
 本轮本地 Go 全套、Web 35、生产构建、Python 9 与两组隔离浏览器回归均通过，见 docs/security/evidence/shared-rules-local.json；CI 40191736678 全通过，GHCR 发布及匿名 digest/config 核验完成，见 docs/security/evidence/shared-rules-publication.json。
 本轮复用原模板表单和转译引擎增加按 text/image/video/audio 区分的 defaults，模型专属规则优先；自定义渠道缺少规则不再走通用请求。v1 保持原样，显式公共规则采用 authoring v2，使用与回滚见 docs/security/supplier-templates.zh-CN.md。同步清理新增的多余界面文案。免费 fixture 与相关本地回归通过；不调用真实供应商、不操作服务器，不把请求格式错配推断为鉴权错误的已证实原因。
