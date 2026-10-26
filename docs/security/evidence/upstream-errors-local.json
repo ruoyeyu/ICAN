@@ -1,0 +1,74 @@
+{
+  "baseCommit": "c3e03d27e8ee1d673b3e8af89c80666a60daef8e",
+  "scope": "Sanitized full upstream error diagnostics for creation, polling and protected downloads; existing error UI and account storage",
+  "local": {
+    "go": "CGO_ENABLED=0 go test ./... passed",
+    "web": {
+      "passed": 37,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "productionBuild": "passed; local stale Turbopack cache removed from build inputs after an invalid-digit cache error",
+    "webAudit": "0 findings across 467 packages; dependencies unchanged",
+    "python": {
+      "passed": 9,
+      "failed": 0
+    },
+    "browserAPI": {
+      "import": "validated",
+      "edit": "saved in existing translator",
+      "export": "no credentials",
+      "freshBrowser": "account config restored",
+      "presets": "OpenAI added without overwriting existing channel",
+      "perModelParameters": "declared choices enforced; custom resolution and literal ratio retained",
+      "mockSubmit": "two intercepted requests: legacy and inherited shared rule; exact prompt/ratio/resolution/duration/model",
+      "errorDetails": "full sanitized diagnostic retained in existing details dialog; no automatic create retry",
+      "pageErrors": []
+    },
+    "browserCatalog": {
+      "catalog": "admin import/edit/export/delete; ordinary user selects without importing",
+      "discovery": "manual file found without restart; deleted file disappears",
+      "credentials": "user key not in catalog; existing account unchanged after deletion",
+      "instructions": "HTML shown as plain text",
+      "modelDiscovery": "existing selector; search/multiple/all/clear; candidates opt in; cancel/failure/late response preserve configuration; temporary key absent from writes and export; no generation",
+      "privateStorage": "local type remains stable across tabs and save",
+      "fieldOmission": "typed values edited, copied to shared rules, saved, exported and synced to account channel",
+      "discoveryCalls": 7,
+      "pageErrors": []
+    }
+  },
+  "cases": [
+    "15 HTTP status/stage combinations: 400, 401, 403, 429, non-JSON 502 across create/poll/download",
+    "Nested JSON strings and error field precedence; request IDs from headers or body",
+    "Full response beyond summary length; explicit 256 KiB truncation; partial credentials at boundary",
+    "Channel credentials, authorization, nested credential fields, encoded keys and signed/relative media grants redacted",
+    "Integer precision and non-secret token-count fields retained in full JSON body",
+    "Task ownership: owner sees details; anonymous and other account cannot query or download custom task or reach upstream",
+    "Public AI logs contain operational metadata only",
+    "HTTP 200 business errors cannot be uploaded as video; valid binary download unchanged",
+    "No automatic custom-video error retry or replacement task; existing queued/unknown/in_progress fixture regressions passed",
+    "Existing native-compatible protocol request/response fixtures passed"
+  ],
+  "paidCalls": 0,
+  "productionDeployment": false,
+  "dependenciesChanged": false,
+  "databaseSchemaChanged": false,
+  "configMigration": "None; credentials, templates, account data and media unchanged",
+  "rollback": "Restore previous pinned image digest with unchanged data directory and encryption key; take normal pre-update backup",
+  "limitations": [
+    "No access to deployed private template or server-side working tree",
+    "No paid supplier generation; actual failure cause requires a new authorized request after deployment"
+  ],
+  "productionTodo": "Reviewed; existing resource/session/update-recovery deployment gates unchanged",
+  "logs": {
+    "go-test.log": "64b79e772a063ea8d70bf9c1b7bf65e23bb77d837894e0ea78762d0ef4a6442b",
+    "web-test.log": "f30b94e4282b0aa653bbeaa4b344375c4649b8a4f5452cd019720487fa95d4fb",
+    "typecheck.log": "8366207267355d3e3d5bf3bf6e8c94c5f93f6078c34f08973fa2b38cdda6cc92",
+    "web-build.log": "6d33ece3730af3b435a18a7117b00ec61570f963b5dfcbb356fb747dabec75ea",
+    "web-audit.log": "5b2627d9df023618c9657af072ce87481a0458005e339120b23f724f0f9c5caf",
+    "python-test.log": "445a1601fec9c548f1cf71d910ea80ddaf228d27948baf395debbb01b63fc1f0",
+    "browser-api.log": "d6744dec3a2a7e228a82dc8651d7de64ed4af15a999ff1ae91863cee8c3876ad",
+    "browser-catalog.log": "48107cf092c5082a7cbf0b6739520a3220a0c694f2b869c7005527fa02a6d1e1"
+  },
+  "logsArchiveSHA256": "761f68ed14767847bfd7f1da2a88bc8c265425ed209488abfa9aa5a375832527"
+}

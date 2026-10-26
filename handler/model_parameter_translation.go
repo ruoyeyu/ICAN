@@ -21,7 +21,7 @@ func parameterTranslationLog(context aiLogContext, translation *service.Paramete
 	if request == nil {
 		return context
 	}
-	context.Method, context.Endpoint = request.Method, request.URL.String()
+	context.Method, context.Endpoint = request.Method, request.URL.EscapedPath()
 	if request.GetBody != nil {
 		reader, err := request.GetBody()
 		if err == nil {
@@ -62,7 +62,7 @@ func serveParameterTranslation(w http.ResponseWriter, r *http.Request, body []by
 		translation, err = service.NewParameterTranslation(channel, request.Model, input.Variables, input.Kind)
 	}
 	if err != nil {
-		Fail(w, err.Error())
+		failAIUpstream(w, err)
 		return true
 	}
 	if translation == nil {
@@ -87,7 +87,7 @@ func serveParameterTranslation(w http.ResponseWriter, r *http.Request, body []by
 			_ = service.RefundUserCredits(user.ID, request.Model, credits, path)
 		}
 		saveAIProxyLog(logContext, result.StatusCode, result.ResponseBody, err.Error())
-		Fail(w, err.Error())
+		failAIUpstream(w, err)
 		return true
 	}
 	saveAIProxyLog(logContext, result.StatusCode, result.ResponseBody, "")
@@ -135,7 +135,7 @@ func serveParameterTranslationVideo(w http.ResponseWriter, r *http.Request, body
 		translation, err = service.NewParameterTranslation(channel, request.Model, input.Variables, input.Kind)
 	}
 	if err != nil {
-		Fail(w, err.Error())
+		failAIUpstream(w, err)
 		return true
 	}
 	if translation == nil {
@@ -162,7 +162,7 @@ func serveParameterTranslationVideo(w http.ResponseWriter, r *http.Request, body
 			refundVideoCredits(user.ID, request.Model, credits, "/videos")
 		}
 		saveAIProxyLog(logContext, result.StatusCode, result.ResponseBody, err.Error())
-		Fail(w, err.Error())
+		failAIUpstream(w, err)
 		return true
 	}
 	videoURL := ""

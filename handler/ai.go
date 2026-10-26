@@ -114,6 +114,11 @@ func proxyAIGetRequest(w http.ResponseWriter, r *http.Request, path string) {
 		failAIChannelSelect(w, err, "AI 接口请求失败")
 		return
 	}
+	_, translatedVideo := service.ParameterTranslationPublicRules(channel.ParameterTranslation, []string{modelName})["video"][modelName]
+	if strings.HasPrefix(path, "/videos/") && (channel.Protocol == "custom" || translatedVideo) {
+		Fail(w, "视频任务不存在或无权访问")
+		return
+	}
 	upstreamPath := resolveAIProxyPath(channel, modelName, path)
 	request, err := http.NewRequest(http.MethodGet, resolveAIProxyURL(channel, modelName, upstreamPath), nil)
 	if err != nil {
@@ -247,17 +252,21 @@ func copyAIResponse(w http.ResponseWriter, request *http.Request, channel model.
 	defer response.Body.Close()
 
 	if response.StatusCode >= http.StatusBadRequest {
-		payload, _ := io.ReadAll(io.LimitReader(response.Body, 256*1024))
+		payload, _ := io.ReadAll(io.LimitReader(response.Body, service.UpstreamErrorBodyLimit+1))
 		log.Printf("AI upstream error: url=%s status=%d body=%s", request.URL.String(), response.StatusCode, strings.TrimSpace(string(payload)))
 		if onFailure != nil {
 			onFailure()
 		}
 		saveAIProxyLog(logContext, response.StatusCode, string(payload), strings.TrimSpace(string(payload)))
-		message := readUpstreamAIErrorMessage(payload, response.StatusCode)
-		if service.IsTokenDanceChannel(channel) {
-			message = firstNonEmpty(service.TokenDanceRecoveryMessage(response.Header.Get("TokenDance-Recovery-Action")), message)
+		stage := "请求"
+		if strings.HasSuffix(request.URL.Path, "/content") {
+			stage = "下载"
 		}
-		Fail(w, message)
+		failure := service.NewUpstreamError(payload, response.StatusCode, stage, response.Header, request, channel.APIKey)
+		if service.IsTokenDanceChannel(channel) {
+			failure.Detail = firstNonEmpty(service.TokenDanceRecoveryMessage(response.Header.Get("TokenDance-Recovery-Action")), failure.Detail)
+		}
+		failAIUpstream(w, failure)
 		return
 	}
 

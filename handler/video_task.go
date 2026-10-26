@@ -147,7 +147,7 @@ func proxyAIVideoTaskRequest(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	payload, status, err := doAIRequest(request, channel)
+	payload, status, headers, err := doAIRequest(request, channel)
 	if taskContext.Err() != nil {
 		Fail(w, "任务已停止")
 		return
@@ -157,25 +157,26 @@ func proxyAIVideoTaskRequest(w http.ResponseWriter, r *http.Request) {
 			refundVideoCredits(user.ID, modelName, credits, upstreamPath)
 		}
 		saveAIProxyLog(logContext, 0, "", err.Error())
-		Fail(w, "AI 接口请求失败")
+		failAIUpstream(w, service.NewUpstreamError([]byte(err.Error()), status, "创建", headers, request, channel.APIKey))
 		return
 	}
 	if status >= http.StatusBadRequest {
-		message := readUpstreamAIErrorMessage(payload, status)
+		failure := service.NewUpstreamError(payload, status, "创建", headers, request, channel.APIKey)
 		if credits > 0 {
 			refundVideoCredits(user.ID, modelName, credits, upstreamPath)
 		}
 		saveAIProxyLog(logContext, status, string(payload), strings.TrimSpace(string(payload)))
-		Fail(w, message)
+		failAIUpstream(w, failure)
 		return
 	}
 	transformed := transformVideoCreatePayload(payload, request, channel, modelName)
 	if message := readVideoCreateErrorMessage(payload, transformed, channel, modelName); message != "" {
+		failure := service.NewUpstreamError(payload, status, "创建", headers, request, channel.APIKey)
 		if credits > 0 {
 			refundVideoCredits(user.ID, modelName, credits, upstreamPath)
 		}
-		saveAIProxyLog(logContext, status, string(payload), message)
-		Fail(w, message)
+		saveAIProxyLog(logContext, status, "", failure.Error())
+		failAIUpstream(w, failure)
 		return
 	}
 	parsed := parseVideoTaskPayload(transformed, modelName)
@@ -293,12 +294,18 @@ func serveGeminiVideoTaskContent(w http.ResponseWriter, r *http.Request, id stri
 		response, err = service.HTTPClientForChannel(channel).Do(request)
 	}
 	if err != nil {
-		Fail(w, "视频内容下载失败")
+		var upstream *service.UpstreamError
+		if errors.As(err, &upstream) {
+			failAIUpstream(w, upstream)
+		} else {
+			failAIUpstream(w, service.NewUpstreamError([]byte(err.Error()), 0, "下载", nil, nil, channel.APIKey))
+		}
 		return true
 	}
 	defer response.Body.Close()
-	if response.StatusCode >= http.StatusBadRequest {
-		Fail(w, readUpstreamAIErrorMessage(nil, response.StatusCode))
+	if response.StatusCode >= http.StatusBadRequest || strings.Contains(strings.ToLower(response.Header.Get("Content-Type")), "json") || strings.HasPrefix(strings.ToLower(response.Header.Get("Content-Type")), "text/") {
+		body, _ := io.ReadAll(io.LimitReader(response.Body, service.UpstreamErrorBodyLimit+1))
+		failAIUpstream(w, service.NewUpstreamError(body, response.StatusCode, "下载", response.Header, response.Request, channel.APIKey))
 		return true
 	}
 	writeVideoDownload(w, response)
@@ -368,17 +375,18 @@ func pollVideoTaskFromUpstream(ctx context.Context, task model.VideoTask) (servi
 		UserDisplayName: task.UserDisplayName,
 		RequestBody:     fmt.Sprintf(`{"taskId":%q}`, pollID),
 	}
-	payload, status, err := doAIRequest(request, channel)
+	payload, status, headers, err := doAIRequest(request, channel)
 	if err != nil {
-		return service.VideoTaskPollUpdate{}, err
+		return service.VideoTaskPollUpdate{}, service.NewUpstreamError([]byte(err.Error()), status, "轮询", headers, request, channel.APIKey)
 	}
 	if status >= http.StatusBadRequest {
-		message := readUpstreamAIErrorMessage(payload, status)
+		failure := service.NewUpstreamError(payload, status, "轮询", headers, request, channel.APIKey)
+		message, diagnostic := failure.Error(), failure.Diagnostics()
 		if status == http.StatusTooManyRequests {
-			return service.VideoTaskPollUpdate{Status: task.Status, ErrorDetail: message, ResponseBody: string(payload)}, nil
+			return service.VideoTaskPollUpdate{Status: task.Status, ErrorDetail: diagnostic, ResponseBody: diagnostic, StatusCode: status}, nil
 		}
 		saveAIProxyLog(logContext, status, string(payload), strings.TrimSpace(string(payload)))
-		return service.VideoTaskPollUpdate{Status: "failed", Error: message, ErrorDetail: message, ResponseBody: string(payload)}, nil
+		return service.VideoTaskPollUpdate{Status: "failed", Error: message, ErrorDetail: diagnostic, ResponseBody: diagnostic, StatusCode: status}, nil
 	}
 	transformed := transformVideoStatusPayload(payload, request, channel, task.Model)
 	parsed := parseVideoTaskPayload(transformed, task.Model)
@@ -394,8 +402,10 @@ func pollVideoTaskFromUpstream(ctx context.Context, task model.VideoTask) (servi
 		}
 		parsed.Status = "failed"
 	}
-	if parsed.ErrorDetail == "" && len(payload) > 0 && parsed.Error != "" {
-		parsed.ErrorDetail = string(payload)
+	if parsed.Error != "" {
+		failure := service.NewUpstreamError(payload, status, "轮询", headers, request, channel.APIKey)
+		parsed.Error, parsed.ErrorDetail = failure.Error(), failure.Diagnostics()
+		transformed = []byte(parsed.ErrorDetail)
 	}
 	if service.IsCompletedVideoTaskStatus(parsed.Status) || service.IsFailedVideoTaskStatus(parsed.Status) {
 		saveAIProxyLog(logContext, status, string(transformed), firstNonEmpty(parsed.Error, ""))
@@ -420,10 +430,10 @@ func normalizeVideoCreateBody(body []byte, contentType string, modelName string,
 	return prepared.body, prepared.contentType, err
 }
 
-func doAIRequest(request *http.Request, channel model.ModelChannel) ([]byte, int, error) {
+func doAIRequest(request *http.Request, channel model.ModelChannel) ([]byte, int, http.Header, error) {
 	response, err := service.HTTPClientForChannel(channel).Do(request)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, nil, err
 	}
 	defer response.Body.Close()
 	payload, _ := io.ReadAll(io.LimitReader(response.Body, 1024*1024))
@@ -432,7 +442,7 @@ func doAIRequest(request *http.Request, channel model.ModelChannel) ([]byte, int
 			payload, _ = json.Marshal(map[string]any{"error": map[string]any{"message": message}})
 		}
 	}
-	return payload, response.StatusCode, nil
+	return payload, response.StatusCode, response.Header, nil
 }
 
 func transformVideoCreatePayload(payload []byte, request *http.Request, channel model.ModelChannel, modelName string) []byte {

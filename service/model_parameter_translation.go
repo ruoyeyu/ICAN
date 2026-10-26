@@ -512,7 +512,16 @@ func ParameterTranslationVideoContent(ctx context.Context, task model.VideoTask,
 	request.Header.Del("Content-Length")
 	client := *translation.Client
 	client.CheckRedirect = func(*http.Request, []*http.Request) error { return errors.New("鉴权内容下载不允许重定向") }
-	return client.Do(request)
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, NewUpstreamError([]byte(err.Error()), 0, "下载", nil, request, channel.APIKey)
+	}
+	if response.StatusCode >= 400 || strings.Contains(strings.ToLower(response.Header.Get("Content-Type")), "json") || strings.HasPrefix(strings.ToLower(response.Header.Get("Content-Type")), "text/") {
+		defer response.Body.Close()
+		body, _ := io.ReadAll(io.LimitReader(response.Body, UpstreamErrorBodyLimit+1))
+		return nil, NewUpstreamError(body, response.StatusCode, "下载", response.Header, request, channel.APIKey)
+	}
+	return response, nil
 }
 
 func PollParameterTranslationVideo(ctx context.Context, task model.VideoTask, channel model.ModelChannel) (VideoTaskPollUpdate, error) {
@@ -533,10 +542,12 @@ func PollParameterTranslationVideo(ctx context.Context, task model.VideoTask, ch
 		if !done {
 			result, err = translation.Send(ctx, "video", true, id)
 			if err != nil {
-				if !result.Retryable && result.StatusCode != http.StatusTooManyRequests {
-					return VideoTaskPollUpdate{Status: "failed", Error: err.Error(), ErrorDetail: err.Error(), ResponseBody: result.ResponseBody, StatusCode: result.StatusCode}, nil
+				detail := result.ResponseBody
+				var upstream *UpstreamError
+				if errors.As(err, &upstream) {
+					detail = upstream.Diagnostics()
 				}
-				update.ErrorDetail = err.Error()
+				return VideoTaskPollUpdate{Status: "failed", Error: err.Error(), ErrorDetail: detail, ResponseBody: detail, StatusCode: result.StatusCode}, nil
 			}
 			if result.Status == "completed" {
 				snapshot.Completed[id] = ParameterTranslationResult{Status: result.Status, Progress: result.Progress, URLs: result.URLs[:min(1, len(result.URLs))], ContentURL: result.ContentURL, StatusCode: result.StatusCode}
@@ -909,16 +920,22 @@ type ParameterTranslationResult struct {
 	ContentType  string
 	ResponseBody string
 	StatusCode   int
-	Retryable    bool `json:"-"`
 }
 
 func (translation *ParameterTranslation) Send(ctx context.Context, kind string, query bool, taskID string, downloadRequest ...*http.Request) (ParameterTranslationResult, error) {
 	result := ParameterTranslationResult{Status: "processing"}
+	download := len(downloadRequest) > 0
+	stage := "创建"
+	if query {
+		stage = "轮询"
+	}
+	if download {
+		stage = "下载"
+	}
 	request, responseType, err := translation.request(ctx, query, taskID, downloadRequest...)
 	if err != nil {
-		return result, err
+		return result, NewUpstreamError([]byte(err.Error()), 0, stage, nil, nil, translation.channel.APIKey)
 	}
-	download := len(downloadRequest) > 0
 	if !query && !download {
 		translation.Submission = request
 	}
@@ -932,22 +949,32 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 	}
 	response, err := client.Do(request)
 	if err != nil {
-		result.Retryable = true
-		message := err.Error()
-		if translation.channel.APIKey != "" {
-			for _, key := range []string{translation.channel.APIKey, url.QueryEscape(translation.channel.APIKey), url.PathEscape(translation.channel.APIKey)} {
-				message = strings.ReplaceAll(message, key, "[密钥]")
-			}
-		}
-		return result, errors.New(message)
+		return result, NewUpstreamError([]byte(err.Error()), 0, stage, nil, request, translation.channel.APIKey)
 	}
 	defer response.Body.Close()
-	payload, err := io.ReadAll(response.Body)
-	if err != nil {
-		result.Retryable = true
-		return result, err
-	}
 	result.StatusCode, result.ContentType = response.StatusCode, response.Header.Get("Content-Type")
+	reader := io.Reader(response.Body)
+	if response.StatusCode >= 400 {
+		reader = io.LimitReader(reader, UpstreamErrorBodyLimit+1)
+	}
+	payload, err := io.ReadAll(reader)
+	failure := func(body []byte) (ParameterTranslationResult, error) {
+		failure := NewUpstreamError(payload, response.StatusCode, stage, response.Header, request, translation.channel.APIKey)
+		if !bytes.Equal(body, payload) {
+			decoded, _ := decodeUpstreamJSON(string(payload))
+			if upstreamDetail(decoded, 0) == "" {
+				failure.Detail = NewUpstreamError(body, response.StatusCode, stage, response.Header, request, translation.channel.APIKey).Detail
+			}
+		}
+		result.ResponseBody = failure.Diagnostics()
+		return result, failure
+	}
+	if response.StatusCode >= 400 {
+		return failure(payload)
+	}
+	if err != nil {
+		return failure([]byte(err.Error()))
+	}
 	var data any
 	_ = json.Unmarshal(payload, &data)
 	if data != nil {
@@ -966,18 +993,19 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 			return result, parseErr
 		}
 		if value != nil && translation.runtime.ToValue(value).ToBoolean() {
-			return result, errors.New(fmt.Sprint(value))
+			body, _ := json.Marshal(value)
+			return failure(body)
 		}
 	} else if object, ok := data.(map[string]any); ok {
-		if failure, ok := object["error"].(map[string]any); ok && failure["message"] != nil {
-			return result, errors.New(fmt.Sprint(failure["message"]))
+		if upstreamDetail(object["error"], 0) != "" {
+			return failure(payload)
 		}
 	}
-	if response.StatusCode >= http.StatusBadRequest || (download && (strings.Contains(strings.ToLower(result.ContentType), "json") || strings.HasPrefix(strings.ToLower(result.ContentType), "text/"))) {
-		return result, readAdminChannelError(payload, response.StatusCode, "自定义接口请求失败")
+	if download && (strings.Contains(strings.ToLower(result.ContentType), "json") || strings.HasPrefix(strings.ToLower(result.ContentType), "text/")) {
+		return failure(payload)
 	}
 	if responseType == "json" && data == nil {
-		return result, errors.New("接口没有返回有效 JSON")
+		return failure(payload)
 	}
 	if query && !download {
 		status, err := translation.selectValue(parameterTranslationValue(translation.poll, "status"), data)
@@ -993,7 +1021,7 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 			return false
 		}
 		if matches(translation.failure) {
-			return result, fmt.Errorf("上游任务失败：%v", status)
+			return failure(payload)
 		}
 		if !goja.IsUndefined(parameterTranslationValue(translation.poll, "progress")) {
 			value, err := translation.selectValue(parameterTranslationValue(translation.poll, "progress"), data)

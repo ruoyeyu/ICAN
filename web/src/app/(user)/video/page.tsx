@@ -1134,7 +1134,7 @@ export default function VideoPage() {
             const durationMs = Date.now() - startedAt;
             const baseLog = { ...log, task, durationMs, lastPolledAt: Date.now() };
             if (isFailedVideoTask(task)) {
-                const nextLog = { ...baseLog, status: "失败" as const, error: task.error?.message || "视频生成失败", errorDetail: errorDetail(new VideoRequestError(task.error?.message || "视频生成失败", task)) };
+                const nextLog = { ...baseLog, status: "失败" as const, error: task.error?.message || "视频生成失败", errorDetail: errorDetail(new VideoRequestError(task.error?.message || "视频生成失败", task.error_detail || task.error)) };
                 await finalizeGenerationLog(nextLog, active);
                 if (!active()) return;
                 setResults((value) => updateResultByLogId(value, log.id, { status: "failed", task, error: nextLog.error, errorDetail: nextLog.errorDetail, durationMs: nextLog.durationMs, lastPolledAt: nextLog.lastPolledAt }));
@@ -2467,7 +2467,7 @@ function backendTaskToLog(task: VideoResponse, fallbackConfig: AiConfig): Genera
         task,
         video,
         error: status === "失败" ? task.error?.message || "视频生成失败" : undefined,
-        errorDetail: status === "失败" ? errorDetail(new VideoRequestError(task.error?.message || "视频生成失败", task)) : undefined,
+        errorDetail: status === "失败" ? errorDetail(new VideoRequestError(task.error?.message || "视频生成失败", task.error_detail || task.error)) : undefined,
         lastPolledAt: Date.now(),
     };
 }

@@ -1,5 +1,7 @@
 # 待办（阻断生产上线）
 
+本轮错误透传修复及免费回归移入 pending-test；未改变既有生产资源、会话和恢复门槛，未部署服务器。实际供应商诊断需读取当前账号新请求的脱敏详情，不根据状态码推断原因。
+
 本轮本地 Go 全套、Web 35、生产构建、Python 9 与两组隔离浏览器回归均通过，见 docs/security/evidence/shared-rules-local.json；CI 40191736678 全通过，GHCR 发布及匿名 digest/config 核验完成，见 docs/security/evidence/shared-rules-publication.json。
 本轮公共调用规则、模型覆盖和多余文案清理已实现，验收记录移入 pending-test。本轮最终镜像 CI/GHCR 核验已完成；原生产资源、会话、备份恢复门槛不变。
 

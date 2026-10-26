@@ -1,5 +1,9 @@
 # 本版本待验收
 
+本轮本地 Go 全套、Web 37、类型检查、生产构建、Python 9 与两组隔离浏览器回归通过，依赖审计 467 包无匹配；证据见 docs/security/evidence/upstream-errors-local.json。
+
+本轮上游错误透传：创建、轮询和下载保留状态、阶段、request ID 及完整脱敏正文；现有失败详情查看，不改页面设计。HTTP 200 的下载错误不再被通用媒体提示覆盖。自定义任务详情按账号隔离，公共日志不存正文；参数、模板、Key 和数据格式不变。免费回归证据见 ../security/evidence/upstream-errors-local.json；真实供应商错误原因仍待用户部署后正常请求确认，没有付费生成。
+
 本轮参数省略：复用字段 optional 与原转译引擎，新增可选 omitValues 精确匹配；固定值/变量、请求体/查询、公共规则/模型覆盖共用。旧 v1/v2 编译保持一致，不更改默认值或已保存渠道。Go 全套、24 组模拟 HTTP 请求、Web 36、类型检查、生产构建及 Python 9 已通过；两组隔离浏览器回归已通过，见 docs/security/evidence/field-omission-local.json；CI 40280932978 全通过，GHCR 发布、匿名 manifest/config 摘要和源码标签核验完成；固定 digest 与原始扫描见 docs/security/evidence/field-omission-publication.json。无付费调用、无服务器操作。用法和旧镜像回滚要求见 docs/security/supplier-templates.zh-CN.md。
 
 本轮本地 Go 全套、Web 35、生产构建、Python 9 与两组隔离浏览器回归均通过，见 docs/security/evidence/shared-rules-local.json；CI 40191736678 全通过，GHCR 发布及匿名 digest/config 核验完成，见 docs/security/evidence/shared-rules-publication.json。

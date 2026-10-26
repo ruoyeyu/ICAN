@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preserve sanitized upstream error bodies, HTTP status, failure stage and request IDs across custom API creation, polling and downloads; retain account ownership checks and metadata-only public logs.
+
 - Extend existing field mappings with opt-in exact-value omission; retain empty-value handling, original values and legacy template behavior.
 
 - Add task-specific supplier shared rules with per-model overrides; reject unmatched custom calls and preserve native-compatible routing, credentials and legacy templates.

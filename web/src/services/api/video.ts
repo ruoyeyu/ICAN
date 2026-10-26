@@ -22,7 +22,7 @@ import { useUserStore } from "@/stores/use-user-store";
 import type { ReferenceImage } from "@/types/image";
 import type { ReferenceAudio, ReferenceVideo } from "@/types/media";
 
-export type VideoResponse = { parameter_translation?: boolean; translationSnapshot?: LocalVideoTranslationSnapshot; id: string; task_id?: string; video_id?: string; source_id?: string; sourceId?: string; channelId?: string; userChannelId?: string; channelName?: string; workflowRef?: string; channel_id?: string; user_channel_id?: string; channel_name?: string; status?: string; video_url?: string; url?: string; storageKey?: string; progress?: number; error?: { message?: string }; size?: string; seconds?: string; model?: string; created_at?: string | number; createdAt?: string | number; started_at?: string | number; startedAt?: string | number; request_body?: string };
+export type VideoResponse = { parameter_translation?: boolean; translationSnapshot?: LocalVideoTranslationSnapshot; id: string; task_id?: string; video_id?: string; source_id?: string; sourceId?: string; channelId?: string; userChannelId?: string; channelName?: string; workflowRef?: string; channel_id?: string; user_channel_id?: string; channel_name?: string; status?: string; video_url?: string; url?: string; storageKey?: string; progress?: number; error?: { message?: string }; error_detail?: string; size?: string; seconds?: string; model?: string; created_at?: string | number; createdAt?: string | number; started_at?: string | number; startedAt?: string | number; request_body?: string };
 type ApiVideoEnvelope = { code: number; data?: VideoResponse | VideoResponse[] | null; msg?: string; message?: string };
 type ApiVideoResponse = VideoResponse | ApiVideoEnvelope;
 export type VideoGenerationResult = { id: string; url: string; durationMs: number; width: number; height: number; bytes: number; mimeType: string; task: VideoResponse };
@@ -265,7 +265,7 @@ export async function pollCreatedVideoGenerationTask(config: AiConfig, task: Vid
             const polled: VideoResponse = await pollOnce();
             const video = polled.parameter_translation ? await syncGeneratedVideo(polled, config, true) : await cacheProtectedVideo(config, model, await cacheProtectedGeminiVideo(config, model, polled));
             onPoll?.(video);
-            if (isFailedVideoStatus(video.status)) throw new VideoRequestError(video.error?.message || "视频生成失败", video);
+            if (isFailedVideoStatus(video.status)) throw new VideoRequestError(video.error?.message || "视频生成失败", video.error_detail || video.error);
             if (typeof video.progress === "number") onProgress?.(video.progress, video);
             if (isCompletedVideoStatus(video.status) || video.video_url || video.url) {
                 completed = video;
@@ -345,12 +345,24 @@ export async function cacheProtectedVideo(config: AiConfig, model: string, task:
     if (!isCompletedVideoStatus(task.status) || task.storageKey || (!needsTaskContent && !needsContentURL)) return task;
     const taskId = task.task_id || task.id || task.video_id || "";
     const response = contentResponse ?? await fetch(contentRequest ? url : `${aiApiUrl(config, `/videos/${encodeURIComponent(taskId)}/content`)}?model=${encodeURIComponent(model)}`, contentRequest || { headers: aiHeaders(config) });
-    if (!response.ok) throw new VideoRequestError(`视频内容下载失败：${response.status}`, task);
-    const blob = await response.blob();
+    const blob = await readVideoContentResponse(response);
     const translatedContent = task.parameter_translation && !url;
-    if ((contentRequest || translatedContent) && (!blob.size || /json|^text\//i.test(blob.type))) throw new VideoRequestError("视频内容接口没有返回媒体文件", task);
     const media = await uploadMediaFile((contentRequest || translatedContent) && !blob.type.startsWith("video/") ? new Blob([blob], { type: "video/mp4" }) : blob, "generated-video", `video-content:${videoSyncKey(config, task)}`);
     return { ...task, url: media.url, video_url: media.url, storageKey: media.storageKey };
+}
+
+export async function readVideoContentResponse(response: Response): Promise<Blob> {
+    const blob = await response.blob();
+    if (!response.ok || /json|^text\//i.test(blob.type)) {
+        const text = await blob.text();
+        let payload: unknown = text;
+        try { payload = JSON.parse(text); } catch { /* Non-JSON server diagnostic. */ }
+        const record = payload && typeof payload === "object" ? payload as Record<string, unknown> : undefined;
+        const message = videoPayloadErrorMessage(payload) || firstString(record?.detail, record?.message, record?.msg) || (typeof payload === "string" ? payload : "");
+        throw new VideoRequestError(message || `视频内容下载失败：HTTP ${response.status}`, payload);
+    }
+    if (!blob.size) throw new VideoRequestError("视频内容接口没有返回媒体文件");
+    return blob;
 }
 
 async function createGrok2APIVideoRequestBody(config: AiConfig, model: string, prompt: string, input: Required<VideoReferenceInput>) {
@@ -970,8 +982,7 @@ async function cacheProtectedGeminiVideo(config: AiConfig, model: string, task: 
         usesAccountProxy(config) ? `${aiApiUrl(config, `/videos/${encodeURIComponent(localTaskId)}/content`)}?model=${encodeURIComponent(model)}` : url,
         { headers: usesAccountProxy(config) ? aiHeaders(config) : geminiDirectHeaders(config) },
     );
-    if (!response.ok) throw new VideoRequestError(`视频内容下载失败：${response.status}`, task);
-    const media = await uploadMediaFile(await response.blob(), "generated-video", `video-content:${videoSyncKey(config, task)}`);
+    const media = await uploadMediaFile(await readVideoContentResponse(response), "generated-video", `video-content:${videoSyncKey(config, task)}`);
     return { ...task, url: media.url, video_url: media.url, storageKey: media.storageKey };
 }
 
@@ -1035,6 +1046,10 @@ function summarizeVideoRequestBody(value: unknown) {
 }
 
 function formatErrorDetail(detail: unknown) {
+    if (detail && typeof detail === "object" && "data" in detail) {
+        const data = detail.data;
+        if (data && typeof data === "object" && "upstream" in data) detail = data.upstream;
+    }
     if (detail == null) return "";
     if (typeof detail === "string") return detail;
     try {

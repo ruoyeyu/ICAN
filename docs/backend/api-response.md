@@ -36,3 +36,9 @@ description: 业务接口统一响应结构与前端处理约定
 - `_parameterTranslation` 是系统内部负载。后端按账号或公共渠道读取保存的原文，转译后只向供应商发送配置里的方法、地址、请求头、查询参数和请求体。
 - 图片 JSON 结果归一为 `{ data: [{ url }] }`；音频 URL 归一为 `{ provider: "parameter-translation", audio_url }`。配置直接返回文件时沿用二进制响应及 MIME。失败仍用现有 `Fail` 业务结构。
 - 视频沿用现有任务响应，增加 `parameter_translation: true` 标记；私有查询快照和公共渠道脚本不随响应返回。创建、查询、完成和失败均进入现有任务管理，失败不重发默认请求。
+
+## 上游失败诊断
+
+创建/下载失败沿用 `{ code: 1, msg, data }`，其中 `msg` 为脱敏摘要，`data.upstream` 包含 `status`、`stage`、可选 `requestId`、`detail`、`body`、`truncated`。`body` 是脱敏后的完整错误正文；超过 256 KiB 时明确标注截断。HTTP 状态指上游响应，业务响应结构不变。请求未收到 HTTP 响应时 `status` 为 0。
+
+视频轮询失败沿用任务的 `error.message` 和 `error_detail`；后者为相同诊断对象的 JSON 字符串。仅当前账号可读取自己的任务详情，公共日志不保存正文。前端下载必须识别 HTTP 200 的业务失败结构，不能将 JSON 错误当作视频。详见 [上游错误详情](../security/upstream-errors.md)。

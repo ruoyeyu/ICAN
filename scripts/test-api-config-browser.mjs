@@ -88,10 +88,16 @@ await page.goto(origin+'/video');await page.getByRole('combobox').filter({hasTex
 await page.getByRole('combobox',{name:'时长（seconds）',exact:true}).fill('3');
 await page.getByRole('combobox',{name:'分辨率（resolution）',exact:true}).fill('shared-custom-resolution');
 await page.getByRole('combobox',{name:'比例（aspect_ratio）',exact:true}).fill('16:9');
+await page.unroute('**/api/v1/videos');
+const diagnostic={status:401,stage:'创建',requestId:'browser-request-id',detail:'fixture permission denied',body:JSON.stringify({message:'fixture permission denied',extra:'detail '.repeat(1000),key:'[已脱敏]',tail:'last diagnostic field'}),truncated:false};
+await page.route('**/api/v1/videos',async route=>{if(route.request().method()!=='POST'){await route.continue();return;}calls++;captured=route.request().postDataJSON();await route.fulfill({contentType:'application/json',body:JSON.stringify({code:1,msg:'上游创建失败（HTTP 401；request ID: browser-request-id）：fixture permission denied',data:{upstream:diagnostic}})});ready();});
 const submittedShared=new Promise(resolve=>{ready=resolve;});
 await page.getByPlaceholder('描述镜头运动、主体动作、场景氛围和画面风格',{exact:true}).filter({visible:true}).first().fill('shared unchanged prompt');
 await page.getByRole('button',{name:/^开始(创作|生成)$/}).first().click();
 await Promise.race([submittedShared,new Promise((_,reject)=>setTimeout(()=>reject(new Error('No shared-rule submission')),15000))]);
 assert.equal(calls,2);assert.equal(captured.model,'fixture-new');assert.equal(captured._parameterTranslation.kind,'video');assert.equal(captured._parameterTranslation.variables.rawSeconds,'3');assert.equal(captured._parameterTranslation.variables.resolution,'shared-custom-resolution');assert.equal(captured._parameterTranslation.variables.rawSize,'16:9');
-assert.deepEqual(errors,[]);console.log(JSON.stringify({import:'validated',edit:'saved in existing translator',export:'no credentials',freshBrowser:'account config restored',presets:'OpenAI added without overwriting existing channel',perModelParameters:'declared choices enforced; custom resolution and literal ratio retained',mockSubmit:'two intercepted requests: legacy and inherited shared rule; exact prompt/ratio/resolution/duration/model',pageErrors:errors}));
+await page.getByRole('button',{name:'详情',exact:true}).first().click();
+assert.deepEqual(JSON.parse(await page.getByRole('dialog',{name:'失败详情',exact:true}).locator('pre').innerText()),diagnostic);
+assert.equal(calls,2);
+assert.deepEqual(errors,[]);console.log(JSON.stringify({import:'validated',edit:'saved in existing translator',export:'no credentials',freshBrowser:'account config restored',presets:'OpenAI added without overwriting existing channel',perModelParameters:'declared choices enforced; custom resolution and literal ratio retained',mockSubmit:'two intercepted requests: legacy and inherited shared rule; exact prompt/ratio/resolution/duration/model',errorDetails:'full sanitized diagnostic retained in existing details dialog; no automatic create retry',pageErrors:errors}));
 }finally{if(browser)await browser.close();next.kill();api.kill();fs.rmSync(data,{recursive:true,force:true});}

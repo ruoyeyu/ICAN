@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createVideoRequestBody } from "./video";
+import { createVideoRequestBody, readVideoContentResponse, VideoRequestError } from "./video";
 import { defaultConfig, localChannelForActiveModel, resolveModelForCapability } from "@/stores/use-config-store";
 import { geminiActionUrl } from "@/lib/gemini";
 
@@ -18,4 +18,23 @@ test("custom video preserves explicit model, prompt, aspect ratio, resolution an
         assert.equal(localChannelForActiveModel({ ...config, activeChannelId: "missing", videoChannelId: "missing" }), undefined);
         assert.equal(resolveModelForCapability(config, "explicit-unavailable", "video"), "explicit-unavailable");
     }
+});
+
+test("video download keeps sanitized server diagnostics including HTTP 200 error envelopes", async () => {
+    for (const status of [400, 401, 403, 429]) {
+        const upstream = { status, stage: "下载", requestId: "fixture-request", detail: "permission denied", body: JSON.stringify({message:"permission denied", detail:"x".repeat(6000), key:"[已脱敏]"}), truncated:false };
+        const payload = {code:1, msg:`上游下载失败（HTTP ${status}；request ID: fixture-request）：permission denied`, data:{upstream}};
+        for (const httpStatus of [200, status]) {
+            await assert.rejects(() => readVideoContentResponse(new Response(JSON.stringify(payload), {status:httpStatus,headers:{"Content-Type":"application/json"}})), (error: unknown) => {
+                assert.ok(error instanceof VideoRequestError);
+                assert.equal(error.message,payload.msg);
+                assert.deepEqual(JSON.parse(error.detail || ""),upstream);
+                return true;
+            });
+        }
+    }
+    await assert.rejects(() => readVideoContentResponse(new Response("upstream unavailable", {status:502,headers:{"Content-Type":"text/plain"}})), /upstream unavailable/);
+    const media = await readVideoContentResponse(new Response(new Uint8Array([0,1,2,3]),{headers:{"Content-Type":"video/mp4"}}));
+    assert.equal(media.type,"video/mp4");
+    assert.deepEqual([...new Uint8Array(await media.arrayBuffer())],[0,1,2,3]);
 });

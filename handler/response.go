@@ -2,11 +2,13 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	log "github.com/tigerowo/infinite-canvas/internal/safelog"
 	"net/http"
 	"strconv"
 
 	"github.com/tigerowo/infinite-canvas/model"
+	"github.com/tigerowo/infinite-canvas/service"
 )
 
 type response struct {
@@ -21,6 +23,15 @@ func OK(w http.ResponseWriter, data any) {
 
 func Fail(w http.ResponseWriter, msg string) {
 	writeJSON(w, response{Code: 1, Data: nil, Msg: msg})
+}
+
+func failAIUpstream(w http.ResponseWriter, err error) {
+	var upstream *service.UpstreamError
+	if errors.As(err, &upstream) {
+		writeJSON(w, response{Code: 1, Data: map[string]any{"upstream": upstream}, Msg: upstream.Error()})
+		return
+	}
+	Fail(w, err.Error())
 }
 
 func FailWithStatus(w http.ResponseWriter, status int, msg string) {
