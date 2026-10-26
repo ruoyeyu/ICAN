@@ -1,5 +1,7 @@
 # 本版本待验收
 
+本轮最终源码 `0c9b9393161df2519dfe86a8a7938e944d5a87c6` 已通过 CI 40297564050 并发布 GHCR；匿名 manifest/config、完整 digest、源码和版本标签已核对，见 docs/security/evidence/upstream-errors-publication.json。扫描 0 严重/高/中/低；唯一 UNKNOWN 按该源码依赖图复核不受影响，原始记录保留。未调用付费生成、未部署服务器。
+
 本轮本地 Go 全套、Web 37、类型检查、生产构建、Python 9 与两组隔离浏览器回归通过，依赖审计 467 包无匹配；证据见 docs/security/evidence/upstream-errors-local.json。
 
 本轮上游错误透传：创建、轮询和下载保留状态、阶段、request ID 及完整脱敏正文；现有失败详情查看，不改页面设计。HTTP 200 的下载错误不再被通用媒体提示覆盖。自定义任务详情按账号隔离，公共日志不存正文；参数、模板、Key 和数据格式不变。免费回归证据见 ../security/evidence/upstream-errors-local.json；真实供应商错误原因仍待用户部署后正常请求确认，没有付费生成。

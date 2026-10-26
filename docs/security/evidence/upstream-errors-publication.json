@@ -1,0 +1,77 @@
+{
+  "sourceCommit": "0c9b9393161df2519dfe86a8a7938e944d5a87c6",
+  "image": "ghcr.io/ruoyeyu/ican@sha256:cdc6049cc294ee90e32e5f8d36532c982b36acf37654a2847d4632bc268af0f8",
+  "tag": "ghcr.io/ruoyeyu/ican:sha-0c9b9393161df2519dfe86a8a7938e944d5a87c6-run-40297564050-1",
+  "imageId": "sha256:152aff2a30259b091014492e48555f382d793167265a7093571c5f127234764b",
+  "platform": "linux/amd64",
+  "checks": "All prerequisite tests, runtime, Compose, inventory and scan steps passed",
+  "scanPolicy": "Block HIGH/CRITICAL matches; preserve complete raw scan including other severities",
+  "workflowRun": "https://github.com/ruoyeyu/ICAN/actions/runs/40297564050",
+  "runAttempt": "1",
+  "productionApproved": false,
+  "scope": "Full sanitized upstream diagnostics across create, poll and protected download; existing UI and account isolation",
+  "scanMatches": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 1
+  },
+  "unknownMatch": {
+    "id": "GO-2026-5932",
+    "package": "golang.org/x/crypto",
+    "installedVersion": "v0.58.0",
+    "advisory": "https://vuln.go.dev/ID/GO-2026-5932.json",
+    "dependencyTarget": "Go 1.27.3; CGO_ENABLED=0 GOOS=linux GOARCH=amd64",
+    "dependencyListSHA256": "99ebfed8dd203aa470db42404934e21c59b40bb898008246762664916b78f6d1",
+    "dependencyCount": 427,
+    "review": "Affected openpgp imports are absent from this exact source dependency graph. Raw scan retained; only this record is excluded from effective counts. Dependencies and scanner gates are unchanged."
+  },
+  "effectiveRiskCounts": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "UNKNOWN": 0
+  },
+  "tests": {
+    "goSuite": "passed (CGO_ENABLED=0); HTTP status/stage, full body, truncation, redaction, ownership, public logs and business-error fixtures",
+    "web": 37,
+    "director": 294,
+    "deploymentAndPublicationPolicies": 9,
+    "productionBuilds": "passed",
+    "imageIsolationAndRestart": "passed: accounts, supplier/personal templates, rules, credentials and private media",
+    "runtimeDNSAndTLS": "passed",
+    "actualComposeConfigurations": [
+      "1.6 CPUs / 1536m",
+      "2 CPUs / 2g"
+    ],
+    "localBrowserEvidence": "upstream-errors-local.json",
+    "sourceVersionMetadata": "passed"
+  },
+  "evidenceArchive": {
+    "path": "ghcr-40297564050-evidence.zip",
+    "sha256": "8f652c53c1e5a94bba91f33d33c09a6ec5ec9e555a0394b02ffeed86f7633977",
+    "artifactId": 12639266529
+  },
+  "publicationArtifact": {
+    "id": 12639432640,
+    "sha256": "6ae1f2259f11e8f66ee0af9ff8d3157f6b4ce1147b2e506a75e5e76e409a3190"
+  },
+  "anonymousRegistryManifestAndConfig": {
+    "manifestDigest": "sha256:cdc6049cc294ee90e32e5f8d36532c982b36acf37654a2847d4632bc268af0f8",
+    "imageConfigDigest": "sha256:152aff2a30259b091014492e48555f382d793167265a7093571c5f127234764b",
+    "sourceRevision": "0c9b9393161df2519dfe86a8a7938e944d5a87c6",
+    "version": "0.1.0",
+    "user": "10001:10001",
+    "platform": "linux/amd64",
+    "embeddedCredentialEnvironment": false,
+    "verified": true
+  },
+  "paidCalls": 0,
+  "productionDeployment": false,
+  "databaseSchemaChanged": false,
+  "dependenciesChanged": false,
+  "rollback": "No schema or template migration. Retain the original data directory and encryption key; restore previous pinned digest using the documented pull/verify/recreate procedure. Keep a consistent pre-update backup.",
+  "previousVerifiedImage": "ghcr.io/ruoyeyu/ican@sha256:f57118a5c4fa079430189d4a6d84412efa63918fe0b2f4d9268dd0e59d573a3e"
+}

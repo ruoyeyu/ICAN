@@ -6,15 +6,15 @@ ICAN 0.1.0 is built on GitHub Actions for **linux/amd64**. The server needs Dock
 
 ## Verified publication
 
-This build adds opt-in parameter omission to the existing template field mappings. Templates without omission rules keep their original behavior. Database and credential formats remain unchanged; retain the original data directory and encryption key. Before rolling back to an image without this optional field, restore matching pre-change channel/template configurations; see [supplier templates](supplier-templates.md).
+This build preserves full sanitized upstream error details across creation, polling and protected downloads, including HTTP status, failure stage and request IDs. Oversized bodies are explicitly marked as truncated. Account, template, credential and database formats are unchanged; keep the original data directory and encryption key. See [diagnostics and rollback](upstream-errors.md).
 
-[CI 40280932978](https://github.com/ruoyeyu/ICAN/actions/runs/40280932978) passed, including publication and registry digest verification. Source: `73d90f36ec80eb84c960ec3c0981ca60d0a0674d`.
+[CI 40297564050](https://github.com/ruoyeyu/ICAN/actions/runs/40297564050) passed, including publication and registry digest verification. Source: `0c9b9393161df2519dfe86a8a7938e944d5a87c6`.
 
 ```text
-ghcr.io/ruoyeyu/ican@sha256:f57118a5c4fa079430189d4a6d84412efa63918fe0b2f4d9268dd0e59d573a3e
+ghcr.io/ruoyeyu/ican@sha256:cdc6049cc294ee90e32e5f8d36532c982b36acf37654a2847d4632bc268af0f8
 ```
 
-[Publication and check results](evidence/field-omission-publication.json) · [Raw security evidence](evidence/ghcr-40280932978-evidence.zip). These records describe this exact image; later builds require their own records.
+[Publication and check results](evidence/upstream-errors-publication.json) · [Raw security evidence](evidence/ghcr-40297564050-evidence.zip). These records describe this exact image; later builds require their own records.
 
 The manifest above was also retrieved anonymously and its digest verified. This published image is accessible without a GitHub login.
 

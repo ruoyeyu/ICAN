@@ -4,13 +4,15 @@ ICAN 的 Go 后端、Web 前端和导演台全部由 GitHub Actions 编译。服
 
 ## 本次已发布成品
 
-[流水线 40280932978](https://github.com/ruoyeyu/ICAN/actions/runs/40280932978) 的构建、检查及发布全部通过。源码 commit：`73d90f36ec80eb84c960ec3c0981ca60d0a0674d`。
+本轮修复创建、轮询及下载的上游错误透传，现有详情窗口保留完整脱敏正文及状态、阶段、request ID；超长正文明确标注截断。模板、账号、Key、素材和数据库格式不变，沿用原数据目录与加密密钥。见[错误详情及回滚说明](upstream-errors.md)。
+
+[流水线 40297564050](https://github.com/ruoyeyu/ICAN/actions/runs/40297564050) 的构建、检查及发布全部通过。源码 commit：`0c9b9393161df2519dfe86a8a7938e944d5a87c6`。
 
 ```sh
-docker pull ghcr.io/ruoyeyu/ican@sha256:f57118a5c4fa079430189d4a6d84412efa63918fe0b2f4d9268dd0e59d573a3e
+docker pull ghcr.io/ruoyeyu/ican@sha256:cdc6049cc294ee90e32e5f8d36532c982b36acf37654a2847d4632bc268af0f8
 ```
 
-[镜像及检查记录](evidence/field-omission-publication.json) · [完整原始安全证据](evidence/ghcr-40280932978-evidence.zip)。
+[镜像及检查记录](evidence/upstream-errors-publication.json) · [完整原始安全证据](evidence/ghcr-40297564050-evidence.zip)。
 
 上述镜像 manifest 已验证可匿名获取且 digest 一致，无需登录 GitHub。
 

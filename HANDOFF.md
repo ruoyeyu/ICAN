@@ -1,8 +1,10 @@
 # ICAN 交接
 
+本轮最终源码 `0c9b9393161df2519dfe86a8a7938e944d5a87c6` 已通过 CI 40297564050 并发布 GHCR；匿名 manifest/config、完整 digest、源码和版本标签已核对，见 docs/security/evidence/upstream-errors-publication.json。扫描 0 严重/高/中/低；唯一 UNKNOWN 按该源码依赖图复核不受影响，原始记录保留。未调用付费生成、未部署服务器。
+
 本轮本地 Go 全套、Web 37、类型检查、生产构建、Python 9 与两组隔离浏览器回归通过，依赖审计 467 包无匹配；证据见 docs/security/evidence/upstream-errors-local.json。
 
-本轮修复自定义 API 上游错误透传：创建、轮询、下载统一解析/脱敏，原详情窗口显示完整脱敏正文与状态、阶段、request ID；256 KiB 超限明确标注。补齐下载业务错误识别与自定义任务归属检查，不改供应商参数、凭据或模板，不自动重建任务。数据与配置无需迁移；回滚说明及验证范围见 docs/security/upstream-errors.md。发布完成后以 upstream-errors-publication.json 的源码和 digest 为准。未调用付费生成、未操作服务器。
+本轮修复自定义 API 上游错误透传：创建、轮询、下载统一解析/脱敏，原详情窗口显示完整脱敏正文与状态、阶段、request ID；256 KiB 超限明确标注。补齐下载业务错误识别与自定义任务归属检查，不改供应商参数、凭据或模板，不自动重建任务。数据与配置无需迁移；回滚说明及验证范围见 docs/security/upstream-errors.md。发布记录以 docs/security/evidence/upstream-errors-publication.json 的源码和 digest 为准。未调用付费生成、未操作服务器。
 
 本轮参数省略：复用字段 optional 与原转译引擎，新增可选 omitValues 精确匹配；固定值/变量、请求体/查询、公共规则/模型覆盖共用。旧 v1/v2 编译保持一致，不更改默认值或已保存渠道。Go 全套、24 组模拟 HTTP 请求、Web 36、类型检查、生产构建及 Python 9 已通过；两组隔离浏览器回归已通过，见 docs/security/evidence/field-omission-local.json；CI 40280932978 全通过，GHCR 发布、匿名 manifest/config 摘要和源码标签核验完成；固定 digest 与原始扫描见 docs/security/evidence/field-omission-publication.json。无付费调用、无服务器操作。用法和旧镜像回滚要求见 docs/security/supplier-templates.zh-CN.md。
 
