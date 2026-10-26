@@ -499,7 +499,7 @@ function LoadingContent({ node, theme, now }: Pick<NodeContentRendererProps, "no
                 <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3">
                     <div className="size-10 animate-spin rounded-full border-2" style={{ borderColor: theme.node.stroke, borderTopColor: selectionBlue }} />
                     <div className="text-sm font-semibold" style={{ color: selectionBlue }}>
-                        {stopLabel || `正在创作 ${progress}%`}
+                        {stopLabel || (node.metadata?.videoRetrieval?.status === "fetching" ? "生成完成，正在取回" : node.metadata?.videoRetrieval?.status === "saving" ? "生成完成，正在保存" : `正在创作 ${progress}%`)}
                     </div>
                     <span className="rounded-full px-2 py-1 text-xs" style={{ background: theme.toolbar.panel, color: theme.node.text }}>
                         {formatDuration(elapsedMs)}
@@ -549,7 +549,7 @@ function ErrorContent({ node, theme, onRetry }: Pick<NodeContentRendererProps, "
                 onMouseDown={(event) => event.stopPropagation()}
             >
                 <RefreshCw className="size-3.5" />
-                重试
+                {node.metadata?.videoResume ? "继续取回" : "重试"}
             </button>
         </div>
     );
@@ -671,6 +671,7 @@ function EmptyImageContent({ node, theme, isBatchRoot, batchCount, batchExpanded
 }
 
 function VideoNodeContent({ node, theme, isSelected, onViewImage, onResize }: NodeContentRendererProps) {
+    const [playbackError,setPlaybackError] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [mediaDurationMs, setMediaDurationMs] = useState(0);
@@ -703,7 +704,8 @@ function VideoNodeContent({ node, theme, isSelected, onViewImage, onResize }: No
     };
     return (
         <div className="relative h-full w-full overflow-hidden rounded-[18px] bg-black">
-            <video ref={videoRef} src={node.metadata.content} tabIndex={-1} playsInline className="h-full w-full object-contain outline-none" onLoadStart={() => { setVideoTime(0); setMediaDurationMs(0); }} onLoadedMetadata={(event) => { const video = event.currentTarget; setMediaDurationMs(Number.isFinite(video.duration) ? video.duration * 1000 : 0); if (video.currentSrc === video.src) onResize(node.id, video.videoWidth, video.videoHeight, undefined, node); }} onTimeUpdate={(event) => setVideoTime(event.currentTarget.currentTime)} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onKeyDown={(event) => { if (isSelected && event.code === "Space") { event.preventDefault(); event.stopPropagation(); togglePlayback(); } }} />
+            <video ref={videoRef} src={node.metadata.content} tabIndex={-1} playsInline className="h-full w-full object-contain outline-none" onError={() => setPlaybackError(true)} onLoadStart={() => { setPlaybackError(false); setVideoTime(0); setMediaDurationMs(0); }} onLoadedMetadata={(event) => { const video = event.currentTarget; setMediaDurationMs(Number.isFinite(video.duration) ? video.duration * 1000 : 0); if (video.currentSrc === video.src) onResize(node.id, video.videoWidth, video.videoHeight, undefined, node); }} onTimeUpdate={(event) => setVideoTime(event.currentTarget.currentTime)} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onKeyDown={(event) => { if (isSelected && event.code === "Space") { event.preventDefault(); event.stopPropagation(); togglePlayback(); } }} />
+            {playbackError && <div role="alert" className="absolute inset-x-2 top-8 text-center text-xs" style={{color:theme.node.text}}>视频无法播放：文件损坏或浏览器不支持该编码</div>}
             {mediaDurationMs > 0 ? <span className="pointer-events-none absolute left-2 top-2 z-20 flex h-7 items-center justify-center rounded-md px-2 text-[11px] font-medium opacity-70 backdrop-blur" style={controlStyle}>{new Date(mediaDurationMs).toISOString().slice(mediaDurationMs >= 3_600_000 ? 11 : 14, 19)}</span> : null}
             <button type="button" title={isPlaying ? "暂停" : "播放"} aria-label={isPlaying ? "暂停" : "播放"} className={`${controlClassName} left-2`} style={controlStyle} onClick={(event) => { event.stopPropagation(); togglePlayback(); }} onMouseDown={keepVideoFocus} onDoubleClick={(event) => event.stopPropagation()}>
                 {isPlaying ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}

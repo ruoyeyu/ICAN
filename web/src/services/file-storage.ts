@@ -18,20 +18,14 @@ export async function uploadMediaFile(input: string | Blob, prefix = "file", syn
     if (!useUserStore.getState().user || !useUserStore.getState().token) throw new Error("请先登录后再上传素材");
     const blob = typeof input === "string" ? await (await fetch(input)).blob() : input;
     const uploaded = await autoSyncToCloud(syncId || blob, async () => {
-        const metadataUrl = blob.type.startsWith("video/") ? URL.createObjectURL(blob) : undefined;
-        try {
-            return await uploadMediaBlobToServer(blob, input instanceof File ? input.name : prefix, metadataUrl, tokenOverride);
-        } finally {
-            if (metadataUrl) URL.revokeObjectURL(metadataUrl);
-        }
+        return uploadMediaBlobToServer(blob, input instanceof File ? input.name : prefix, tokenOverride);
     });
     if (uploaded) return uploaded;
     const storageKey = `${prefix}:${nanoid()}`;
     await store.setItem(storageKey, blob);
     const url = URL.createObjectURL(blob);
     objectUrls.set(storageKey, url);
-    const meta = blob.type.startsWith("video/") ? await readVideoMeta(url) : {};
-    return { url, storageKey, bytes: blob.size, mimeType: blob.type || "application/octet-stream", ...meta };
+    return { url, storageKey, bytes: blob.size, mimeType: blob.type || "application/octet-stream" };
 }
 
 export async function uploadAssetMediaFile(file: File, prefix = "asset-media"): Promise<UploadedFile> {
@@ -66,7 +60,7 @@ export async function uploadRemoteMediaToServer(url: string, filename: string): 
     return uploadMediaBlobToServer(blob, filename);
 }
 
-async function uploadMediaBlobToServer(blob: Blob, filename: string, metadataUrl?: string, tokenOverride?: string): Promise<UploadedFile> {
+async function uploadMediaBlobToServer(blob: Blob, filename: string, tokenOverride?: string): Promise<UploadedFile> {
     if (!useUserStore.getState().user || !useUserStore.getState().token) throw new Error("请先登录后再上传素材");
     const config = await loadStorageConfig().catch(() => null);
     if (tokenOverride !== undefined && useUserStore.getState().token !== tokenOverride) {
@@ -90,8 +84,7 @@ async function uploadMediaBlobToServer(blob: Blob, filename: string, metadataUrl
     const response = await fetch("/api/v1/files", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
     const payload = (await response.json().catch(() => null)) as { code?: number; msg?: string; data?: UploadedFile } | null;
     if (!response.ok || payload?.code !== 0 || !payload.data) throw new Error(payload?.msg || "媒体同步失败");
-    const meta = metadataUrl || payload.data.mimeType?.startsWith("video/") ? await readVideoMeta(metadataUrl || payload.data.url) : {};
-    return { ...payload.data, bytes: payload.data.bytes || blob.size, mimeType: payload.data.mimeType || blob.type || "application/octet-stream", ...meta };
+    return { ...payload.data, bytes: payload.data.bytes || blob.size, mimeType: payload.data.mimeType || blob.type || "application/octet-stream" };
 }
 
 async function uploadWebDAVMediaDirect(blob: Blob, filename: string, provider: UserWebDAVStorageProvider): Promise<UploadedFile | null> {
@@ -104,8 +97,7 @@ async function cacheAnonymousMedia(uploaded: UploadedFile, blob: Blob) {
     await store.setItem(uploaded.storageKey, blob);
     const url = URL.createObjectURL(blob);
     objectUrls.set(uploaded.storageKey, url);
-    const meta = blob.type.startsWith("video/") ? await readVideoMeta(url) : {};
-    return { ...uploaded, url, bytes: uploaded.bytes || blob.size, mimeType: uploaded.mimeType || blob.type || "application/octet-stream", ...meta };
+    return { ...uploaded, url, bytes: uploaded.bytes || blob.size, mimeType: uploaded.mimeType || blob.type || "application/octet-stream" };
 }
 
 async function loadStorageConfig() {
@@ -243,14 +235,4 @@ export function collectMediaStorageKeys(value: unknown, keys = new Set<string>()
     if ("storageKey" in value && typeof value.storageKey === "string" && value.storageKey.includes(":")) keys.add(value.storageKey);
     Object.values(value).forEach((item) => (Array.isArray(item) ? item.forEach((child) => collectMediaStorageKeys(child, keys)) : collectMediaStorageKeys(item, keys)));
     return keys;
-}
-
-function readVideoMeta(url: string) {
-    return new Promise<{ width: number; height: number }>((resolve) => {
-        const video = document.createElement("video");
-        const done = () => resolve({ width: video.videoWidth || 1280, height: video.videoHeight || 720 });
-        video.onloadedmetadata = done;
-        video.onerror = done;
-        video.src = url;
-    });
 }

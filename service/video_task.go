@@ -149,6 +149,7 @@ func DeleteUserVideoTask(userID string, id string) error {
 
 func VideoTaskResponse(task model.VideoTask) map[string]any {
 	result := map[string]any{
+		"server_task":   true,
 		"id":            task.ID,
 		"object":        "video",
 		"model":         task.Model,
@@ -186,6 +187,7 @@ func VideoTaskResponse(task model.VideoTask) map[string]any {
 		result["error"] = map[string]any{"message": firstVideoTaskValue(task.Error, task.ErrorDetail)}
 		result["error_detail"] = task.ErrorDetail
 	}
+	addVideoRetrievalResponse(task, result)
 	return result
 }
 

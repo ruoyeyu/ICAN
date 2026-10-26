@@ -1,5 +1,7 @@
 # ICAN 交接
 
+本轮视频取回：流式暂存并校验完整性后才登记素材；生成/取回状态分离、显式继续取回原任务、账号与任务级持久去重、旧轮询不覆盖完成结果。移除文件交付对浏览器 metadata 事件的等待。新增可重复执行的 video_retrievals V1 增量迁移，保留旧表和密钥，恢复/回滚见 docs/security/video-retrieval.md。完成任务不再未经确认十分钟清理。免费模拟与浏览器验证记录见 video-retrieval-local.json；镜像以本轮成功 CI 和固定 digest 为准，未调用付费生成、未操作服务器。
+
 本轮最终源码 `0c9b9393161df2519dfe86a8a7938e944d5a87c6` 已通过 CI 40297564050 并发布 GHCR；匿名 manifest/config、完整 digest、源码和版本标签已核对，见 docs/security/evidence/upstream-errors-publication.json。扫描 0 严重/高/中/低；唯一 UNKNOWN 按该源码依赖图复核不受影响，原始记录保留。未调用付费生成、未部署服务器。
 
 本轮本地 Go 全套、Web 37、类型检查、生产构建、Python 9 与两组隔离浏览器回归通过，依赖审计 467 包无匹配；证据见 docs/security/evidence/upstream-errors-local.json。

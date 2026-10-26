@@ -246,6 +246,10 @@ func copyAIResponse(w http.ResponseWriter, request *http.Request, channel model.
 			onFailure()
 		}
 		saveAIProxyLog(logContext, 0, "", err.Error())
+		if strings.HasPrefix(logContext.Endpoint, "/videos/") && strings.HasSuffix(logContext.Endpoint, "/content") {
+			failAIUpstream(w, service.NewUpstreamError([]byte(err.Error()), 0, "下载", nil, request, channel.APIKey))
+			return
+		}
 		Fail(w, "AI 接口请求失败")
 		return
 	}
@@ -270,6 +274,15 @@ func copyAIResponse(w http.ResponseWriter, request *http.Request, channel model.
 		return
 	}
 
+	if strings.HasPrefix(logContext.Endpoint, "/videos/") && strings.HasSuffix(logContext.Endpoint, "/content") {
+		if strings.Contains(response.Header.Get("Content-Type"), "json") || strings.HasPrefix(response.Header.Get("Content-Type"), "text/") {
+			payload, _ := io.ReadAll(io.LimitReader(response.Body, service.UpstreamErrorBodyLimit+1))
+			failAIUpstream(w, service.NewUpstreamError(payload, response.StatusCode, "下载", response.Header, request, channel.APIKey))
+		} else {
+			writeVideoDownload(w, response, channel.APIKey)
+		}
+		return
+	}
 	if copyAIProtocolResponse(w, response, request, channel, logContext, onFailure) {
 		return
 	}

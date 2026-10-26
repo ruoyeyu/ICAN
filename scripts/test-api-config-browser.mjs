@@ -47,7 +47,7 @@ assert.ok(channel);assert.equal(channel.apiKey,'fixture-private-key');assert.ok(
 await ctx.close();ctx=await browser.newContext({viewport:{width:1500,height:1000}});page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await login();
 await page.getByRole('button',{name:'配置',exact:true}).click();await page.locator('input[value="Async video fixture"]').waitFor();
 await page.getByRole('button',{name:'新增自定义 API',exact:true}).click();
-await page.getByLabel('初始化预设',{exact:true}).click();await page.locator('.ant-select-dropdown:visible .ant-select-item-option').filter({hasText:/^Async video fixture$/}).waitFor();await page.getByText('OpenAI 兼容',{exact:true}).click();
+await page.getByLabel('初始化预设',{exact:true}).click();await page.locator('.ant-select-dropdown:visible .ant-select-item-option').filter({hasText:/^Async video fixture$/}).waitFor();await page.getByLabel('初始化预设',{exact:true}).press('Home');await page.getByLabel('初始化预设',{exact:true}).press('ArrowDown');await page.getByLabel('初始化预设',{exact:true}).press('Enter');await page.getByRole('dialog',{name:'新增自定义 API'}).getByTitle('OpenAI 兼容',{exact:true}).waitFor();
 await page.getByLabel('渠道名称',{exact:true}).fill('Native compatible');await page.getByLabel('基础地址',{exact:true}).fill('https://native.example.invalid');await page.getByLabel('个人 API Key',{exact:true}).fill('second-private-key');
 await page.getByLabel('模型名称',{exact:true}).fill('my-chat-model');await page.getByLabel('模型名称',{exact:true}).press('Enter');
 await page.getByRole('button',{name:'添加渠道',exact:true}).click();

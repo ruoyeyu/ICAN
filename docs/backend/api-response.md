@@ -42,3 +42,8 @@ description: 业务接口统一响应结构与前端处理约定
 创建/下载失败沿用 `{ code: 1, msg, data }`，其中 `msg` 为脱敏摘要，`data.upstream` 包含 `status`、`stage`、可选 `requestId`、`detail`、`body`、`truncated`。`body` 是脱敏后的完整错误正文；超过 256 KiB 时明确标注截断。HTTP 状态指上游响应，业务响应结构不变。请求未收到 HTTP 响应时 `status` 为 0。
 
 视频轮询失败沿用任务的 `error.message` 和 `error_detail`；后者为相同诊断对象的 JSON 字符串。仅当前账号可读取自己的任务详情，公共日志不保存正文。前端下载必须识别 HTTP 200 的业务失败结构，不能将 JSON 错误当作视频。详见 [上游错误详情](../security/upstream-errors.md)。
+# Video delivery
+
+Owned video-task responses retain upstream `status`/`task_id` and add `server_task` plus optional `retrieval: {status, attempt, errorDetail}`. Delivery states are `fetching`, `saving`, `ready`, `failed`; `ready` includes the existing private `url`, `storageKey`, `bytes`, and `mimeType`. Failed delivery does not change upstream completion.
+
+`POST /api/v1/video-tasks/:id/retrieve` starts one persisted delivery attempt and returns the ordinary task envelope. Repeated requests return the existing state. A failed attempt requires `{retryAttempt: <observed attempt>}` to continue; stale retry requests cannot claim another attempt. The optional `provider` uses existing user-storage authorization. Generation is never submitted by this endpoint. Retrieval errors use the existing sanitized upstream diagnostics and are owner-only.

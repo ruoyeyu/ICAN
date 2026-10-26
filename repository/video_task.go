@@ -39,7 +39,7 @@ func SaveVideoTask(task model.VideoTask) (model.VideoTask, error) {
 	if err := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&task).Error; err != nil {
 		return task, err
 	}
-	update := db.Model(&model.VideoTask{}).Where("user_id = ? AND id = ? AND status <> ?", task.UserID, task.ID, "cancelled").Select("*").Updates(&task)
+	update := db.Model(&model.VideoTask{}).Where("user_id = ? AND id = ? AND status NOT IN ?", task.UserID, task.ID, []string{"completed", "failed", "cancelled", "canceled"}).Select("*").Updates(&task)
 	if update.Error == nil && update.RowsAffected == 0 {
 		update = db.First(&task, "user_id = ? AND id = ?", task.UserID, task.ID)
 	}
@@ -52,7 +52,7 @@ func UpdateVideoTask(task model.VideoTask) error {
 		return err
 	}
 	return db.Model(&model.VideoTask{}).
-		Where("user_id = ? AND id = ? AND status <> ?", task.UserID, task.ID, "cancelled").
+		Where("user_id = ? AND id = ? AND status NOT IN ?", task.UserID, task.ID, []string{"completed", "failed", "cancelled", "canceled"}).
 		Select("*").Updates(&task).Error
 }
 
@@ -112,7 +112,13 @@ func DeleteUserVideoTask(userID string, id string) error {
 	if err != nil {
 		return err
 	}
-	return db.Where("user_id = ? AND (id = ? OR upstream_task_id = ? OR upstream_video_id = ?)", userID, id, id, id).Delete(&model.VideoTask{}).Error
+	return db.Transaction(func(tx *gorm.DB) error {
+		matching := tx.Model(&model.VideoTask{}).Select("id").Where("user_id = ? AND (id = ? OR upstream_task_id = ? OR upstream_video_id = ?)", userID, id, id, id)
+		if err := tx.Where("user_id = ? AND task_id IN (?)", userID, matching).Delete(&model.VideoRetrieval{}).Error; err != nil {
+			return err
+		}
+		return tx.Where("user_id = ? AND (id = ? OR upstream_task_id = ? OR upstream_video_id = ?)", userID, id, id, id).Delete(&model.VideoTask{}).Error
+	})
 }
 
 func ListDueVideoTasks(limit int) ([]model.VideoTask, error) {
@@ -138,6 +144,6 @@ func DeleteFinishedVideoTasksBefore(before string) error {
 	}
 	return db.
 		Where("completed_at <> ? AND completed_at < ?", "", before).
-		Where("status IN ?", []string{"completed", "failed", "cancelled", "canceled"}).
+		Where("status IN ?", []string{"failed", "cancelled", "canceled"}).
 		Delete(&model.VideoTask{}).Error
 }

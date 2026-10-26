@@ -495,3 +495,7 @@ RunningHub/ComfyUI 不加入上述普通模型筛选：系统工作流公开列�
 - `storage_objects.share_version`：供应商授权链接撤销版本；所有读取仍校验对象存在、所有者及其启用状态。
 - `user_configs.model_config`、`user_configs.storage_provider` 和 `settings.private` 使用 AES-256-GCM 密文（`ican:v1:` 前缀）；关联数据包含账号和字段，密钥不在数据库内。旧明文必须先在副本显式迁移。
 - 图片/音频任务创建只能 INSERT；客户端任务 ID 冲突不能覆盖已有账号数据。视频任务更新同时约束 user_id 与 id。
+
+## Video delivery V1
+
+`video_retrievals` is an additive table created by `repository.migrateVideoRetrievalV1` after the existing migrations. `task_id` is the primary key; `user_id` is indexed and checked on every read/claim. `object_id` is reserved once for idempotent storage, `status` tracks fetching/saving/ready/failed, `attempt` prevents stale retries, and `error_detail` contains sanitized owner-only diagnostics. The storage index and ready state commit in the same database transaction. Existing task/account/configuration/key/media tables are unchanged. On API startup, interrupted attempts become failed; ready results survive. Backup-copy and old-table reads are covered by `TestVideoRetrievalV1BackupMigration`.

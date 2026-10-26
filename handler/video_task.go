@@ -17,6 +17,9 @@ import (
 )
 
 func StartVideoTaskPoller() {
+	if err := service.CleanupInterruptedVideoDownloads(); err != nil {
+		log.Printf("cleanup interrupted video downloads failed: %v", err)
+	}
 	service.StartVideoTaskPoller(pollVideoTaskFromUpstream)
 }
 
@@ -308,20 +311,30 @@ func serveGeminiVideoTaskContent(w http.ResponseWriter, r *http.Request, id stri
 		failAIUpstream(w, service.NewUpstreamError(body, response.StatusCode, "下载", response.Header, response.Request, channel.APIKey))
 		return true
 	}
-	writeVideoDownload(w, response)
+	writeVideoDownload(w, response, channel.APIKey)
 	return true
 }
 
-func writeVideoDownload(w http.ResponseWriter, response *http.Response) {
-	prefix, contentType, err := service.ReadPassivePrefix(response.Body)
-	if err != nil || !strings.HasPrefix(contentType, "video/") {
-		Fail(w, "视频内容接口未返回有效视频")
+func writeVideoDownload(w http.ResponseWriter, response *http.Response, secrets ...string) {
+	video, err := service.VerifyVideoDownload(response, secrets...)
+	if err != nil {
+		var upstream *service.UpstreamError
+		if errors.As(err, &upstream) {
+			failAIUpstream(w, upstream)
+		} else {
+			FailError(w, err)
+		}
 		return
 	}
-	w.Header().Set("Content-Type", contentType)
+	defer video.Close()
+	w.Header().Set("Content-Type", video.MimeType)
+	w.Header().Set("Content-Length", fmt.Sprint(video.Bytes))
+	w.Header().Set("X-ICAN-Content-Length", fmt.Sprint(video.Bytes))
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(response.StatusCode)
-	_, _ = io.Copy(w, io.MultiReader(bytes.NewReader(prefix), response.Body))
+	if n, err := io.Copy(w, video.File); err != nil || n != video.Bytes {
+		panic(http.ErrAbortHandler)
+	}
 }
 
 func pollVideoTaskFromUpstream(ctx context.Context, task model.VideoTask) (service.VideoTaskPollUpdate, error) {

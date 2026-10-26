@@ -1,5 +1,7 @@
 # 本版本待验收
 
+视频取回修复：生成完成与下载/保存分离；错误可见并只继续取回原任务；断流、长度不符和缺少 MP4 索引不登记素材。刷新与并发复用同一结果，metadata 事件不阻塞交付。V1 增量表与备份副本升级/回滚、免费 fixtures 和浏览器证据见 ../security/video-retrieval.md 及 evidence/video-retrieval-local.json。真实慢速上游应由用户部署后取回已有任务验收，不重新付费生成。
+
 本轮最终源码 `0c9b9393161df2519dfe86a8a7938e944d5a87c6` 已通过 CI 40297564050 并发布 GHCR；匿名 manifest/config、完整 digest、源码和版本标签已核对，见 docs/security/evidence/upstream-errors-publication.json。扫描 0 严重/高/中/低；唯一 UNKNOWN 按该源码依赖图复核不受影响，原始记录保留。未调用付费生成、未部署服务器。
 
 本轮本地 Go 全套、Web 37、类型检查、生产构建、Python 9 与两组隔离浏览器回归通过，依赖审计 467 包无匹配；证据见 docs/security/evidence/upstream-errors-local.json。

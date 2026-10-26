@@ -11,7 +11,7 @@ import { saveAs } from "file-saver";
 import { deleteCanvasProjects, stopCanvasTask } from "@/services/api/canvas-tasks";
 import { createCanvasImageTask, pollCanvasImageTaskStatus, requestImageQuestion, type CanvasImageTask } from "@/services/api/image";
 import { createCanvasAudioTask, pollCanvasAudioTaskStatus, type CanvasAudioTask } from "@/services/api/audio";
-import { createVideoGenerationTask, pollVideoGenerationTaskStatus, VIDEO_POLL_INTERVAL_MS, type VideoResponse } from "@/services/api/video";
+import { createVideoGenerationTask, pollVideoGenerationTaskStatus, retrieveVideoGenerationTask, VIDEO_POLL_INTERVAL_MS, type VideoResponse } from "@/services/api/video";
 import { comfyOutputStorageKey, getWorkflowTask, submitWorkflowTask, workflowMediaSource, type WorkflowGenerationTask } from "@/services/api/workflow-generation";
 import type { WorkflowRef } from "@/lib/workflow-channel";
 import { channelProtocolForConfig, defaultConfig, resolveModelForCapability, type AiConfig, useConfigStore, useEffectiveConfig } from "@/stores/use-config-store";
@@ -737,7 +737,11 @@ function InfiniteCanvasPage({ projectId }: { projectId: string }) {
                         if (!isNodeTaskActive(node.id, node.metadata?.clientTaskId)) return;
                         setNodes((prev) => applyCanvasVideoTaskUpdate(prev, node.id, task, generationConfig, node.metadata?.startedAt || Date.now(), { width: node.width, height: node.height }, node.metadata?.clientTaskId));
                     })
-                    .catch(() => undefined)
+                    .catch((error) => {
+                        if (controller.signal.aborted || !isNodeTaskActive(node.id, node.metadata?.clientTaskId)) return;
+                        setNodes((prev) => prev.map((item) => item.id === node.id && item.metadata?.clientTaskId === node.metadata?.clientTaskId && !item.metadata?.content
+                            ? { ...item, metadata: { ...item.metadata, status: NODE_STATUS_ERROR, videoResume: true, errorDetails: `视频状态或取回失败：${error instanceof Error ? error.message : "请求失败"}${error?.detail ? `\n${error.detail}` : ""}` } } : item));
+                    })
                     .finally(() => {
                         pollingVideoNodeIdsRef.current.delete(node.id);
                     });
@@ -4061,6 +4065,20 @@ function InfiniteCanvasPage({ projectId }: { projectId: string }) {
 
     const handleRetryNode = useCallback(
         async (node: CanvasNodeData) => {
+            if (node.type === CanvasNodeType.Video && node.metadata?.videoResume && canvasVideoTaskId(node.metadata)) {
+                const config = buildGenerationConfig(effectiveConfig,node,"video");
+                const saved = canvasVideoTaskFromMetadata(node.metadata);
+                setNodes((prev) => prev.map((item) => item.id === node.id && !item.metadata?.content ? { ...item, metadata:{...item.metadata,status:NODE_STATUS_LOADING,errorDetails:undefined} } : item));
+                try {
+                    const task = saved.retrieval?.status === "failed"
+                        ? await retrieveVideoGenerationTask(config,saved,true)
+                        : await pollVideoGenerationTaskStatus(config,saved);
+                    setNodes((prev) => applyCanvasVideoTaskUpdate(prev,node.id,task,config,node.metadata?.startedAt || Date.now(),node,node.metadata?.clientTaskId));
+                } catch (error) {
+                    setNodes((prev) => prev.map((item) => item.id === node.id && item.metadata?.clientTaskId === node.metadata?.clientTaskId && !item.metadata?.content ? { ...item,metadata:{...item.metadata,status:NODE_STATUS_ERROR,videoResume:true,errorDetails:error instanceof Error ? error.message : "视频取回失败"} } : item));
+                }
+                return;
+            }
             const sourceNode = findRetrySourceNode(node.id, nodesRef.current, connectionsRef.current) || node;
             const retryWorkflowRef = node.metadata?.workflowRef;
             const batchPrimaryId = retryWorkflowRef && isCanvasImageNodeType(node.type) && node.metadata?.isBatchRoot ? node.metadata.primaryImageId : undefined;
@@ -5581,18 +5599,22 @@ function canvasTaskMediaURL(task: CanvasImageTask | CanvasAudioTask | VideoRespo
 
 function applyCanvasVideoTaskUpdate(nodes: CanvasNodeData[], nodeId: string, task: VideoResponse & CanvasTaskMediaSize, config: AiConfig, startedAt: number, fallbackSize: { width: number; height: number }, clientTaskId?: string) {
     const target = nodes.find((node) => node.id === nodeId);
-    if (!target || target.metadata?.status === "stopped" || (target.metadata?.status === "stopping" && !canvasVideoTaskCompleted(task)) || (clientTaskId && target.metadata?.clientTaskId !== clientTaskId)) return nodes;
+    if (!target || target.metadata?.content || (target.metadata?.videoRetrieval?.attempt || 0) > (task.retrieval?.attempt || 0) || target.metadata?.status === "stopped" || (target.metadata?.status === "stopping" && !canvasVideoTaskCompleted(task)) || (clientTaskId && target.metadata?.clientTaskId !== clientTaskId)) return nodes;
     return nodes.map((node) => {
         if (node.id !== nodeId) return node;
         const progress = typeof task.progress === "number" ? Math.max(0, Math.min(100, task.progress)) : node.metadata?.progress || 0;
         const url = task.video_url || task.url || "";
-        const completed = canvasVideoTaskCompleted(task);
-        const failed = canvasVideoTaskFailed(task) || (completed && !url);
+        const retrieving = task.retrieval && task.retrieval.status !== "ready";
+        const completed = canvasVideoTaskCompleted(task) && !retrieving;
+        const failed = task.retrieval?.status === "failed" || canvasVideoTaskFailed(task) || (completed && !url);
         const taskStartedAt = parseCanvasVideoTaskTime(task.started_at ?? task.startedAt ?? task.created_at ?? task.createdAt) || startedAt;
         const metadata: CanvasNodeMetadata = {
             ...node.metadata,
             status: failed ? NODE_STATUS_ERROR : completed ? NODE_STATUS_SUCCESS : NODE_STATUS_LOADING,
-            errorDetails: failed ? task.error_detail || task.error?.message || (completed ? "视频生成完成但没有返回视频地址" : "视频生成失败") : undefined,
+            videoTaskStatus: task.status,
+            videoRetrieval: task.retrieval,
+            videoResume: task.retrieval?.status === "failed",
+            errorDetails: task.retrieval?.status === "failed" ? `生成完成，取回失败：${task.retrieval.errorDetail || "请继续取回"}` : failed ? task.error_detail || task.error?.message || (completed ? "视频生成完成但没有返回视频地址" : "视频生成失败") : undefined,
             model: task.model || config.model,
             size: task.size || node.metadata?.size || config.size,
             seconds: task.seconds || node.metadata?.seconds || config.videoSeconds,
@@ -5908,7 +5930,8 @@ function canvasVideoTaskFromMetadata(metadata?: CanvasNodeMetadata): VideoRespon
         task_id: metadata?.videoTaskId,
         video_id: metadata?.videoTaskVideoId,
         model: metadata?.model,
-        status: metadata?.status,
+        status: metadata?.videoTaskStatus || metadata?.status,
+        retrieval: metadata?.videoRetrieval,
         progress: metadata?.progress,
         ...(metadata?.videoTaskTranslation ? { parameter_translation: true, translationSnapshot: metadata.videoTaskTranslation } : {}),
     };

@@ -23,7 +23,7 @@ import { COGVIDEOX3_DURATIONS, isAgnesVideoV25Model, isCogVideoX3Model, modelKey
 import { deleteStoredMedia, downloadRemoteMedia, resolveMediaUrl, uploadMediaFile, uploadRemoteMediaToServer } from "@/services/file-storage";
 import { deleteStoredImages, resolveImageUrl, uploadImage } from "@/services/image-storage";
 import { deleteVideoGenerationLogs, fetchVideoGenerationLogs, saveVideoGenerationLogs } from "@/services/api/generation-logs";
-import { createVideoGenerationTask, deleteVideoGenerationTask, listVideoGenerationTasks, pollVideoGenerationTaskStatus, VIDEO_POLL_INTERVAL_MS, VideoRequestError, type VideoResponse } from "@/services/api/video";
+import { createVideoGenerationTask, deleteVideoGenerationTask, listVideoGenerationTasks, pollVideoGenerationTaskStatus, retrieveVideoGenerationTask, VIDEO_POLL_INTERVAL_MS, VideoRequestError, type VideoResponse } from "@/services/api/video";
 import { stopCanvasTask } from "@/services/api/canvas-tasks";
 import { comfyOutputStorageKey, getWorkflowTask, isRetryableWorkflowError, submitWorkflowTask, workflowMediaSource } from "@/services/api/workflow-generation";
 import { useAssetStore } from "@/stores/use-asset-store";
@@ -833,7 +833,19 @@ export default function VideoPage() {
         }
     };
 
+    const resumeVideoDelivery = async (log: GenerationLog) => {
+        if (!log.task) return;
+        const config = { ...videoConfig, ...log.config, model:log.model, videoModel:log.model };
+        try {
+            const task = await retrieveVideoGenerationTask(config,log.task,true);
+            const resumed = {...log,task,status:"生成中" as const,error:undefined,errorDetail:undefined};
+            await saveGenerationLog(resumed);
+            setResults((value) => updateResultByLogId(value,log.id,{task,status:"pending",error:undefined,errorDetail:undefined}));
+        } catch(error) { message.error(errorMessage(error)); }
+    };
+
     const retryResult = (result: GenerationResult) => {
+        if (result.task?.retrieval) { const log=logsRef.current.find((item)=>item.id === (result.taskLogId || result.id)); if(log) void resumeVideoDelivery(log); return; }
         const retryChannelId = videoTaskChannelId(result.task);
         const snapshot = buildRequestSnapshot({ promptText: result.prompt, negativePromptText: result.config.videoNegativePrompt || "", referenceItems: result.references, firstFrameItem: result.firstFrame, lastFrameItem: result.lastFrame, videoReferenceItems: result.videoReferences, audioReferenceItems: result.audioReferences, taskCountValue: 1, configValue: { ...videoConfig, ...result.config, ...(retryChannelId ? { videoChannelId: retryChannelId, activeChannelId: retryChannelId } : {}), model: result.model, videoModel: result.model }, modelValue: result.model, workflowRef: result.providerWorkflowRef || null });
         if (!snapshot) return;
@@ -1134,7 +1146,8 @@ export default function VideoPage() {
             const durationMs = Date.now() - startedAt;
             const baseLog = { ...log, task, durationMs, lastPolledAt: Date.now() };
             if (isFailedVideoTask(task)) {
-                const nextLog = { ...baseLog, status: "失败" as const, error: task.error?.message || "视频生成失败", errorDetail: errorDetail(new VideoRequestError(task.error?.message || "视频生成失败", task.error_detail || task.error)) };
+                if (task.retrieval?.status === "failed") task.error = {message:"生成完成，取回失败"};
+                const nextLog = { ...baseLog, status: "失败" as const, error: task.error?.message || "视频生成失败", errorDetail: errorDetail(new VideoRequestError(task.error?.message || "视频生成失败", task.retrieval?.errorDetail || task.error_detail || task.error)) };
                 await finalizeGenerationLog(nextLog, active);
                 if (!active()) return;
                 setResults((value) => updateResultByLogId(value, log.id, { status: "failed", task, error: nextLog.error, errorDetail: nextLog.errorDetail, durationMs: nextLog.durationMs, lastPolledAt: nextLog.lastPolledAt }));
@@ -1210,6 +1223,7 @@ export default function VideoPage() {
     };
 
     const retryGenerationLog = (log: GenerationLog) => {
+        if (log.task?.retrieval) { void resumeVideoDelivery(log); return; }
         const retryChannelId = videoTaskChannelId(log.task);
         const snapshot = buildRequestSnapshot({ promptText: log.prompt, negativePromptText: log.config.videoNegativePrompt || "", referenceItems: log.references || [], firstFrameItem: log.firstFrame || null, lastFrameItem: log.lastFrame || null, videoReferenceItems: log.videoReferences || [], audioReferenceItems: log.audioReferences || [], taskCountValue: 1, configValue: { ...videoConfig, ...log.config, ...(retryChannelId ? { videoChannelId: retryChannelId, activeChannelId: retryChannelId } : {}), model: log.model, videoModel: log.model }, modelValue: log.model, workflowRef: log.providerWorkflowRef || null });
         if (!snapshot) return;
@@ -2077,7 +2091,7 @@ function PendingVideoCard({ result, now, onCopyPrompt, onStop, onRetry, onDelete
                 <div className="absolute inset-0 opacity-60" style={{ backgroundImage: "radial-gradient(circle, rgba(120,113,108,0.35) 1.4px, transparent 1.6px)", backgroundSize: "16px 16px" }} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-sm text-stone-500 dark:text-stone-400">
                     {stopped ? <Square className="size-6" /> : <LoaderCircle className="size-6 animate-spin" />}
-                    {stopped || stopping ? <span>{stopped ? "已停止" : result.error ? "停止未确认" : "停止中"}</span> : progress !== null ? <span className="animate-pulse font-semibold text-sky-500">正在创作 {progress}%</span> : <span>生成中</span>}
+                    {stopped || stopping ? <span>{stopped ? "已停止" : result.error ? "停止未确认" : "停止中"}</span> : progress !== null ? <span className="animate-pulse font-semibold text-sky-500">{result.task?.retrieval?.status === "fetching" ? "生成完成，正在取回" : result.task?.retrieval?.status === "saving" ? "生成完成，正在保存" : `正在创作 ${progress}%`}</span> : <span>生成中</span>}
                     <span className="rounded-full bg-white/80 px-2 py-1 text-xs text-stone-600 shadow-sm dark:bg-stone-950/70 dark:text-stone-300">{formatDuration(durationMs)}</span>
                     <Button type={stopped ? "default" : "primary"} danger={!stopped} disabled={stopping && !result.error} onClick={stopped ? onRetry : onStop} aria-label={stopped ? "重新生成" : stopping ? result.error ? "重试停止" : "停止中" : "停止"} className="!h-6 !min-w-12 !rounded-full !px-3">
                         {stopped ? <RotateCcw className="size-3" /> : stopping && !result.error ? <LoaderCircle className="size-3.5 animate-spin" /> : <Square className="size-3" fill="currentColor" />}
@@ -2110,7 +2124,7 @@ function FailedVideoCard({ result, error, onCopyPrompt, onPreview, onRetry }: { 
             <div className="relative flex aspect-video flex-col items-center justify-center gap-3 p-5 text-center">
                 <ReferenceThumbnailOverlay references={result.references} className="left-1.5 top-1.5" />
                 <AlertCircle className="size-7 text-red-500" />
-                <div className="text-sm font-medium text-red-600 dark:text-red-300">生成失败</div>
+                <div className="text-sm font-medium text-red-600 dark:text-red-300">{result.task?.retrieval ? "生成完成，取回失败" : "生成失败"}</div>
                 <Typography.Paragraph ellipsis={{ rows: 4 }} className="!mb-0 !text-xs !text-red-500 dark:!text-red-300">
                     {error}
                 </Typography.Paragraph>
@@ -2120,7 +2134,7 @@ function FailedVideoCard({ result, error, onCopyPrompt, onPreview, onRetry }: { 
                 <Button size="small" onClick={onPreview}>载入</Button>
                 <div className="flex gap-2">
                     <Button size="small" onClick={() => setDetailOpen(true)}>详情</Button>
-                    <Button size="small" danger onClick={onRetry}>重试</Button>
+                    <Button size="small" danger onClick={onRetry}>{result.task?.retrieval ? "继续取回" : "重试"}</Button>
                 </div>
             </div>
             <Modal title="失败详情" open={detailOpen} width={760} onCancel={() => setDetailOpen(false)} footer={null}>
@@ -2467,7 +2481,7 @@ function backendTaskToLog(task: VideoResponse, fallbackConfig: AiConfig): Genera
         task,
         video,
         error: status === "失败" ? task.error?.message || "视频生成失败" : undefined,
-        errorDetail: status === "失败" ? errorDetail(new VideoRequestError(task.error?.message || "视频生成失败", task.error_detail || task.error)) : undefined,
+        errorDetail: status === "失败" ? errorDetail(new VideoRequestError(task.error?.message || "视频生成失败", task.retrieval?.errorDetail || task.error_detail || task.error)) : undefined,
         lastPolledAt: Date.now(),
     };
 }
@@ -2721,10 +2735,12 @@ function parseTaskVideoSize(value: unknown) {
 }
 
 function isCompletedVideoTask(task: VideoResponse) {
+    if (task.retrieval && task.retrieval.status !== "ready") return false;
     return Boolean(task.video_url || task.url) || ["completed", "complete", "done", "succeeded", "success"].includes((task.status || "").toLowerCase());
 }
 
 function isFailedVideoTask(task: VideoResponse) {
+    if (task.retrieval?.status === "failed") return true;
     return ["failed", "fail", "error", "cancelled", "canceled"].includes((task.status || "").toLowerCase());
 }
 

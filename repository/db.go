@@ -91,6 +91,9 @@ func DB() (*gorm.DB, error) {
 			&model.ComfyBridge{},
 			&model.ComfyBridgeRequest{},
 		)
+		if dbErr == nil {
+			dbErr = migrateVideoRetrievalV1(db)
+		}
 	})
 	return db, dbErr
 }

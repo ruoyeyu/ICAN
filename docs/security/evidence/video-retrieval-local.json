@@ -1,0 +1,119 @@
+{
+  "baseCommit": "6ea86b7c9fba22bc6c11b08028c59e42ab097268",
+  "scope": "Separate completed upstream video tasks from verified account-owned media retrieval; preserve original task IDs and explicit retrieval-only retries",
+  "local": {
+    "go": "CGO_ENABLED=0 go test ./... passed",
+    "moduleChecksums": "go mod verify passed",
+    "web": {
+      "passed": 40,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "productionBuild": "passed after removing invalid local Turbopack cache from build inputs",
+    "webAudit": {
+      "packages": 467,
+      "findings": 0
+    },
+    "python": {
+      "passed": 9,
+      "failed": 0
+    },
+    "browserAPI": {
+      "import": "validated",
+      "edit": "saved in existing translator",
+      "export": "no credentials",
+      "freshBrowser": "account config restored",
+      "presets": "OpenAI added without overwriting existing channel",
+      "perModelParameters": "declared choices enforced; custom resolution and literal ratio retained",
+      "mockSubmit": "two intercepted requests: legacy and inherited shared rule; exact prompt/ratio/resolution/duration/model",
+      "errorDetails": "full sanitized diagnostic retained in existing details dialog; no automatic create retry",
+      "pageErrors": []
+    },
+    "browserCatalog": {
+      "catalog": "admin import/edit/export/delete; ordinary user selects without importing",
+      "discovery": "manual file found without restart; deleted file disappears",
+      "credentials": "user key not in catalog; existing account unchanged after deletion",
+      "instructions": "HTML shown as plain text",
+      "modelDiscovery": "existing selector; search/multiple/all/clear; candidates opt in; cancel/failure/late response preserve configuration; temporary key absent from writes and export; no generation",
+      "privateStorage": "local type remains stable across tabs and save",
+      "fieldOmission": "typed values edited, copied to shared rules, saved, exported and synced to account channel",
+      "discoveryCalls": 7,
+      "pageErrors": []
+    },
+    "browserRetrieval": {
+      "completion": "generation and retrieval shown separately",
+      "refresh": "fetching and ready restored without duplicate retrieval",
+      "failure": "visible; same-task manual retrieval only",
+      "metadata": "response held; successful canvas persisted before metadata",
+      "polls": 4,
+      "retrieves": 2,
+      "paidCreates": 0,
+      "pageErrors": []
+    }
+  },
+  "cases": [
+    "Complete, slow, interrupted and mismatched-length streams (including declared zero)",
+    "Actual HTTP disconnect and fixture-only deadline retain stage, byte count and request ID",
+    "Missing MP4 index rejected before media indexing; HTML rejected",
+    "Local atomic rename and S3/WebDAV file streaming",
+    "Owner isolation, 12 concurrent initial requests and 12 explicit same-attempt retries produce one transfer per attempt",
+    "Failed retrieval does not auto-retry; successful refresh reuses one media record",
+    "Stale generation updates cannot replace completed tasks; completed tasks survive old cleanup interval",
+    "Browser with indefinitely pending media response persists and restores the ready canvas without metadata",
+    "Database backup: additive V1 migration twice, interrupted recovery and existing task data preservation"
+  ],
+  "dependencyReview": {
+    "addedRuntimeModule": "github.com/abema/go-mp4 v1.7.4",
+    "license": "MIT",
+    "newModuleOSVMatches": 0,
+    "rawModuleMatches": [
+      "GO-2026-5320",
+      "GO-2026-5781",
+      "GO-2026-5932"
+    ],
+    "target": "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go list -deps .",
+    "packageCount": 430,
+    "packagesSHA256": "0e9810b91b14d1050ff228d239ee4ec363b3b5e8926824836557584bc19d931b",
+    "assessment": "The three raw module matches affect goldmark, rsc.io/pdf and golang.org/x/crypto/openpgp; none of those packages is in this target dependency graph. Original API records and exact dependency graph are retained. Final image scan remains a separate CI gate."
+  },
+  "migration": "migrateVideoRetrievalV1 creates video_retrievals only; interrupted attempts become failed on startup; existing accounts, channels, keys, canvas, media and task columns unchanged",
+  "retentionChange": "Completed task records remain until explicit deletion so retrieval can resume; no numeric resource, retry or HTTP timeout settings changed",
+  "rollback": "Previous pinned image can read existing tables with the additive table present; preserve data and original encryption key. Previous download defect remains in that image.",
+  "paidCalls": 0,
+  "productionDeployment": false,
+  "limitations": [
+    "Production evidence file was not accessible; diagnosis uses the operator-provided excerpt and source review",
+    "Original production transport error and exact browser wait were not captured",
+    "MP4 validation checks transport and top-level container structure, not complete codec decoding",
+    "Single API process; multi-replica delivery recovery is not supported",
+    "Historical truncated media are not automatically removed; recovery needs a retained original task",
+    "Initial server retrieval begins when a client observes completion and posts the retrieval request; after acceptance it does not require an active page"
+  ],
+  "resolvedLocalFailures": [
+    "Existing browser preset click was unstable; test now uses keyboard selection and verifies the selected option, without changing UI or skipping assertions",
+    "Repeated production build hit invalid persistent cache; clean-cache build passed"
+  ],
+  "logs": {
+    "go-final.log": "20723e3e10a0d32478b6c1ef4957d922fbd7f88e980596f8c3f5379dd12f7c13",
+    "storage-streams.log": "acbfbf31648711575f1e6bd5af5df334f5de24e8fad0eb73aa54eb32e408ced4",
+    "go-mod-verify.log": "b4537ed75f533f993f371954de47e42a793b8e5b0587577de7e27fb3e50696bd",
+    "go-deps.txt": "0e9810b91b14d1050ff228d239ee4ec363b3b5e8926824836557584bc19d931b",
+    "web.log": "909f7a1a4f17fe6d48fc82ec57e246dd777e59032c800be1d5e8e36733cf1d80",
+    "ts.log": "8366207267355d3e3d5bf3bf6e8c94c5f93f6078c34f08973fa2b38cdda6cc92",
+    "build-clean.log": "3670fcb1abebf9a84cd8f592851989d21f65591f4680e51be8335a05b57fc895",
+    "web-audit.log": "4942632b76968a9c553c41281a85ef2af4e87b46584d038090c12389e055e089",
+    "python.log": "3a2465825d79c0d9599fda3b6ef5b4443c3cfa8f78dca14fe86db48ec5f089de",
+    "browser-api-final.log": "d6744dec3a2a7e228a82dc8651d7de64ed4af15a999ff1ae91863cee8c3876ad",
+    "browser-catalog.log": "48107cf092c5082a7cbf0b6739520a3220a0c694f2b869c7005527fa02a6d1e1",
+    "browser-retrieval-final.log": "6d09b21b534fe01143cd8f08ab59f20726c00b6ca9a3b34ce7d3006102ef96e7",
+    "build-final.log": "7549c08e7f8c8df935ce775950fd1a9f846a12812162bf1c431bf10873661517",
+    "browser-api.log": "9c8d012a2b2a7a779acac1cf7488ee98522b4a36fe9657c18332abe30db76376",
+    "browser-api-rerun.log": "9c8d012a2b2a7a779acac1cf7488ee98522b4a36fe9657c18332abe30db76376",
+    "browser-api-keyboard.log": "c807ada88ec314fba1b4a04355c0ef2f0d2ec4aaa976782b0d9fb68cf1fc3f0e",
+    "go-osv.json": "076d544ca0525f7ab609e5947c6c2b6a9129f7be6678b08f2346ee8ea7d78c38",
+    "GO-2026-5320.json": "d761eb549ea760b494c20ee24912af38ae0375f961602f2f5b54349d753c7d38",
+    "GO-2026-5781.json": "5c3d1399fbfc3a4807e86618423ae477c2f6ec6fd690214ab54f9313e95f5de7",
+    "GO-2026-5932.json": "877aeeb648e0faf4b61772710c39d4910413b4f0480d9584964558d50e17cb5d"
+  },
+  "logsArchiveSHA256": "015c8aa7d3fd09b25321d6567578f07754ba700e1ce77e685e3308cb482c643a"
+}

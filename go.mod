@@ -3,6 +3,7 @@ module github.com/tigerowo/infinite-canvas
 go 1.26.0
 
 require (
+	github.com/abema/go-mp4 v1.7.4
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-sql-driver/mysql v1.8.1

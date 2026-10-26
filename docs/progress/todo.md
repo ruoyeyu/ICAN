@@ -1,5 +1,7 @@
 # 待办（阻断生产上线）
 
+视频结果取回修复与免费回归进入 pending-test。本轮不调整渠道超时或生产资源限额，不删除历史损坏素材；已有任务的真实慢速下载及服务器备份/回滚仍由部署验收确认。新镜像发布与生产部署分开记录。
+
 本轮错误透传修复及免费回归移入 pending-test；最终 CI 40297564050/GHCR 及匿名 digest 核验已通过；未改变既有生产资源、会话和恢复门槛，未部署服务器。实际供应商诊断需读取当前账号新请求的脱敏详情，不根据状态码推断原因。
 
 本轮本地 Go 全套、Web 35、生产构建、Python 9 与两组隔离浏览器回归均通过，见 docs/security/evidence/shared-rules-local.json；CI 40191736678 全通过，GHCR 发布及匿名 digest/config 核验完成，见 docs/security/evidence/shared-rules-publication.json。

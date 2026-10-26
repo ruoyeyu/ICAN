@@ -486,14 +486,11 @@ func ParameterTranslationVideoContent(ctx context.Context, task model.VideoTask,
 		taskID = snapshot.TaskIDs[0]
 	}
 	if taskID != "" && snapshot.Completed[taskID].ContentURL == "" {
-		result, err := translation.Send(ctx, "video", true, taskID)
+		request, _, err := translation.request(ctx, true, taskID)
 		if err != nil {
 			return nil, err
 		}
-		if len(result.Body) == 0 {
-			return nil, errors.New("视频查询接口没有返回视频文件")
-		}
-		return &http.Response{StatusCode: http.StatusOK, Header: http.Header{"Content-Type": []string{result.ContentType}}, Body: io.NopCloser(bytes.NewReader(result.Body))}, nil
+		return translatedVideoContentResponse(request, channel, translation.Client)
 	}
 	request, _, err := translation.request(ctx, taskID != "", taskID)
 	if err != nil {
@@ -510,7 +507,11 @@ func ParameterTranslationVideoContent(ctx context.Context, task model.VideoTask,
 	request.Body, request.GetBody, request.ContentLength = nil, nil, 0
 	request.Header.Del("Content-Type")
 	request.Header.Del("Content-Length")
-	client := *translation.Client
+	return translatedVideoContentResponse(request, channel, translation.Client)
+}
+
+func translatedVideoContentResponse(request *http.Request, channel model.ModelChannel, configuredClient *http.Client) (*http.Response, error) {
+	client := *configuredClient
 	client.CheckRedirect = func(*http.Request, []*http.Request) error { return errors.New("鉴权内容下载不允许重定向") }
 	response, err := client.Do(request)
 	if err != nil {
