@@ -50,6 +50,10 @@ export function ChannelTemplateForm({ value, onChange, models }: { value: Templa
                     <Space wrap>
                         <Checkbox checked={field.string} onChange={e => update({ string: e.target.checked })}>转字符串</Checkbox>
                         <Checkbox checked={field.optional} onChange={e => update({ optional: e.target.checked })}>为空时省略</Checkbox>
+                        <Select mode="tags" aria-label={`指定值时省略 ${index + 1}`} style={{ minWidth: 220 }} placeholder='指定值时省略，如 "auto"' value={(field.omitValues || []).map(v => JSON.stringify(v))} onChange={(values: string[]) => update({ omitValues: values.map(value => {
+                            try { const parsed: unknown = JSON.parse(value); if (typeof parsed === "string" || typeof parsed === "boolean" || (typeof parsed === "number" && Number.isFinite(parsed))) return parsed; } catch {}
+                            return value;
+                        }) })} />
                         <Select value={field.when} style={{ minWidth: 160 }} onChange={when => update({ when })} options={[{ value: "always", label: "始终发送" }, { value: "singleImage", label: "单图且无首尾帧" }, { value: "multipleImages", label: "多图且无首尾帧" }, { value: "frames", label: "有首尾帧" }, { value: "noFrames", label: "无首尾帧" }]} />
                         <Button danger onClick={() => patch({ fields: model.fields.filter((_, i) => i !== index) })}>删除字段</Button>
                     </Space>

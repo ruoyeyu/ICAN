@@ -7,7 +7,7 @@ import { emptyTranslationInputs, translationInputsSchema } from "./translation-i
 const path = z.string().regex(/^[\w-]+(?:\.[\w-]+)*$/, "字段路径仅支持点分隔名称").refine(s => !s.split(".").some(k => ["__proto__", "prototype", "constructor"].includes(k)), "禁止原型字段");
 const endpoint = z.string().min(1).refine(s => s.startsWith("/") && !s.startsWith("//") && !/[?#\\\r\n]/.test(s) && !s.includes("{channelKey}"), "使用相对于基础地址的路径；查询字段单独映射");
 export const fieldSources = ["model", "rawPrompt", "rawSize", "rawSeconds", "resolution", "quality", "count", "mode", "negativePrompt", "generateAudio", "watermark", "images", "firstImage", "firstFrame", "lastFrame", "videos", "audios", "voice", "audioFormat", "speed", "instructions", "messages", "request", "literal"] as const;
-const field = z.object({ target: path, source: z.enum(fieldSources), value: z.string(), string: z.boolean(), optional: z.boolean(), when: z.enum(["always", "singleImage", "multipleImages", "frames", "noFrames"]), location: z.enum(["body", "query"]) }).strict();
+const field = z.object({ target: path, source: z.enum(fieldSources), value: z.string(), string: z.boolean(), optional: z.boolean(), omitValues: z.array(z.union([z.string(), z.number(), z.boolean()])).optional(), when: z.enum(["always", "singleImage", "multipleImages", "frames", "noFrames"]), location: z.enum(["body", "query"]) }).strict();
 const auth = z.object({ type: z.enum(["bearer", "header", "none"]), header: z.string().regex(/^[A-Za-z0-9-]+$/), prefix: z.string().refine(s => !/[\r\n]/.test(s)) }).strict();
 export const templateModelSchema = z.object({
     name: z.string().min(1), kind: z.enum(["image", "video", "audio", "text"]),
@@ -71,6 +71,7 @@ function expression(f: TemplateField): string {
     let value = f.string ? `String(${raw})` : raw;
     if (f.optional) value = `((${raw}) === undefined || (${raw}) === null || (${raw}).length === 0 ? undefined : (${value}))`;
     else if (f.source !== "literal") value = `(() => {if ((${raw}) === undefined || (${raw}) === null) throw new Error(${JSON.stringify(`字段 ${f.target} 缺少 ${f.source}`)}); return (${value});})()`;
+    if (f.omitValues?.length) value = `((${f.omitValues.map(v => `(${raw}) === ${JSON.stringify(v)}`).join(" || ")}) ? undefined : (${value}))`;
     const conditions = { always: "", singleImage: "images.length === 1 && !firstFrame && !lastFrame", multipleImages: "images.length > 1 && !firstFrame && !lastFrame", frames: "firstFrame || lastFrame", noFrames: "!firstFrame && !lastFrame" };
     return conditions[f.when] ? `((${conditions[f.when]}) ? (${value}) : undefined)` : value;
 }

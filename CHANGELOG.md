@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Extend existing field mappings with opt-in exact-value omission; retain empty-value handling, original values and legacy template behavior.
+
 - Add task-specific supplier shared rules with per-model overrides; reject unmatched custom calls and preserve native-compatible routing, credentials and legacy templates.
 - Remove added explanatory UI copy and badges from custom API and video settings.
 

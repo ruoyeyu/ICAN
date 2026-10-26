@@ -1,0 +1,224 @@
+{
+  "format": "ican-channel",
+  "version": 1,
+  "name": "Omission fixture",
+  "baseUrl": "https://upstream.invalid",
+  "protocol": "custom",
+  "models": [
+    "new-video"
+  ],
+  "modelCapabilities": {
+    "new-video": "video"
+  },
+  "authoring": {
+    "version": 2,
+    "models": [],
+    "defaults": [
+      {
+        "name": "video",
+        "kind": "video",
+        "method": "POST",
+        "path": "/jobs",
+        "format": "json",
+        "auth": {
+          "type": "bearer",
+          "header": "Authorization",
+          "prefix": "Bearer "
+        },
+        "fields": [
+          {
+            "target": "resolution",
+            "source": "resolution",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body",
+            "omitValues": [
+              "auto"
+            ]
+          },
+          {
+            "target": "resolution",
+            "source": "resolution",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "query",
+            "omitValues": [
+              "auto"
+            ]
+          },
+          {
+            "target": "fixed_auto",
+            "source": "literal",
+            "value": "\"auto\"",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body",
+            "omitValues": [
+              "auto"
+            ]
+          },
+          {
+            "target": "zero",
+            "source": "count",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body",
+            "omitValues": [
+              "0"
+            ]
+          },
+          {
+            "target": "disabled",
+            "source": "generateAudio",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body",
+            "omitValues": [
+              "false"
+            ]
+          },
+          {
+            "target": "fixed_zero",
+            "source": "literal",
+            "value": "0",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body",
+            "omitValues": [
+              "auto"
+            ]
+          },
+          {
+            "target": "fixed_false",
+            "source": "literal",
+            "value": "false",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body",
+            "omitValues": [
+              "auto"
+            ]
+          },
+          {
+            "target": "explicit_zero",
+            "source": "count",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body",
+            "omitValues": [
+              0
+            ]
+          },
+          {
+            "target": "explicit_false",
+            "source": "generateAudio",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body",
+            "omitValues": [
+              false
+            ]
+          },
+          {
+            "target": "string_zero",
+            "source": "count",
+            "value": "null",
+            "string": true,
+            "optional": false,
+            "when": "always",
+            "location": "body",
+            "omitValues": [
+              "0"
+            ]
+          },
+          {
+            "target": "empty_list",
+            "source": "literal",
+            "value": "[]",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "empty_string",
+            "source": "literal",
+            "value": "\"\"",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "empty_null",
+            "source": "literal",
+            "value": "null",
+            "string": false,
+            "optional": true,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "legacy",
+            "source": "quality",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "model",
+            "source": "model",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          },
+          {
+            "target": "prompt",
+            "source": "rawPrompt",
+            "value": "null",
+            "string": false,
+            "optional": false,
+            "when": "always",
+            "location": "body"
+          }
+        ],
+        "poll": {
+          "enabled": false,
+          "method": "GET",
+          "path": "",
+          "taskId": "",
+          "status": "",
+          "progress": "",
+          "success": [],
+          "failure": []
+        },
+        "result": "url",
+        "content": "",
+        "inputs": {
+          "version": 1,
+          "parameters": {},
+          "media": {}
+        }
+      }
+    ]
+  }
+}

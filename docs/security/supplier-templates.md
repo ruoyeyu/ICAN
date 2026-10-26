@@ -36,6 +36,14 @@ Opening the selector rereads the directory. Files appear/disappear without a res
 
 The optional `instructions` field is plain text: no HTML rendering, remote images or scripts. Other fields use the existing [portable authoring format](custom-api-templates.md).
 
+## Optional parameter sending
+
+Use the existing field mapping's **Omit when empty** checkbox and **Omit specified values** input. The list starts empty. For example, keep `resolution` as the source, enable empty omission and add `auto`: the field exports `"optional": true, "omitValues": ["auto"]`. Empty values and the string `auto` are omitted; other values remain unchanged. This is configured per field, never enabled globally for suppliers.
+
+Empty means missing, `null`, an empty string or an empty array, as before. Zero and false are preserved unless explicitly listed. Matches are type-, case- and whitespace-sensitive and happen before the existing string conversion. Enter `0` / `false` for a number/boolean, or `"0"` / `"false"` for strings. Body/query fields, fixed JSON values, UI variables, shared rules and model overrides use the same mechanism.
+
+Editing, import/export and account sync use the existing workflow. Updating a catalog template does not replace saved channels; explicitly edit their corresponding fields to adopt the rule.
+
 ## Personal imports and changes
 
 Importing a file in **Add custom API** keeps it as a personal template when adding the channel. It appears under **Personal templates** and follows the account after **Done**; other accounts cannot see it. Select it and choose **Delete personal template**, then **Done**, to sync removal.
@@ -49,3 +57,5 @@ Back up the existing data directory, including `api-templates`, with the deploym
 Before reverting to an older image, retain the current database and template directory backup. Older versions cannot display the catalog and may not preserve the optional account field when saving. Restore a matching backup if needed; do not regenerate keys or initialize another database. See [image updates and rollback](ghcr-deployment.md).
 
 Before enabling shared rules, back up the database, media, `api-templates` and original encryption key. Only explicitly saved configurations adopt v2. To roll back to an image without v2 support, restore the matching database/template backup; do not resave v2 channels with the older application. Existing video tasks retain their saved rule snapshots and are never recreated because a template changes.
+
+Omission rules add an optional field without a database migration. Templates without it retain their exact v1/v2 compilation. Back up channel configurations and template files before opting in. Older images reject `omitValues`; restore matching pre-change configurations when rolling back and do not resave extended templates in an older editor.

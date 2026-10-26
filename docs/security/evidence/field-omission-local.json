@@ -1,0 +1,64 @@
+{
+  "baseCommit": "c653a2ab1ba59ca627b482c01c8aea15dcad1390",
+  "scope": "Optional exact-value omission added to the existing field mapping/compiler; existing empty omission reused",
+  "local": {
+    "go": "CGO_ENABLED=0 go test ./... passed",
+    "httpFixtureCases": 24,
+    "web": {
+      "passed": 36,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "webAudit": "0 findings across 467 packages; lockfile unchanged",
+    "python": {
+      "passed": 9,
+      "failed": 0
+    },
+    "browserCatalog": {
+      "catalog": "admin import/edit/export/delete; ordinary user selects without importing",
+      "discovery": "manual file found without restart; deleted file disappears",
+      "credentials": "user key not in catalog; existing account unchanged after deletion",
+      "instructions": "HTML shown as plain text",
+      "modelDiscovery": "existing selector; search/multiple/all/clear; candidates opt in; cancel/failure/late response preserve configuration; temporary key absent from writes and export; no generation",
+      "privateStorage": "local type remains stable across tabs and save",
+      "fieldOmission": "typed values edited, copied to shared rules, saved, exported and synced to account channel",
+      "discoveryCalls": 7,
+      "pageErrors": []
+    },
+    "browserAPI": {
+      "import": "validated",
+      "edit": "saved in existing translator",
+      "export": "no credentials",
+      "freshBrowser": "account config restored",
+      "presets": "OpenAI added without overwriting existing channel",
+      "perModelParameters": "declared choices enforced; custom resolution and literal ratio retained",
+      "mockSubmit": "two intercepted requests: legacy and inherited shared rule; exact prompt/ratio/resolution/duration/model",
+      "pageErrors": []
+    }
+  },
+  "cases": [
+    "Body and query omission across JSON, urlencoded and multipart HTTP requests",
+    "Exact raw scalar matching before explicit string conversion; zero and false preserved unless explicitly matched",
+    "Fixed JSON values and UI variable references; new model uses existing shared rule",
+    "Missing/null/empty string/empty array omission; unmatched custom values unchanged",
+    "Unmodified v1/v2 fixtures compile byte for byte; empty omission list preserves required-field errors",
+    "Strict import validation; catalog persistence; export and account synchronization; credentials remain separate"
+  ],
+  "paidCalls": 0,
+  "productionDeployment": false,
+  "dependenciesChanged": false,
+  "databaseSchemaChanged": false,
+  "configMigration": "Optional omitValues only on explicit edit; existing data/keys untouched; older image requires matching pre-change configuration backup",
+  "productionTodo": "Reviewed docs/progress/todo.md; existing deployment gates unchanged",
+  "logs": {
+    "go-tests.log": "39466f81f2e53afe80b376d9d4455e8b428638efeabc21f05488043da7cc3e0a",
+    "web-tests.log": "c2eb9ce37406285009d07061df342170c2d323fda16a6cc13f1bd1462c2ff0e2",
+    "web-build.log": "41012e8da1d394c3867c9e3eb59950ba19331b7301768ec7d22defe101a1cafd",
+    "web-audit.log": "1463be8c97313ca754a6567fd619b7dd910623f762bb434ff177626231724a6d",
+    "python-tests.log": "be48e7f4ed2d15e4a5fc50555d615c620fcac6a9f72d1c1730d9de96e6d1b4e4",
+    "browser-catalog.log": "48107cf092c5082a7cbf0b6739520a3220a0c694f2b869c7005527fa02a6d1e1",
+    "browser-api.log": "235666f31de1d064d7416e7124b020c052e68d0925baba98230baf315521da02"
+  },
+  "logsArchiveSHA256": "c83f5419d8fb333f8a55bcd003df07530aef80eeb64ea8a694296358f842dc70"
+}

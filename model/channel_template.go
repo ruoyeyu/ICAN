@@ -51,13 +51,14 @@ type TemplateModel struct {
 }
 
 type TemplateField struct {
-	Target   string `json:"target"`
-	Source   string `json:"source"`
-	Value    string `json:"value"`
-	String   bool   `json:"string"`
-	Optional bool   `json:"optional"`
-	When     string `json:"when"`
-	Location string `json:"location"`
+	Target     string `json:"target"`
+	Source     string `json:"source"`
+	Value      string `json:"value"`
+	String     bool   `json:"string"`
+	Optional   bool   `json:"optional"`
+	OmitValues []any  `json:"omitValues,omitempty"`
+	When       string `json:"when"`
+	Location   string `json:"location"`
 }
 
 type PersonalChannelTemplate struct {

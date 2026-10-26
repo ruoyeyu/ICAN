@@ -2,10 +2,37 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { compileTemplate, exportChannelTemplate, importChannelTemplate, newTemplateField, newTemplateModel, readTemplate } from "./channel-template";
-import { translationModelInputs, translationPrograms } from "./channel-parameter-translation";
+import { translationModelInputs, translationPrograms, translationProgram } from "./channel-parameter-translation";
 const model = newTemplateModel("fixture-video", "video");
 const authoring = { version: 1 as const, models: [model] };
 const channel = { name: "Fixture", baseUrl: "https://api.example.invalid", apiKey: "private-fixture-key", models: [model.name], protocol: "custom" };
+test("field omission is opt-in, typed and roundtrips through the existing format", async () => {
+ const fixture=importChannelTemplate(readFileSync(new URL('../../scripts/fixtures/channel-template-omission.json',import.meta.url),'utf8'));
+ const source=compileTemplate(fixture.authoring);
+ assert.equal(source,readFileSync(new URL('../../../service/testdata/channel-template-omission.js',import.meta.url),'utf8'));
+ assert.deepEqual(readTemplate(source),fixture.authoring);
+ assert.deepEqual(importChannelTemplate(exportChannelTemplate({...fixture,apiKey:'private-fixture-key'},source)).authoring,fixture.authoring);
+ const program=await translationProgram(source,'new-video','video');assert.ok(program);
+ const execute=new Function('resolution','count','generateAudio','quality','model','rawPrompt',`return ${program}`);
+ for(const resolution of [undefined,null,'','auto','720p',' AUTO ',' auto ',0,false]) {
+  const request=JSON.parse(JSON.stringify(execute(resolution,0,false,'auto','new-video',' exact {channelKey} ').rule.POST));
+  const omitted=resolution===undefined||resolution===null||resolution===''||resolution==='auto';
+  assert.equal(Object.hasOwn(request.body,'resolution'),!omitted);
+  assert.equal(Object.hasOwn(request.params,'resolution'),!omitted);
+  if(!omitted){assert.equal(request.body.resolution,resolution);assert.equal(request.params.resolution,resolution);}
+  for(const key of ['fixed_auto','explicit_zero','explicit_false','empty_list','empty_string','empty_null'])assert.equal(Object.hasOwn(request.body,key),false,key);
+  assert.equal(request.body.zero,0);assert.equal(request.body.disabled,false);assert.equal(request.body.fixed_zero,0);assert.equal(request.body.fixed_false,false);
+  assert.equal(request.body.string_zero,'0');assert.equal(request.body.legacy,'auto');assert.equal(request.body.model,'new-video');assert.equal(request.body.prompt,' exact {channelKey} ');
+ }
+ for(const invalid of ['auto',null,[null],[{}],[[]]]) {
+  const copy=structuredClone(fixture);(copy.authoring.defaults![0].fields[0] as any).omitValues=invalid;
+  assert.throws(()=>importChannelTemplate(JSON.stringify(copy)));
+ }
+ const legacy=structuredClone(authoring);legacy.models[0].fields=[{...newTemplateField('resolution','resolution'),omitValues:[]}];
+ const code=(await translationPrograms(compileTemplate(legacy)))[model.name];
+ const run=new Function('resolution',`return ${code}`);
+ assert.throws(()=>run(undefined),/缺少/);assert.equal(run('auto').rule.POST.body.resolution,'auto');
+});
 test("form roundtrip uses existing translator and excludes personal credentials", async () => {
  const source = compileTemplate(authoring);
  assert.deepEqual(readTemplate(source), authoring);

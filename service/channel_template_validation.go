@@ -214,6 +214,13 @@ func validTemplateModel(m model.TemplateModel) bool {
 				return false
 			}
 		}
+		for _, value := range f.OmitValues {
+			switch value.(type) {
+			case string, float64, bool:
+			default:
+				return false
+			}
+		}
 		for j, other := range m.Fields {
 			if i != j && f.Location == other.Location && (f.Target == other.Target || strings.HasPrefix(f.Target, other.Target+".")) {
 				return false
