@@ -173,3 +173,30 @@ func TestUpstreamFullBodyAndTruncation(t *testing.T) {
 		t.Fatal("boundary must preserve exact-size body")
 	}
 }
+
+func TestTranslatedBusinessFailureWithoutTaskKeepsBody(t *testing.T) {
+	for _, body := range []string{`{"detail":"generation permission denied","extra":"last field"}`, `{"unexpected":"last field"}`} {
+		channel, vars := formFixture(t)
+		fixture := newProtocolFixture(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprint(w, body)
+		}))
+		tr, err := NewParameterTranslation(channel, "fixture-video", vars, "video")
+		if err != nil {
+			t.Fatal(err)
+		}
+		result, err := tr.Send(context.Background(), "video", false, "")
+		fixture.Close()
+		var upstream *UpstreamError
+		if !errors.As(err, &upstream) || upstream.Status != 200 || !strings.Contains(upstream.Body, "last field") || !strings.Contains(result.ResponseBody, "last field") {
+			t.Fatal("business failure lost body", err)
+		}
+		expected := "提交响应没有返回配置位置的任务 ID"
+		if strings.Contains(body, "permission") {
+			expected = "generation permission denied"
+		}
+		if upstream.Detail != expected {
+			t.Fatal(upstream.Detail)
+		}
+	}
+}

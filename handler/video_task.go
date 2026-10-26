@@ -185,7 +185,7 @@ func proxyAIVideoTaskRequest(w http.ResponseWriter, r *http.Request) {
 			refundVideoCredits(user.ID, modelName, credits, upstreamPath)
 		}
 		saveAIProxyLog(logContext, status, string(transformed), "视频接口没有返回任务 ID")
-		Fail(w, "视频接口没有返回任务 ID")
+		failAIUpstream(w, service.NewUpstreamError(payload, status, "创建", headers, request, channel.APIKey))
 		return
 	}
 	task, err := service.CreateVideoTask(service.VideoTaskCreateInput{

@@ -47,7 +47,8 @@
     "Public AI logs contain operational metadata only",
     "HTTP 200 business errors cannot be uploaded as video; valid binary download unchanged",
     "No automatic custom-video error retry or replacement task; existing queued/unknown/in_progress fixture regressions passed",
-    "Existing native-compatible protocol request/response fixtures passed"
+    "Existing native-compatible protocol request/response fixtures passed",
+    "HTTP 200 creation business error without a task ID retains upstream detail/body; missing details retain local validation fallback"
   ],
   "paidCalls": 0,
   "productionDeployment": false,
@@ -61,7 +62,7 @@
   ],
   "productionTodo": "Reviewed; existing resource/session/update-recovery deployment gates unchanged",
   "logs": {
-    "go-test.log": "64b79e772a063ea8d70bf9c1b7bf65e23bb77d837894e0ea78762d0ef4a6442b",
+    "go-test.log": "72bb07e6ed57c6a04c34d98b858dd60f3a39620606d72e5d12e549aeef3c97be",
     "web-test.log": "f30b94e4282b0aa653bbeaa4b344375c4649b8a4f5452cd019720487fa95d4fb",
     "typecheck.log": "8366207267355d3e3d5bf3bf6e8c94c5f93f6078c34f08973fa2b38cdda6cc92",
     "web-build.log": "6d33ece3730af3b435a18a7117b00ec61570f963b5dfcbb356fb747dabec75ea",
@@ -70,5 +71,5 @@
     "browser-api.log": "d6744dec3a2a7e228a82dc8651d7de64ed4af15a999ff1ae91863cee8c3876ad",
     "browser-catalog.log": "48107cf092c5082a7cbf0b6739520a3220a0c694f2b869c7005527fa02a6d1e1"
   },
-  "logsArchiveSHA256": "761f68ed14767847bfd7f1da2a88bc8c265425ed209488abfa9aa5a375832527"
+  "logsArchiveSHA256": "f396199671d631034b17df39777f676837a3dfaf0267951b5ad94d61b017b287"
 }

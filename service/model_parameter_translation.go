@@ -1050,7 +1050,7 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 			result.TaskIDs = []string{fmt.Sprint(value)}
 		}
 		if len(result.TaskIDs) == 0 {
-			return result, errors.New("提交响应没有返回配置位置的任务 ID")
+			return failure([]byte("提交响应没有返回配置位置的任务 ID"))
 		}
 		seen := map[string]bool{}
 		ids := result.TaskIDs[:0]
@@ -1180,7 +1180,7 @@ func (translation *ParameterTranslation) Send(ctx context.Context, kind string, 
 		}
 	}
 	if len(result.URLs) == 0 {
-		return result, errors.New("生成已完成，但配置的结果位置没有可用媒体地址")
+		return failure([]byte("生成已完成，但配置的结果位置没有可用媒体地址"))
 	}
 	return result, nil
 }

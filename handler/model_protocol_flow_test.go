@@ -71,6 +71,7 @@ func TestModelProtocolChannelFlow(t *testing.T) {
 		{name: "Gemini video error response", protocol: "gemini", modelName: "veo", endpoint: "/videos", body: `{"model":"veo","contents":[]}`, path: "/v1beta/models/veo:predictLongRunning", wantBody: `{"contents":[]}`, payload: `{"name":"operations/job"}`, message: "上游创建失败（HTTP 200）：接口没有提供有效错误详情"},
 		{name: "KIE business error response", protocol: "kie", endpoint: "/videos", path: "/v1/jobs/createTask", wantBody: `{"model":"future-model","input":{}}`, payload: `{"code":400,"msg":"rejected"}`, message: "上游创建失败（HTTP 200）：rejected"},
 		{name: "OpenAI chat", protocol: "openai", endpoint: "/chat/completions", body: `{"model":"future-model","messages":[]}`, path: "/v1/chat/completions", payload: `{"choices":[]}`},
+		{name: "OpenAI video detail without task", protocol: "openai", endpoint: "/videos", path: "/v1/videos", payload: `{"detail":"generation permission denied"}`, message: "上游创建失败（HTTP 200）：generation permission denied"},
 		{name: "OpenAI video", protocol: "openai", endpoint: "/videos", body: `{"model":"future-model","prompt":"scene"}`, path: "/v1/videos", payload: `{"id":"upstream-job","status":"processing"}`},
 	}
 	for _, test := range tests {
