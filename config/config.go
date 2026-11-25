@@ -12,6 +12,7 @@ import (
 )
 
 type Config struct {
+	OutboundSOCKS5Proxy   string `env:"OUTBOUND_SOCKS5_PROXY"`
 	APITemplateDir        string `env:"API_TEMPLATE_DIR" envDefault:"data/api-templates"`
 	PublicOrigin          string `env:"PUBLIC_ORIGIN"`
 	DataEncryptionKey     string `env:"DATA_ENCRYPTION_KEY"`

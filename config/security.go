@@ -6,11 +6,20 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"net"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
 func ValidateSecurityConfig() error {
+	if Cfg.OutboundSOCKS5Proxy != "" {
+		host, port, err := net.SplitHostPort(Cfg.OutboundSOCKS5Proxy)
+		number, portErr := strconv.Atoi(port)
+		if err != nil || net.ParseIP(host) == nil || portErr != nil || number < 1 || number > 65535 {
+			return errors.New("OUTBOUND_SOCKS5_PROXY 必须是明确的代理 IP:端口")
+		}
+	}
 	if len(Cfg.JWTSecret) < 32 || Cfg.JWTSecret == "infinite-canvas" {
 		return errors.New("JWT_SECRET 必须配置为至少 32 字节的独立随机密钥")
 	}

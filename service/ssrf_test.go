@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/tigerowo/infinite-canvas/config"
 	"golang.org/x/net/dns/dnsmessage"
 	"net"
 	"net/http"
@@ -131,5 +132,12 @@ func TestConnectTimeDNSRejectsMixedPublicPrivateAnswers(t *testing.T) {
 	if response, err := newSafeProxyHTTPClient().Get("http://rebind.invalid/file"); err == nil {
 		response.Body.Close()
 		t.Fatal("mixed DNS answer accepted")
+	}
+	oldProxy := config.Cfg.OutboundSOCKS5Proxy
+	config.Cfg.OutboundSOCKS5Proxy = "127.0.0.1:1"
+	defer func() { config.Cfg.OutboundSOCKS5Proxy = oldProxy }()
+	if response, err := newSafeProxyHTTPClient().Get("http://rebind.invalid/file"); err == nil {
+		response.Body.Close()
+		t.Fatal("mixed DNS answer accepted with explicit proxy")
 	}
 }

@@ -10,6 +10,9 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/tigerowo/infinite-canvas/config"
+	"golang.org/x/net/proxy"
 )
 
 var safeProxyHTTPClient = newSafeProxyHTTPClient()
@@ -19,7 +22,8 @@ func SafeProxyHTTPClient() *http.Client {
 }
 
 // OutboundHTTPClient keeps the existing operation timeout while sharing the
-// connect-time IP policy. User supplied URLs never use ambient HTTP proxies.
+// connect-time IP policy. User supplied URLs never use ambient HTTP proxies. An explicit administrator
+// SOCKS5 proxy still receives only locally resolved, validated public IPs.
 func OutboundHTTPClient(timeout time.Duration) *http.Client {
 	client := *SafeProxyHTTPClient()
 	client.Timeout = timeout
@@ -83,9 +87,17 @@ func safeProxyDialContext(ctx context.Context, network, address string) (net.Con
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,
 	}
+	dial := dialer.DialContext
+	if address := config.Cfg.OutboundSOCKS5Proxy; address != "" {
+		forward, err := proxy.SOCKS5("tcp", address, nil, dialer)
+		if err != nil {
+			return nil, err
+		}
+		dial = forward.(proxy.ContextDialer).DialContext
+	}
 	var lastErr error
 	for _, item := range ips {
-		conn, err := dialer.DialContext(
+		conn, err := dial(
 			ctx,
 			network,
 			net.JoinHostPort(item.String(), port),
