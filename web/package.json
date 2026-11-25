@@ -35,7 +35,7 @@
         "mediabunny": "1.55.7",
         "motion": "12.40.0",
         "nanoid": "5.1.16",
-        "next": "16.4.3",
+        "next": "16.4.5",
         "radix-ui": "1.5.0",
         "react": "19.3.1",
         "react-dom": "19.3.1",
@@ -58,7 +58,7 @@
         "typescript": "5.9.3"
     },
     "overrides": {
-        "follow-redirects": "1.16.1",
+        "follow-redirects": "1.16.2",
         "postcss": "8.5.23",
         "source-map-js": "1.2.2",
         "browserslist": "4.28.7",
