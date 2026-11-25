@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- [新增] 管理后台供应商模板支持直接粘贴、编辑、格式化 JSON，校验后应用到现有表单。
+
+- [修复] 画布视频设置子菜单层级及小窗口边界定位，避免比例、分辨率选项被遮挡。
+
 - Display invitation codes in the administrator list with encrypted persistence; revoke unused codes by deletion, retain used records and enforce the same rule on the backend.
 
 - Separate completed video generation from delivery; reject interrupted/truncated downloads, persist single delivery attempts across refreshes, and resume the original task without another paid generation. Media metadata no longer blocks canvas completion.

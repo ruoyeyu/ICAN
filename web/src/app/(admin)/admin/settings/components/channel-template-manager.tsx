@@ -20,6 +20,8 @@ export function ChannelTemplateManager() {
     const [draft, setDraft] = useState<ChannelTemplate>();
     const [editing, setEditing] = useState<ChannelTemplateEntry>();
     const [saving, setSaving] = useState(false);
+    const [jsonText, setJsonText] = useState<string>();
+    const [jsonError, setJsonError] = useState("");
     const [temporaryKey, setTemporaryKey] = useState("");
     const [fetchingModels, setFetchingModels] = useState(false);
     const [sourceModels, setSourceModels] = useState<string[]>();
@@ -42,6 +44,8 @@ export function ChannelTemplateManager() {
         setSourceModels(undefined);
     }, [token, draft?.baseUrl, draft?.protocol]);
     const changeDraft = (value?: ChannelTemplate) => {
+        setJsonText(undefined);
+        setJsonError("");
         ++modelRequest.current;
         setTemporaryKey("");
         setSourceModels(undefined);
@@ -98,6 +102,7 @@ export function ChannelTemplateManager() {
             try { const value = importChannelTemplate(await chosen.text()); if (current()) { setEditing(undefined); changeDraft(value); } } catch (error) { report(error); }
         }} />
         {draft && <Modal open title={editing ? "编辑供应商模板" : "新增供应商模板"} width={960} styles={{ body: { maxHeight: "70vh", overflowY: "auto" } }} onCancel={() => changeDraft()} onOk={() => void save()} confirmLoading={saving} okText="保存模板">
+            <Button className="mb-4" onClick={() => { setJsonText(JSON.stringify(draft, null, 2)); setJsonError(""); }}>编辑 JSON</Button>
             <Form layout="vertical">
                 <Form.Item label="供应商名称"><Input aria-label="模板名称" value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} /></Form.Item>
                 <Form.Item label="基础地址"><Input aria-label="模板基础地址" value={draft.baseUrl} onChange={e => setDraft({ ...draft, baseUrl: e.target.value })} placeholder="https://api.example.com" /></Form.Item>
@@ -112,6 +117,18 @@ export function ChannelTemplateManager() {
                 <Form.Item label="使用说明"><Input.TextArea aria-label="模板使用说明" value={draft.instructions || ""} onChange={e => setDraft({ ...draft, instructions: e.target.value })} /></Form.Item>
             </Form>
             <ChannelTemplateForm key={editing?.id || "new"} models={draft.models} value={draft.authoring} onChange={authoring => setDraft({ ...draft, authoring })} />
+        </Modal>}
+        {draft && <Modal open={jsonText !== undefined} title="编辑模板 JSON" width={900} okText="应用到表单" onCancel={() => { setJsonText(undefined); setJsonError(""); }} onOk={() => {
+            try { changeDraft(importChannelTemplate(jsonText || "")); }
+            catch (error) { setJsonError(error instanceof Error ? error.message : "模板 JSON 无效"); }
+        }}>
+            <p className="mb-3">可粘贴完整导出的模板 JSON。应用后仍需点击“保存模板”才会发布；公共模板不能包含 API Key。</p>
+            {jsonError && <Alert className="mb-3" type="error" title={jsonError} />}
+            <Input.TextArea aria-label="模板 JSON" value={jsonText || ""} onChange={e => { setJsonText(e.target.value); setJsonError(""); }} autoSize={{ minRows: 16, maxRows: 24 }} spellCheck={false} className="!font-mono" />
+            <Button className="mt-3" onClick={() => {
+                try { setJsonText(JSON.stringify(JSON.parse(jsonText || ""), null, 2)); setJsonError(""); }
+                catch (error) { setJsonError(error instanceof Error ? error.message : "JSON 格式不正确"); }
+            }}>格式化 JSON</Button>
         </Modal>}
         {draft && sourceModels !== undefined && <ChannelModelSelectorModal
             channel={draft}

@@ -4,7 +4,7 @@ import { declaredTranslationForModel, usesCustomVideoInterface } from "@/stores/
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { FileText, Image as ImageIcon, Music2, Plus, Settings2, Trash2, Video as VideoIcon, X } from "lucide-react";
-import { Button, Input, Switch } from "antd";
+import { Button, ConfigProvider, Input, Switch } from "antd";
 
 import { VideoSettingsPanel, isAPIMartKlingMotionControlConfig, isKIEKlingMotionControlConfig, isAPIMartKlingV3Config, isKIEKlingV3Config, kieKlingOmniVariant, videoResolutionLabel, videoSecondsLabel, videoSizeLabel } from "@/components/video-settings-panel";
 import { isAutoDLConfig } from "@/lib/autodl";
@@ -82,14 +82,17 @@ export function CanvasVideoSettingsPopover({ config, onConfigChange, frameOption
 }
 
 function VideoSettingsPortal({ buttonRect, panelRef, placement, theme, config, onConfigChange, frameOptions, resourceOptions, metadata, firstFrameNodeId, lastFrameNodeId, onFrameChange, onMetadataChange, visualOnly }: { buttonRect: DOMRect; panelRef: RefObject<HTMLDivElement | null>; placement: CanvasVideoSettingsPopoverProps["placement"]; theme: (typeof canvasThemes)[keyof typeof canvasThemes]; config: AiConfig; onConfigChange: CanvasVideoSettingsPopoverProps["onConfigChange"]; frameOptions: CanvasVideoFrameOption[]; resourceOptions: CanvasVideoResourceOption[]; metadata?: CanvasNodeMetadata; firstFrameNodeId?: string; lastFrameNodeId?: string; onFrameChange?: CanvasVideoSettingsPopoverProps["onFrameChange"]; onMetadataChange?: CanvasVideoSettingsPopoverProps["onMetadataChange"]; visualOnly: boolean }) {
-    const width = 356;
+    const width = Math.min(356, Math.max(0, window.innerWidth - 24));
     const gap = 8;
     const margin = 12;
     const alignRight = placement?.endsWith("Right");
     const alignCenter = placement === "top" || placement === "bottom";
     const left = alignCenter ? buttonRect.left + buttonRect.width / 2 - width / 2 : alignRight ? buttonRect.right - width : buttonRect.left;
-    const topPlacement = placement?.startsWith("top");
-    const style = { position: "fixed", zIndex: 1200, width, left: Math.max(margin, Math.min(window.innerWidth - width - margin, left)), ...(topPlacement ? { bottom: window.innerHeight - buttonRect.top + gap, maxHeight: Math.max(260, buttonRect.top - margin * 2) } : { top: buttonRect.bottom + gap, maxHeight: Math.max(260, window.innerHeight - buttonRect.bottom - margin * 2) }), background: theme.toolbar.panel, borderRadius: 18, boxShadow: "0 18px 54px rgba(28, 25, 23, 0.16)", padding: 18, overflowY: "auto", color: theme.node.text } as const;
+    const above = Math.max(0, Math.min(window.innerHeight - margin, buttonRect.top - gap) - margin);
+    const below = Math.max(0, window.innerHeight - margin - Math.max(margin, buttonRect.bottom + gap));
+    const preferTop = placement?.startsWith("top");
+    const topPlacement = preferTop ? above >= 260 || above >= below : below < 260 && above > below;
+    const style = { position: "fixed", zIndex: 1200, width, left: Math.max(margin, Math.min(window.innerWidth - width - margin, left)), ...(topPlacement ? { bottom: Math.max(margin, window.innerHeight - buttonRect.top + gap), maxHeight: above } : { top: Math.max(margin, buttonRect.bottom + gap), maxHeight: below }), boxSizing: "border-box", background: theme.toolbar.panel, borderRadius: 18, boxShadow: "0 18px 54px rgba(28, 25, 23, 0.16)", padding: 18, overflowY: "auto", color: theme.node.text } as const;
     const model = config.model || config.videoModel || "";
     const isAPIMartKlingV3 = isAPIMartKlingV3Config(config, model);
     const isKIEKlingV3 = isKIEKlingV3Config(config, model);
@@ -103,6 +106,7 @@ function VideoSettingsPortal({ buttonRect, panelRef, placement, theme, config, o
     const lastFrameValue = lastFrameNodeId && optionIds.has(lastFrameNodeId) ? lastFrameNodeId : "";
 
     return createPortal(
+        <ConfigProvider theme={{ token: { zIndexPopupBase: style.zIndex } }}>
         <div ref={panelRef} className="canvas-image-settings-popover" style={style} onPointerDown={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
             <div className="space-y-4">
                 <div className="text-lg font-semibold">视频设置</div>
@@ -118,7 +122,8 @@ function VideoSettingsPortal({ buttonRect, panelRef, placement, theme, config, o
                 ) : null}
                 <VideoSettingsPanel config={config} modelName={visualOnly ? config.videoModel || config.model : undefined} onConfigChange={(key, value) => onConfigChange(key, value)} theme={theme} showTitle={false} className="space-y-4" hideNegativePrompt={isKlingV3} visualOnly={visualOnly} />
             </div>
-        </div>,
+        </div>
+        </ConfigProvider>,
         document.body,
     );
 }
