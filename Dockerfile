@@ -15,7 +15,7 @@ RUN mkdir -p /app/web/public/director && cp dist/* /app/web/public/director/
 WORKDIR /app/web
 RUN bun audit && bun test src && bun run build
 
-FROM library/golang:1.27.3-bookworm@sha256:972b4110ba0f47539a975c31e52c64765e1ff19f2d74469ae4a595c6676e80a5 AS api-build
+FROM library/golang:1.27.4-bookworm@sha256:ce59b41415e2524ae99926fe1f37ce48ba8c194dcbd2a56a65436cdcefa2bd34 AS api-build
 WORKDIR /app
 ENV GOTOOLCHAIN=local
 COPY go.mod go.sum ./
@@ -35,7 +35,7 @@ RUN CGO_ENABLED=0 go test ./... && CGO_ENABLED=0 go build -trimpath -o /server .
 RUN mkdir -p /runtime-data /runtime-cache
 
 # Candidate runtime: signed Wolfi packages, pinned to the reviewed image digest.
-FROM cgr.dev/chainguard/glibc-dynamic@sha256:2827063c9efb4ba971d8621eb75f4e61b8d19850a6293a797df37358cc6f687b
+FROM cgr.dev/chainguard/glibc-dynamic@sha256:eaa0c377a38e4c67f4192fd5fe9d24d39d51c4531613d97731537f9d33460ae4
 ARG SOURCE_REVISION
 LABEL org.opencontainers.image.source="https://github.com/ruoyeyu/ICAN" \
       org.opencontainers.image.revision=$SOURCE_REVISION \

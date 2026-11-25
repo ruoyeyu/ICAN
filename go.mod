@@ -13,7 +13,7 @@ require (
 	github.com/libtnb/sqlite v1.2.2
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/studio-b12/gowebdav v0.13.0
-	golang.org/x/crypto v0.58.0
+	golang.org/x/crypto v0.58.1-0.20261009181718-2f1f834330b2
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.2
