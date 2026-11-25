@@ -89,7 +89,7 @@ func safeProxyDialContext(ctx context.Context, network, address string) (net.Con
 	}
 	dial := dialer.DialContext
 	if address := config.Cfg.OutboundSOCKS5Proxy; address != "" {
-		forward, err := proxy.SOCKS5("tcp", address, nil, dialer)
+		forward, err := proxy.SOCKS5("tcp", address, nil, &dialer)
 		if err != nil {
 			return nil, err
 		}
