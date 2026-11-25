@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- [修复] 更新 Next.js 与 follow-redirects 安全补丁版本，保持现有依赖安全检查。
+- [修复] 更新 Next.js、follow-redirects 与 Go 网络依赖安全补丁版本，保持现有依赖安全检查。
 
 - [新增] 管理后台供应商模板支持直接粘贴、编辑、格式化 JSON，校验后应用到现有表单。
 
